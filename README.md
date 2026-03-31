@@ -1,16 +1,43 @@
-# React + Vite
+# Live Portfolio Tracker
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A professional dark-themed portfolio tracker built with React 18 + Vite + Tailwind CSS, inspired by Zerodha/Groww.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Dashboard** — Total value, invested amount, P&L, overall XIRR, allocation pie chart, top gainers/losers
+- **Live Prices** — Yahoo Finance (stocks), MFAPI.in (mutual funds), goldprice.org (metals), auto-refresh every 60s
+- **8 Asset Categories** — Stocks (Indian & US), Mutual Funds, Fixed Deposits, Gold, Silver, Cash, Real Estate, Others
+- **XIRR Calculation** — Newton-Raphson method per asset, per category, and overall portfolio
+- **Transaction Management** — Buy/sell transactions with full CRUD
+- **Data Persistence** — All data stored in browser localStorage; no server required
+- **Export / Import** — JSON backup and restore in Settings
+- **INR Formatting** — ₹1,23,456.78 throughout; green for profit, red for loss
 
-## React Compiler
+## Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- React 18 + Vite
+- Tailwind CSS (dark theme)
+- React Router v6
+- Recharts (pie chart)
+- date-fns
 
-## Expanding the ESLint configuration
+## Getting Started
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```bash
+npm install
+npm run dev     # development server at http://localhost:5173
+npm run build   # production build
+```
+
+## Usage
+
+1. Open the app and navigate to any asset category page (e.g. Stocks, Mutual Funds).
+2. Click **Add** to add an asset, then use **Txns** to record buy/sell transactions.
+3. Return to the Dashboard to see your live portfolio summary, allocation chart, and XIRR.
+4. Use **Settings** to configure auto-refresh, export a JSON backup, or import one.
+
+## Notes
+
+- Stock symbols for NSE: `RELIANCE.NS`, for BSE: `RELIANCE.BO`, for US: `AAPL`
+- Mutual fund scheme codes are from [mfapi.in](https://mfapi.in) (e.g. `120503`)
+- Gold/Silver prices are fetched from goldprice.org; a static fallback is used if the API is unavailable
