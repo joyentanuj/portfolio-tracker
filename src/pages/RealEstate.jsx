@@ -2,7 +2,7 @@ import React from 'react';
 import Card from '../components/Common/Card';
 import RealEstateComponent from '../components/Assets/RealEstate';
 import { usePortfolio } from '../context/PortfolioContext';
-import { formatCurrency, formatXIRR, formatPercent } from '../utils/formatters';
+import { formatCurrency, formatXIRR } from '../utils/formatters';
 
 export default function RealEstate() {
   const { getCategoryStats } = usePortfolio();

@@ -5,7 +5,7 @@ import Button from '../Common/Button';
 import Modal from '../Common/Modal';
 import TransactionModal from '../Transactions/TransactionModal';
 
-function MetalSummaryCard({ type, data, stats, prices, onAddTx, icon, color }) {
+function MetalSummaryCard({ type, stats, prices, onAddTx, icon }) {
   const priceInfo = prices[type];
 
   return (

@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Button from '../Common/Button';
-import { formatDate } from '../../utils/formatters';
 
 export default function TransactionForm({ onSubmit, onCancel, initialData = null, assetType }) {
   const [form, setForm] = useState({
@@ -13,10 +12,6 @@ export default function TransactionForm({ onSubmit, onCancel, initialData = null
   });
 
   const [errors, setErrors] = useState({});
-
-  useEffect(() => {
-    if (initialData) setForm({ ...form, ...initialData });
-  }, [initialData]);
 
   const validate = () => {
     const errs = {};

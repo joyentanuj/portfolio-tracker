@@ -7,8 +7,6 @@ import Modal from '../Common/Modal';
 function REForm({ onSubmit, onCancel, initial = null }) {
   const [form, setForm] = useState({
     name: '',
-    purchasePrice: '',
-    currentValue: '',
     purchaseDate: new Date().toISOString().split('T')[0],
     location: '',
     notes: '',

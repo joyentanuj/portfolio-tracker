@@ -7,7 +7,6 @@ import Modal from '../Common/Modal';
 function CashForm({ onSubmit, onCancel, initial = null }) {
   const [form, setForm] = useState({
     name: '',
-    amount: '',
     date: new Date().toISOString().split('T')[0],
     notes: '',
     ...initial,

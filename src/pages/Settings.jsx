@@ -2,7 +2,7 @@ import React, { useRef } from 'react';
 import Card from '../components/Common/Card';
 import Button from '../components/Common/Button';
 import { usePortfolio } from '../context/PortfolioContext';
-import { getPortfolioData, savePortfolioData, clearPortfolioData } from '../utils/storage';
+import { clearPortfolioData } from '../utils/storage';
 
 export default function Settings() {
   const { data, updateData, updateSettings, showToast } = usePortfolio();

@@ -1,6 +1,6 @@
 import React from 'react';
 import { usePortfolio } from '../../context/PortfolioContext';
-import { formatCurrency, formatCurrencyCompact, formatXIRR, formatPercent } from '../../utils/formatters';
+import { formatCurrency, formatCurrencyCompact, formatXIRR } from '../../utils/formatters';
 
 function StatCard({ label, value, sub, positive, neutral = false, large = false }) {
   const color = neutral ? 'text-white' : positive ? 'text-green-400' : 'text-red-400';

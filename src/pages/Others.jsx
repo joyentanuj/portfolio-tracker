@@ -2,7 +2,7 @@ import React from 'react';
 import Card from '../components/Common/Card';
 import OtherAssets from '../components/Assets/OtherAssets';
 import { usePortfolio } from '../context/PortfolioContext';
-import { formatCurrency, formatPercent } from '../utils/formatters';
+import { formatCurrency } from '../utils/formatters';
 
 export default function Others() {
   const { getCategoryStats } = usePortfolio();

@@ -2,7 +2,7 @@ import React from 'react';
 import Card from '../components/Common/Card';
 import GoldSilverComponent from '../components/Assets/GoldSilver';
 import { usePortfolio } from '../context/PortfolioContext';
-import { formatCurrency, formatXIRR } from '../utils/formatters';
+import { formatCurrency } from '../utils/formatters';
 
 export default function GoldSilverPage() {
   const { getCategoryStats } = usePortfolio();

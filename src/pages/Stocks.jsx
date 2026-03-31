@@ -2,7 +2,7 @@ import React from 'react';
 import Card from '../components/Common/Card';
 import StocksList from '../components/Assets/StocksList';
 import { usePortfolio } from '../context/PortfolioContext';
-import { formatCurrency, formatXIRR, formatPercent } from '../utils/formatters';
+import { formatCurrency, formatXIRR } from '../utils/formatters';
 
 export default function Stocks() {
   const { getCategoryStats } = usePortfolio();

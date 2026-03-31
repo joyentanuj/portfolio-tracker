@@ -1,9 +1,8 @@
 import React from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { NAV_LINKS } from '../../utils/constants';
 
 export default function Sidebar({ isOpen, onClose }) {
-  const location = useLocation();
 
   return (
     <>

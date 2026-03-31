@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useReducer, useCallback } from 'react';
 import { getPortfolioData, savePortfolioData, generateId } from '../utils/storage';
 import { xirr, buildCashFlows } from '../utils/xirr';
 
@@ -320,6 +320,7 @@ export function PortfolioProvider({ children }) {
   return <PortfolioContext.Provider value={value}>{children}</PortfolioContext.Provider>;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const usePortfolio = () => {
   const ctx = useContext(PortfolioContext);
   if (!ctx) throw new Error('usePortfolio must be used within PortfolioProvider');

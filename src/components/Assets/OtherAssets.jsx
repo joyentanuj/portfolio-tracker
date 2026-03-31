@@ -8,8 +8,6 @@ function OtherForm({ onSubmit, onCancel, initial = null }) {
   const [form, setForm] = useState({
     name: '',
     type: '',
-    purchasePrice: '',
-    currentValue: '',
     purchaseDate: new Date().toISOString().split('T')[0],
     notes: '',
     ...initial,

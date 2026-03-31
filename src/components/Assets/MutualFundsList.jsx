@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { usePortfolio } from '../../context/PortfolioContext';
-import { formatCurrency, formatNumber, formatXIRR, formatPercent, formatDate } from '../../utils/formatters';
+import { formatCurrency, formatNumber, formatXIRR, formatPercent } from '../../utils/formatters';
 import Button from '../Common/Button';
 import Modal from '../Common/Modal';
 import TransactionModal from '../Transactions/TransactionModal';

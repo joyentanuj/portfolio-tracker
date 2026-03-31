@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { usePortfolio } from '../../context/PortfolioContext';
-import { formatCurrency, formatXIRR, formatDate, formatPercent } from '../../utils/formatters';
+import { formatCurrency, formatXIRR, formatDate } from '../../utils/formatters';
 import { COMPOUNDING_FREQUENCIES } from '../../utils/constants';
 import Button from '../Common/Button';
 import Modal from '../Common/Modal';
@@ -8,8 +8,6 @@ import Modal from '../Common/Modal';
 function FDForm({ onSubmit, onCancel, initial = null }) {
   const [form, setForm] = useState({
     bankName: '',
-    principal: '',
-    interestRate: '',
     startDate: new Date().toISOString().split('T')[0],
     maturityDate: '',
     compoundingFrequency: 'quarterly',
