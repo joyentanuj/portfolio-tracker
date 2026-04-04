@@ -3,7 +3,7 @@ import { defaultStocks, defaultMutualFunds } from '../data/defaultHoldings';
 const PORTFOLIO_KEY = 'portfolio_tracker_data';
 // Increment DATA_VERSION whenever defaultHoldings.js changes so that all users
 // automatically receive the corrected data on their next page load.
-const DATA_VERSION = 3;
+const DATA_VERSION = 4;
 const VERSION_KEY = 'portfolio_tracker_data_version';
 
 // Maps old (wrong) scheme codes → new (correct) scheme codes introduced in each version.
@@ -17,6 +17,19 @@ const SCHEME_CODE_MIGRATIONS = {
   '146647': '120505', // Kotak Flexicap Fund (was showing ₹10.00 instead of ~₹88.62)
   '120503': '120465', // Axis Large Cap Fund (was returning ELSS NAV instead of Large Cap ~₹63.11)
   '120684': '145444', // ICICI Prudential Nifty Next 50 Index Fund (was showing wrong NAV instead of ~₹57.54)
+};
+
+// Maps symbol → corrected display name (v4: fix names to match brokerage)
+const STOCK_NAME_MIGRATIONS = {
+  'ABCAPITAL.NS':  'Aditya Birla Capital Ltd',
+  'GOLDCASE.NS':   'Zerodha Gold ETF',
+  'HDFCNEXT50.NS': 'HDFC Nifty NEXT 50 ETF',
+  'KIRLOSENG.NS':  'Kirloskar Oil Engines Ltd',
+  'LUMAXTECH.NS':  'Lumax AutoTechnologies Ltd',
+  'NESTLEIND.NS':  'Nestle India Ltd',
+  'NH.NS':         'Narayana Hrudayalaya Ltd',
+  'SMALLCAP.NS':   'Mirae Asset Nifty Smallcap 250 Momentum Quality 100 ETF',
+  'TMCV.NS':       'Tata Motors Ltd',
 };
 
 export const generateId = () =>
@@ -108,6 +121,14 @@ export const getPortfolioData = () => {
           data.mutualFunds = data.mutualFunds.map((mf) => {
             const corrected = SCHEME_CODE_MIGRATIONS[mf.schemeCode];
             return corrected ? { ...mf, schemeCode: corrected } : mf;
+          });
+        }
+
+        // Fix stock display names that were wrong.
+        if (Array.isArray(data.stocks)) {
+          data.stocks = data.stocks.map((stock) => {
+            const correctedName = STOCK_NAME_MIGRATIONS[stock.symbol];
+            return correctedName ? { ...stock, name: correctedName } : stock;
           });
         }
 
