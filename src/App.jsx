@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { HashRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { PortfolioProvider } from './context/PortfolioContext';
 import Sidebar from './components/Layout/Sidebar';
 import Navbar from './components/Layout/Navbar';
@@ -58,10 +58,10 @@ function AppLayout() {
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <PortfolioProvider>
         <AppLayout />
       </PortfolioProvider>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
