@@ -8,10 +8,10 @@ const CustomTooltip = ({ active, payload }) => {
   if (!active || !payload?.length) return null;
   const d = payload[0];
   return (
-    <div className="bg-gray-800 border border-gray-600 rounded-xl px-4 py-3 shadow-xl">
-      <p className="text-white font-semibold text-sm">{d.name}</p>
-      <p className="text-indigo-400 text-sm">{formatCurrency(d.value)}</p>
-      <p className="text-gray-400 text-xs">{d.payload.percent?.toFixed(1)}% of portfolio</p>
+    <div className="bg-white border border-gray-200 rounded-xl px-4 py-3 shadow-xl">
+      <p className="text-gray-900 font-semibold text-sm">{d.name}</p>
+      <p className="text-indigo-600 text-sm">{formatCurrency(d.value)}</p>
+      <p className="text-gray-500 text-xs">{d.payload.percent?.toFixed(1)}% of portfolio</p>
     </div>
   );
 };
@@ -45,7 +45,7 @@ export default function PortfolioChart() {
 
   if (chartData.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-64 text-gray-500">
+      <div className="flex flex-col items-center justify-center h-64 text-gray-400">
         <div className="text-4xl mb-3">📊</div>
         <p className="text-sm">No assets yet. Add your first asset to see the chart.</p>
       </div>
@@ -84,17 +84,17 @@ export default function PortfolioChart() {
               <div className="w-3 h-3 rounded-full shrink-0" style={{ background: item.color }} />
               <div className="flex-1 min-w-0">
                 <div className="flex justify-between items-center mb-0.5">
-                  <span className="text-gray-300 text-xs font-medium truncate">{item.name}</span>
-                  <span className="text-white text-xs font-semibold ml-2">{formatCurrencyCompact(item.value)}</span>
+                  <span className="text-gray-700 text-xs font-medium truncate">{item.name}</span>
+                  <span className="text-gray-900 text-xs font-semibold ml-2">{formatCurrencyCompact(item.value)}</span>
                 </div>
-                <div className="w-full bg-gray-700 rounded-full h-1.5">
+                <div className="w-full bg-gray-100 rounded-full h-1.5">
                   <div
                     className="h-1.5 rounded-full transition-all"
                     style={{ width: `${item.percent}%`, background: item.color }}
                   />
                 </div>
               </div>
-              <span className="text-gray-500 text-xs w-10 text-right">{item.percent.toFixed(1)}%</span>
+              <span className="text-gray-400 text-xs w-10 text-right">{item.percent.toFixed(1)}%</span>
             </div>
           ))}
         </div>

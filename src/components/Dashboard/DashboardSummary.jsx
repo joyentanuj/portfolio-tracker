@@ -3,12 +3,12 @@ import { usePortfolio } from '../../context/PortfolioContext';
 import { formatCurrency, formatCurrencyCompact, formatXIRR } from '../../utils/formatters';
 
 function StatCard({ label, value, sub, positive, neutral = false, large = false }) {
-  const color = neutral ? 'text-white' : positive ? 'text-green-400' : 'text-red-400';
+  const color = neutral ? 'text-gray-900' : positive ? 'text-green-600' : 'text-red-600';
   return (
-    <div className="bg-gray-800 rounded-xl border border-gray-700 p-5">
-      <p className="text-gray-400 text-xs font-medium uppercase tracking-wider mb-2">{label}</p>
+    <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+      <p className="text-gray-500 text-xs font-medium uppercase tracking-wider mb-2">{label}</p>
       <p className={`font-bold ${large ? 'text-2xl' : 'text-xl'} ${color}`}>{value}</p>
-      {sub && <p className="text-gray-500 text-xs mt-1">{sub}</p>}
+      {sub && <p className="text-gray-400 text-xs mt-1">{sub}</p>}
     </div>
   );
 }

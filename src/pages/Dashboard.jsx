@@ -44,7 +44,7 @@ export default function Dashboard() {
                 <Link
                   key={cat}
                   to={CATEGORY_PATHS[cat]}
-                  className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-700/50 transition-colors group"
+                  className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors group"
                 >
                   <div
                     className="w-8 h-8 rounded-lg flex items-center justify-center text-base shrink-0"
@@ -53,19 +53,19 @@ export default function Dashboard() {
                     {CATEGORY_ICONS[cat]}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-white text-sm font-medium">{CATEGORY_LABELS[cat]}</p>
-                    <p className="text-gray-500 text-xs">{stats.count} assets</p>
+                    <p className="text-gray-900 text-sm font-medium">{CATEGORY_LABELS[cat]}</p>
+                    <p className="text-gray-400 text-xs">{stats.count} assets</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-white text-sm font-semibold">{formatCurrency(stats.totalValue)}</p>
-                    <p className={`text-xs ${stats.pnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                    <p className="text-gray-900 text-sm font-semibold">{formatCurrency(stats.totalValue)}</p>
+                    <p className={`text-xs ${stats.pnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                       {stats.pnl >= 0 ? '+' : ''}{formatPercent(stats.pnlPercent)}
                     </p>
                   </div>
                   {stats.xirr !== null && (
                     <div className="text-right ml-2 hidden sm:block">
-                      <p className="text-gray-500 text-[10px]">XIRR</p>
-                      <p className={`text-xs font-medium ${stats.xirr >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      <p className="text-gray-400 text-[10px]">XIRR</p>
+                      <p className={`text-xs font-medium ${stats.xirr >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                         {formatXIRR(stats.xirr)}
                       </p>
                     </div>
