@@ -4,9 +4,20 @@ import { xirr, buildCashFlows } from '../utils/xirr';
 
 const PortfolioContext = createContext(null);
 
+const PRICES_CACHE_KEY = 'portfolio_tracker_prices';
+
+function getCachedPrices() {
+  try {
+    const raw = localStorage.getItem(PRICES_CACHE_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+
 const initialState = {
   data: getPortfolioData(),
-  prices: {},
+  prices: getCachedPrices(),
   lastUpdated: null,
   loading: false,
   toasts: [],
@@ -16,8 +27,15 @@ function reducer(state, action) {
   switch (action.type) {
     case 'SET_DATA':
       return { ...state, data: action.payload };
-    case 'SET_PRICES':
-      return { ...state, prices: { ...state.prices, ...action.payload }, lastUpdated: new Date() };
+    case 'SET_PRICES': {
+      const newPrices = { ...state.prices, ...action.payload };
+      try {
+        localStorage.setItem(PRICES_CACHE_KEY, JSON.stringify(newPrices));
+      } catch (e) {
+        console.error('Failed to cache prices', e);
+      }
+      return { ...state, prices: newPrices, lastUpdated: new Date() };
+    }
     case 'SET_LOADING':
       return { ...state, loading: action.payload };
     case 'ADD_TOAST':
