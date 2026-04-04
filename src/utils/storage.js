@@ -67,11 +67,10 @@ function buildSeededData() {
 
 export const getPortfolioData = () => {
   try {
-    const currentVersion = parseInt(localStorage.getItem(VERSION_KEY) || '0', 10);
     const raw = localStorage.getItem(PORTFOLIO_KEY);
 
-    if (!raw || currentVersion < DATA_VERSION) {
-      // Clear old data and re-seed with the latest default holdings
+    if (!raw) {
+      // First ever load — seed with default holdings
       const seeded = buildSeededData();
       try {
         localStorage.setItem(PORTFOLIO_KEY, JSON.stringify(seeded));
@@ -80,6 +79,16 @@ export const getPortfolioData = () => {
         console.error('Failed to save seeded portfolio data', e);
       }
       return seeded;
+    }
+
+    // Update version key without touching user data
+    const currentVersion = parseInt(localStorage.getItem(VERSION_KEY) || '0', 10);
+    if (currentVersion < DATA_VERSION) {
+      try {
+        localStorage.setItem(VERSION_KEY, String(DATA_VERSION));
+      } catch (e) {
+        console.error('Failed to update version key', e);
+      }
     }
 
     const parsed = JSON.parse(raw);
