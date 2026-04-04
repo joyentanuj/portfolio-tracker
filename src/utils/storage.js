@@ -3,7 +3,7 @@ import { defaultStocks, defaultMutualFunds } from '../data/defaultHoldings';
 const PORTFOLIO_KEY = 'portfolio_tracker_data';
 // Increment DATA_VERSION whenever defaultHoldings.js changes so that all users
 // automatically receive the corrected data on their next page load.
-const DATA_VERSION = 4;
+const DATA_VERSION = 5;
 const VERSION_KEY = 'portfolio_tracker_data_version';
 
 // Maps old (wrong) scheme codes → new (correct) scheme codes introduced in each version.
@@ -14,9 +14,14 @@ const SCHEME_CODE_MIGRATIONS = {
   '149470': '127042', // Motilal Oswal Midcap Fund (was showing ₹1,279 instead of ~₹95.91)
   '147946': '148063', // Edelweiss US Technology Equity FoF (wrong fund was being fetched)
   '119598': '119800', // SBI Liquid Fund (was showing ₹94.86 instead of ~₹4,314)
-  '146647': '120505', // Kotak Flexicap Fund (was showing ₹10.00 instead of ~₹88.62)
   '120503': '120465', // Axis Large Cap Fund (was returning ELSS NAV instead of Large Cap ~₹63.11)
-  '120684': '145444', // ICICI Prudential Nifty Next 50 Index Fund (was showing wrong NAV instead of ~₹57.54)
+  // v5: Fix remaining wrong codes (undoing v3 mistakes and fixing newly identified issues)
+  '146647': '120166', // Kotak Flexicap Fund: very old wrong code → correct Direct Growth code (intentionally same destination as next entry)
+  '120505': '120166', // Kotak Flexicap Fund: v3's wrong destination code → correct Direct Growth code
+  '145444': '120684', // ICICI Pru Nifty Next 50: revert bad v3 migration (145444 is Bharat Consumption IDCW!); also fixes users who had the correct 120684 before v3 incorrectly migrated them to 145444
+  '147762': '149039', // Navi Nifty 50 Index Fund: was pointing to wrong fund (NAV ₹12.04 vs ₹14.89)
+  '148466': '149910', // Navi NASDAQ 100 FoF: was pointing to ICICI Pru Nifty IT ETF!
+  '128102': '118551', // Franklin US Opportunities: code 128102 returned wrong fund's NAV
 };
 
 // Maps symbol → corrected display name (v4: fix names to match brokerage)
