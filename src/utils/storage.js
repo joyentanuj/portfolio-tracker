@@ -3,7 +3,7 @@ import { defaultStocks, defaultMutualFunds } from '../data/defaultHoldings';
 const PORTFOLIO_KEY = 'portfolio_tracker_data';
 // Increment DATA_VERSION whenever defaultHoldings.js changes so that all users
 // automatically receive the corrected data on their next page load.
-const DATA_VERSION = 6;
+const DATA_VERSION = 7;
 const VERSION_KEY = 'portfolio_tracker_data_version';
 
 // Maps old (wrong) scheme codes → new (correct) scheme codes introduced in each version.
@@ -22,6 +22,8 @@ const SCHEME_CODE_MIGRATIONS = {
   '147762': '149039', // Navi Nifty 50 Index Fund: was pointing to wrong fund (NAV ₹12.04 vs ₹14.89)
   '148466': '149910', // Navi NASDAQ 100 FoF: was pointing to ICICI Pru Nifty IT ETF!
   '128102': '118551', // Franklin US Opportunities: code 128102 returned wrong fund's NAV
+  // v7: Fix Mirae Asset Nifty Smallcap 250 ETF FoF (150705 was Regular Plan; correct Direct Plan is 152459)
+  '150705': '152459',
 };
 
 // Maps symbol → corrected display name (v4: fix names to match brokerage)
@@ -48,7 +50,7 @@ const MF_DATA_MIGRATIONS = {
   '120684': { units: 2782.509, avgCost: 61.74 },   // ICICI Pru Nifty Next 50
   '120166': { units: 924.936,  avgCost: 74.60 },   // Kotak Flexicap Fund
   '118834': { units: 222.004,  avgCost: 103.60 },  // Mirae Asset Large & Midcap
-  '150705': { units: 14491.170, avgCost: 9.80 },   // Mirae Smallcap 250 ETF FoF
+  '152459': { units: 14491.170, avgCost: 9.80 },   // Mirae Smallcap 250 ETF FoF (Direct Plan)
   '127042': { units: 1644.486, avgCost: 112.49 },  // Motilal Oswal Midcap
   '149039': { units: 20781.077, avgCost: 15.62 },  // Navi Nifty 50
   '149910': { units: 1332.603, avgCost: 12.76 },   // Navi Nasdaq100 (was 2371 — major error)
