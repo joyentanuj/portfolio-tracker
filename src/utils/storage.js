@@ -2,6 +2,9 @@ import { defaultStocks, defaultMutualFunds } from '../data/defaultHoldings';
 
 const PORTFOLIO_KEY = 'portfolio_tracker_data';
 
+export const generateId = () =>
+  `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+
 export const getInitialData = () => ({
   stocks: [],
   mutualFunds: [],
@@ -90,6 +93,3 @@ export const savePortfolioData = (data) => {
 export const clearPortfolioData = () => {
   localStorage.removeItem(PORTFOLIO_KEY);
 };
-
-export const generateId = () =>
-  `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
