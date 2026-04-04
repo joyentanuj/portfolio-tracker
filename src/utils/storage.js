@@ -3,7 +3,7 @@ import { defaultStocks, defaultMutualFunds } from '../data/defaultHoldings';
 const PORTFOLIO_KEY = 'portfolio_tracker_data';
 // Increment DATA_VERSION whenever defaultHoldings.js changes so that all users
 // automatically receive the corrected data on their next page load.
-const DATA_VERSION = 2;
+const DATA_VERSION = 3;
 const VERSION_KEY = 'portfolio_tracker_data_version';
 
 export const generateId = () =>
@@ -81,14 +81,18 @@ export const getPortfolioData = () => {
       return seeded;
     }
 
-    // Update version key without touching user data
+    // Version bump — re-seed with corrected default holdings so users
+    // automatically get the updated scheme codes on their next page load.
     const currentVersion = parseInt(localStorage.getItem(VERSION_KEY) || '0', 10);
     if (currentVersion < DATA_VERSION) {
+      const seeded = buildSeededData();
       try {
+        localStorage.setItem(PORTFOLIO_KEY, JSON.stringify(seeded));
         localStorage.setItem(VERSION_KEY, String(DATA_VERSION));
       } catch (e) {
-        console.error('Failed to update version key', e);
+        console.error('Failed to re-seed portfolio data on version bump', e);
       }
+      return seeded;
     }
 
     const parsed = JSON.parse(raw);
