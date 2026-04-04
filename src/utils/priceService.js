@@ -1,15 +1,37 @@
-const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
+const CORS_PROXIES = [
+  'https://api.allorigins.win/raw?url=',
+  'https://corsproxy.io/?url=',
+];
+
+async function fetchWithFallback(url, timeoutMs = 10000) {
+  for (const proxy of CORS_PROXIES) {
+    try {
+      const response = await fetch(`${proxy}${encodeURIComponent(url)}`, {
+        signal: AbortSignal.timeout(timeoutMs),
+      });
+      if (response.ok) return response;
+      console.warn(`[priceService] Proxy ${proxy} returned status ${response.status} for ${url}`);
+    } catch (err) {
+      console.warn(`[priceService] Proxy ${proxy} failed for ${url}:`, err?.message ?? err);
+    }
+  }
+  return null;
+}
 
 export const fetchStockPrice = async (symbol) => {
   try {
     const url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}`;
-    const response = await fetch(`${CORS_PROXY}${encodeURIComponent(url)}`, {
-      signal: AbortSignal.timeout(10000),
-    });
-    if (!response.ok) return null;
+    const response = await fetchWithFallback(url);
+    if (!response) {
+      console.warn(`[priceService] No response for ${symbol} from any proxy`);
+      return null;
+    }
     const data = await response.json();
     const result = data.chart?.result?.[0];
-    if (!result) return null;
+    if (!result) {
+      console.warn(`[priceService] No chart result for ${symbol}`);
+      return null;
+    }
     const price = result.meta?.regularMarketPrice;
     const prevClose = result.meta?.chartPreviousClose || result.meta?.previousClose || price;
     const change = price - prevClose;
@@ -22,7 +44,8 @@ export const fetchStockPrice = async (symbol) => {
       currency: result.meta?.currency || 'INR',
       exchangeName: result.meta?.exchangeName,
     };
-  } catch {
+  } catch (err) {
+    console.warn(`[priceService] Error fetching ${symbol}:`, err);
     return null;
   }
 };
@@ -56,11 +79,8 @@ export const fetchMFPrice = async (schemeCode) => {
 export const fetchGoldSilverPrice = async () => {
   try {
     // Try to fetch from a free gold API
-    const response = await fetch(
-      `${CORS_PROXY}${encodeURIComponent('https://data-asg.goldprice.org/dbXRates/INR')}`,
-      { signal: AbortSignal.timeout(8000) }
-    );
-    if (response.ok) {
+    const response = await fetchWithFallback('https://data-asg.goldprice.org/dbXRates/INR', 8000);
+    if (response) {
       const data = await response.json();
       const goldPerOz = data.items?.[0]?.xauPrice;
       const silverPerOz = data.items?.[0]?.xagPrice;
