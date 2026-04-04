@@ -49,71 +49,97 @@ export const defaultStocks = [
 ];
 
 // Scheme codes from mfapi.in — edit any entry via the UI if a code is incorrect.
+// NOTE: If you already have data loaded, go to Settings > Clear All Data in the app
+// (or clear your browser's localStorage) to re-seed with this updated data.
 export const defaultMutualFunds = [
   {
-    schemeCode: '147946',
-    schemeName: 'Edelweiss US Technology Equity Fund of Fund - Direct Plan Growth',
-    units: 3407.564,
-    avgCost: 29.93,
+    schemeCode: '122639',
+    schemeName: 'Parag Parikh Flexi Cap Fund - Direct Growth',
+    units: 3647,
+    avgCost: 86.33,
+  },
+  {
+    schemeCode: '147762',
+    schemeName: 'Navi Nifty 50 Index Fund - Direct Plan Growth',
+    units: 20781,
+    avgCost: 15.62,
   },
   {
     schemeCode: '101539',
     schemeName: 'ICICI Prudential All Seasons Bond Fund - Direct Plan Growth',
-    units: 7476.554,
+    units: 7476,
     avgCost: 40.12,
+  },
+  {
+    schemeCode: '120828',
+    schemeName: 'Quant Small Cap Fund - Direct Growth',
+    units: 896,
+    avgCost: 273.89,
   },
   {
     schemeCode: '120693',
     schemeName: 'ICICI Prudential Nifty Next 50 Index Fund - Direct Plan Growth',
-    units: 2782.509,
+    units: 2782,
     avgCost: 61.74,
+  },
+  {
+    schemeCode: '149470',
+    schemeName: 'Motilal Oswal Midcap Fund - Direct Growth',
+    units: 1644,
+    avgCost: 112.49,
   },
   {
     schemeCode: '148473',
     schemeName: 'ICICI Prudential Nifty50 Value 20 Index Fund - Direct Plan Growth',
-    units: 12873.422,
+    units: 12873,
     avgCost: 10.8,
   },
   {
     schemeCode: '150705',
     schemeName: 'Mirae Asset Nifty Smallcap 250 Momentum Quality 100 ETF FoF - Direct Plan Growth',
-    units: 14491.17,
+    units: 14491,
     avgCost: 9.8,
   },
   {
-    schemeCode: '149470',
-    schemeName: 'Motilal Oswal Midcap Fund - Direct Growth',
-    units: 1644.486,
-    avgCost: 112.49,
-  },
-  {
-    schemeCode: '148466',
-    schemeName: 'Navi Nasdaq100 US Specific Equity Passive FoF - Direct Plan Growth',
-    units: 1332.603,
-    avgCost: 12.76,
-  },
-  {
-    schemeCode: '147762',
-    schemeName: 'Navi Nifty 50 Index Fund - Direct Plan Growth',
-    units: 20781.077,
-    avgCost: 15.62,
-  },
-  {
-    schemeCode: '122639',
-    schemeName: 'Parag Parikh Flexi Cap Fund - Direct Growth',
-    units: 3412.535,
-    avgCost: 89.61,
-  },
-  {
-    schemeCode: '120828',
-    schemeName: 'Quant Small Cap Fund - Direct Growth',
-    units: 896.677,
-    avgCost: 273.89,
+    schemeCode: '147946',
+    schemeName: 'Edelweiss US Technology Equity Fund of Fund - Direct Plan Growth',
+    units: 3407,
+    avgCost: 29.93,
   },
   {
     schemeCode: '119568',
     schemeName: 'SBI Liquid Fund - Direct Plan Growth',
-    units: 23.769,
+    units: 23,
     avgCost: 4206.91,
+  },
+  {
+    schemeCode: '146647',
+    schemeName: 'Kotak Flexicap Fund - Direct Plan Growth',
+    units: 924,
+    avgCost: 74.66,
+  },
+  {
+    schemeCode: '120503',
+    schemeName: 'Axis Large Cap Fund - Direct Plan Growth',
+    units: 1173,
+    avgCost: 58.82,
+  },
+  {
+    schemeCode: '148466',
+    schemeName: 'Navi Nasdaq100 US Specific Equity Passive FoF - Direct Plan Growth',
+    units: 2371,
+    avgCost: 11.39,
+  },
+  {
+    schemeCode: '118834',
+    schemeName: 'Mirae Asset Large & Midcap Fund - Direct Plan Growth',
+    units: 222,
+    avgCost: 103.56,
+  },
+  {
+    schemeCode: '128102',
+    schemeName: 'Franklin U.S. Opportunities Equity Active Fund - Direct Plan Growth',
+    units: 101,
+    avgCost: 49.41,
   },
 ];
