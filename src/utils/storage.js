@@ -3,7 +3,7 @@ import { defaultStocks, defaultMutualFunds } from '../data/defaultHoldings';
 const PORTFOLIO_KEY = 'portfolio_tracker_data';
 // Increment DATA_VERSION whenever defaultHoldings.js changes so that all users
 // automatically receive the corrected data on their next page load.
-const DATA_VERSION = 5;
+const DATA_VERSION = 6;
 const VERSION_KEY = 'portfolio_tracker_data_version';
 
 // Maps old (wrong) scheme codes → new (correct) scheme codes introduced in each version.
@@ -35,6 +35,26 @@ const STOCK_NAME_MIGRATIONS = {
   'NH.NS':         'Narayana Hrudayalaya Ltd',
   'SMALLCAP.NS':   'Mirae Asset Nifty Smallcap 250 Momentum Quality 100 ETF',
   'TMCV.NS':       'Tata Motors Ltd',
+};
+
+// Maps scheme code → corrected { units, avgCost } sourced from CAS (v6).
+// Only the seeded 'Initial import' transaction is corrected; custom user transactions are left as-is.
+const MF_DATA_MIGRATIONS = {
+  '120465': { units: 1173.943, avgCost: 58.78 },   // Axis Large Cap Fund
+  '148063': { units: 3407.564, avgCost: 29.93 },   // Edelweiss US Technology Equity FoF
+  '118551': { units: 101.906,  avgCost: 49.07 },   // Franklin US Opportunities Equity
+  '148473': { units: 12873.422, avgCost: 10.80 },  // ICICI Pru Nifty50 Value 20
+  '120603': { units: 7476.554, avgCost: 40.12 },   // ICICI Pru All Seasons Bond
+  '120684': { units: 2782.509, avgCost: 61.74 },   // ICICI Pru Nifty Next 50
+  '120166': { units: 924.936,  avgCost: 74.60 },   // Kotak Flexicap Fund
+  '118834': { units: 222.004,  avgCost: 103.60 },  // Mirae Asset Large & Midcap
+  '150705': { units: 14491.170, avgCost: 9.80 },   // Mirae Smallcap 250 ETF FoF
+  '127042': { units: 1644.486, avgCost: 112.49 },  // Motilal Oswal Midcap
+  '149039': { units: 20781.077, avgCost: 15.62 },  // Navi Nifty 50
+  '149910': { units: 1332.603, avgCost: 12.76 },   // Navi Nasdaq100 (was 2371 — major error)
+  '122639': { units: 3647.148, avgCost: 86.59 },   // Parag Parikh Flexi Cap (combined folios)
+  '120828': { units: 896.677,  avgCost: 273.89 },  // Quant Small Cap Fund
+  '119800': { units: 23.769,   avgCost: 4207.23 }, // SBI Liquid Fund
 };
 
 export const generateId = () =>
@@ -124,8 +144,31 @@ export const getPortfolioData = () => {
         // Fix any mutual fund holdings that still use an old (wrong) scheme code.
         if (Array.isArray(data.mutualFunds)) {
           data.mutualFunds = data.mutualFunds.map((mf) => {
-            const corrected = SCHEME_CODE_MIGRATIONS[mf.schemeCode];
-            return corrected ? { ...mf, schemeCode: corrected } : mf;
+            let updated = mf;
+            const correctedCode = SCHEME_CODE_MIGRATIONS[mf.schemeCode];
+            if (correctedCode) {
+              updated = { ...updated, schemeCode: correctedCode };
+            }
+            // Correct units/avgCost for the seeded 'Initial import' transaction (v6).
+            const codeToCheck = correctedCode || mf.schemeCode;
+            const dataFix = MF_DATA_MIGRATIONS[codeToCheck];
+            if (dataFix && Array.isArray(updated.transactions)) {
+              updated = {
+                ...updated,
+                transactions: updated.transactions.map((tx) => {
+                  if (tx.notes === 'Initial import') {
+                    return {
+                      ...tx,
+                      quantity: dataFix.units,
+                      price: dataFix.avgCost,
+                      amount: parseFloat((dataFix.units * dataFix.avgCost).toFixed(2)),
+                    };
+                  }
+                  return tx;
+                }),
+              };
+            }
+            return updated;
           });
         }
 
