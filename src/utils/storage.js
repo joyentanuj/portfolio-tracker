@@ -16,9 +16,9 @@ const SCHEME_CODE_MIGRATIONS = {
   '119598': '119800', // SBI Liquid Fund (was showing ₹94.86 instead of ~₹4,314)
   '120503': '120465', // Axis Large Cap Fund (was returning ELSS NAV instead of Large Cap ~₹63.11)
   // v5: Fix remaining wrong codes (undoing v3 mistakes and fixing newly identified issues)
-  '146647': '120166', // Kotak Flexicap Fund: very old wrong code → correct Direct Growth code
+  '146647': '120166', // Kotak Flexicap Fund: very old wrong code → correct Direct Growth code (intentionally same destination as next entry)
   '120505': '120166', // Kotak Flexicap Fund: v3's wrong destination code → correct Direct Growth code
-  '145444': '120684', // ICICI Pru Nifty Next 50: revert bad v3 migration (145444 is Bharat Consumption IDCW!)
+  '145444': '120684', // ICICI Pru Nifty Next 50: revert bad v3 migration (145444 is Bharat Consumption IDCW!); also fixes users who had the correct 120684 before v3 incorrectly migrated them to 145444
   '147762': '149039', // Navi Nifty 50 Index Fund: was pointing to wrong fund (NAV ₹12.04 vs ₹14.89)
   '148466': '149910', // Navi NASDAQ 100 FoF: was pointing to ICICI Pru Nifty IT ETF!
   '128102': '118551', // Franklin US Opportunities: code 128102 returned wrong fund's NAV
