@@ -102,7 +102,7 @@ export const defaultMutualFunds = [
     avgCost: 103.60,
   },
   {
-    schemeCode: '150705',
+    schemeCode: '152459',
     schemeName: 'Mirae Asset Nifty Smallcap 250 Momentum Quality 100 ETF FoF - Direct Plan Growth',
     units: 14491.170,
     avgCost: 9.80,
