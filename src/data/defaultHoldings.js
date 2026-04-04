@@ -59,7 +59,7 @@ export const defaultMutualFunds = [
     avgCost: 86.33,
   },
   {
-    schemeCode: '147762',
+    schemeCode: '149039',
     schemeName: 'Navi Nifty 50 Index Fund - Direct Plan Growth',
     units: 20781,
     avgCost: 15.62,
@@ -77,7 +77,7 @@ export const defaultMutualFunds = [
     avgCost: 273.89,
   },
   {
-    schemeCode: '145444',
+    schemeCode: '120684',
     schemeName: 'ICICI Prudential Nifty Next 50 Index Fund - Direct Plan Growth',
     units: 2782,
     avgCost: 61.74,
@@ -113,7 +113,7 @@ export const defaultMutualFunds = [
     avgCost: 4206.91,
   },
   {
-    schemeCode: '120505',
+    schemeCode: '120166',
     schemeName: 'Kotak Flexicap Fund - Direct Plan Growth',
     units: 924,
     avgCost: 74.66,
@@ -125,7 +125,7 @@ export const defaultMutualFunds = [
     avgCost: 58.82,
   },
   {
-    schemeCode: '148466',
+    schemeCode: '149910',
     schemeName: 'Navi Nasdaq100 US Specific Equity Passive FoF - Direct Plan Growth',
     units: 2371,
     avgCost: 11.39,
@@ -137,7 +137,7 @@ export const defaultMutualFunds = [
     avgCost: 103.56,
   },
   {
-    schemeCode: '128102',
+    schemeCode: '118551',
     schemeName: 'Franklin U.S. Opportunities Equity Active Fund - Direct Plan Growth',
     units: 101,
     avgCost: 49.41,
