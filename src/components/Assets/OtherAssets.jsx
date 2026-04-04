@@ -28,8 +28,8 @@ function OtherForm({ onSubmit, onCancel, initial = null }) {
     });
   };
 
-  const ic = 'w-full bg-gray-900 border border-gray-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500';
-  const lc = 'block text-gray-400 text-xs font-medium mb-1';
+  const ic = 'w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:border-indigo-500';
+  const lc = 'block text-gray-600 text-xs font-medium mb-1';
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
   return (
@@ -62,7 +62,7 @@ function OtherForm({ onSubmit, onCancel, initial = null }) {
         <label className={lc}>Notes</label>
         <input className={ic} value={form.notes} onChange={e => set('notes', e.target.value)} placeholder="Description, location, etc." />
       </div>
-      {err && <p className="text-red-400 text-xs">{err}</p>}
+      {err && <p className="text-red-600 text-xs">{err}</p>}
       <div className="flex gap-3">
         <Button type="button" variant="secondary" onClick={onCancel} className="flex-1">Cancel</Button>
         <Button type="submit" className="flex-1">{initial ? 'Update' : 'Add Asset'}</Button>
@@ -95,14 +95,14 @@ export default function OtherAssets() {
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
-        <p className="text-gray-400 text-sm">{others.length} assets</p>
+        <p className="text-gray-500 text-sm">{others.length} assets</p>
         <Button onClick={() => setAddModal(true)} icon="+" size="sm">Add Asset</Button>
       </div>
 
       {others.length === 0 ? (
-        <div className="text-center py-16 text-gray-500">
+        <div className="text-center py-16 text-gray-400">
           <div className="text-5xl mb-4">📦</div>
-          <p className="font-medium text-gray-400 mb-1">No other assets</p>
+          <p className="font-medium text-gray-500 mb-1">No other assets</p>
           <p className="text-sm">Track collectibles, vehicles, jewellery, and more</p>
         </div>
       ) : (
@@ -110,26 +110,26 @@ export default function OtherAssets() {
           {others.map(asset => {
             const stats = getAssetStats(asset, 'others');
             return (
-              <div key={asset.id} className="flex items-center justify-between bg-gray-900 rounded-xl border border-gray-700 p-4">
+              <div key={asset.id} className="flex items-center justify-between bg-gray-50 rounded-xl border border-gray-200 p-4">
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
-                    <p className="text-white font-semibold">{asset.name}</p>
+                    <p className="text-gray-900 font-semibold">{asset.name}</p>
                     {asset.type && (
-                      <span className="text-xs px-2 py-0.5 bg-indigo-900/50 text-indigo-400 rounded-full">{asset.type}</span>
+                      <span className="text-xs px-2 py-0.5 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-full">{asset.type}</span>
                     )}
                   </div>
-                  <p className="text-gray-500 text-xs mt-0.5">Purchased: {formatDate(asset.purchaseDate)}</p>
-                  {asset.notes && <p className="text-gray-500 text-xs">{asset.notes}</p>}
+                  <p className="text-gray-400 text-xs mt-0.5">Purchased: {formatDate(asset.purchaseDate)}</p>
+                  {asset.notes && <p className="text-gray-400 text-xs">{asset.notes}</p>}
                 </div>
                 <div className="text-right mr-4">
-                  <p className="text-white font-semibold">{formatCurrency(stats.currentValue)}</p>
-                  <p className={`text-xs ${stats.pnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                  <p className="text-gray-900 font-semibold">{formatCurrency(stats.currentValue)}</p>
+                  <p className={`text-xs ${stats.pnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                     {stats.pnl >= 0 ? '+' : ''}{formatCurrency(stats.pnl)} ({formatPercent(stats.pnlPercent)})
                   </p>
                 </div>
                 <div className="flex items-center gap-1">
-                  <button onClick={() => setEditAsset(asset)} className="p-1.5 text-gray-500 hover:text-indigo-400 hover:bg-gray-700 rounded-lg">✏️</button>
-                  <button onClick={() => handleDelete(asset.id)} className="p-1.5 text-gray-500 hover:text-red-400 hover:bg-gray-700 rounded-lg">🗑️</button>
+                  <button onClick={() => setEditAsset(asset)} className="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg">✏️</button>
+                  <button onClick={() => handleDelete(asset.id)} className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg">🗑️</button>
                 </div>
               </div>
             );

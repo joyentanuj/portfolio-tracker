@@ -39,9 +39,9 @@ export default function TransactionForm({ onSubmit, onCancel, initialData = null
 
   const set = (field, value) => setForm(f => ({ ...f, [field]: value }));
 
-  const inputClass = 'w-full bg-gray-900 border border-gray-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500 transition-colors';
-  const labelClass = 'block text-gray-400 text-xs font-medium mb-1';
-  const errorClass = 'text-red-400 text-xs mt-0.5';
+  const inputClass = 'w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:border-indigo-500 transition-colors';
+  const labelClass = 'block text-gray-600 text-xs font-medium mb-1';
+  const errorClass = 'text-red-600 text-xs mt-0.5';
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -55,9 +55,9 @@ export default function TransactionForm({ onSubmit, onCancel, initialData = null
             className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors border ${
               form.type === t
                 ? t === 'buy'
-                  ? 'bg-green-600/20 border-green-500 text-green-400'
-                  : 'bg-red-600/20 border-red-500 text-red-400'
-                : 'bg-gray-900 border-gray-700 text-gray-400 hover:border-gray-600'
+                  ? 'bg-green-50 border-green-500 text-green-700'
+                  : 'bg-red-50 border-red-500 text-red-700'
+                : 'bg-white border-gray-300 text-gray-500 hover:border-gray-400'
             }`}
           >
             {t === 'buy' ? '↑ Buy' : '↓ Sell'}
@@ -106,9 +106,9 @@ export default function TransactionForm({ onSubmit, onCancel, initialData = null
 
       {/* Total */}
       {form.quantity && form.price && (
-        <div className="bg-gray-900 rounded-lg px-3 py-2 text-sm">
-          <span className="text-gray-400">Total: </span>
-          <span className="text-white font-semibold">
+        <div className="bg-gray-50 rounded-lg px-3 py-2 text-sm border border-gray-200">
+          <span className="text-gray-600">Total: </span>
+          <span className="text-gray-900 font-semibold">
             ₹{(Number(form.quantity) * Number(form.price)).toLocaleString('en-IN', { maximumFractionDigits: 2 })}
           </span>
         </div>

@@ -9,14 +9,14 @@ function MetalSummaryCard({ type, stats, prices, onAddTx, icon }) {
   const priceInfo = prices[type];
 
   return (
-    <div className="bg-gray-900 rounded-xl border border-gray-700 p-5">
+    <div className="bg-gray-50 rounded-xl border border-gray-200 p-5">
       <div className="flex items-center gap-3 mb-4">
         <span className="text-3xl">{icon}</span>
         <div>
-          <h3 className="text-white font-bold text-lg capitalize">{type}</h3>
-          <p className="text-gray-400 text-sm">
+          <h3 className="text-gray-900 font-bold text-lg capitalize">{type}</h3>
+          <p className="text-gray-500 text-sm">
             Live: {priceInfo?.price ? `${formatCurrency(priceInfo.price)}/g` : 'Loading...'}
-            {priceInfo?.source === 'static' && <span className="text-yellow-500 ml-1">(est.)</span>}
+            {priceInfo?.source === 'static' && <span className="text-yellow-600 ml-1">(est.)</span>}
           </p>
         </div>
         <div className="ml-auto">
@@ -26,20 +26,20 @@ function MetalSummaryCard({ type, stats, prices, onAddTx, icon }) {
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
         <div>
-          <p className="text-gray-500 text-xs">Total Weight</p>
-          <p className="text-white font-semibold">{formatNumber(stats.totalUnits, 3)}g</p>
+          <p className="text-gray-400 text-xs">Total Weight</p>
+          <p className="text-gray-900 font-semibold">{formatNumber(stats.totalUnits, 3)}g</p>
         </div>
         <div>
-          <p className="text-gray-500 text-xs">Avg Buy Price</p>
-          <p className="text-white font-semibold">{formatCurrency(stats.avgBuyPrice)}/g</p>
+          <p className="text-gray-400 text-xs">Avg Buy Price</p>
+          <p className="text-gray-900 font-semibold">{formatCurrency(stats.avgBuyPrice)}/g</p>
         </div>
         <div>
-          <p className="text-gray-500 text-xs">Current Value</p>
-          <p className="text-white font-semibold">{formatCurrency(stats.currentValue)}</p>
+          <p className="text-gray-400 text-xs">Current Value</p>
+          <p className="text-gray-900 font-semibold">{formatCurrency(stats.currentValue)}</p>
         </div>
         <div>
-          <p className="text-gray-500 text-xs">P&L</p>
-          <p className={`font-semibold ${stats.pnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+          <p className="text-gray-400 text-xs">P&L</p>
+          <p className={`font-semibold ${stats.pnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
             {stats.pnl >= 0 ? '+' : ''}{formatCurrency(stats.pnl)}
             <span className="text-xs ml-1">({formatPercent(stats.pnlPercent)})</span>
           </p>
@@ -47,7 +47,7 @@ function MetalSummaryCard({ type, stats, prices, onAddTx, icon }) {
       </div>
 
       {stats.xirr !== null && (
-        <div className={`text-sm font-medium ${stats.xirr >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+        <div className={`text-sm font-medium ${stats.xirr >= 0 ? 'text-green-600' : 'text-red-600'}`}>
           XIRR: {formatXIRR(stats.xirr)}
         </div>
       )}

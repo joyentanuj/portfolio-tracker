@@ -45,7 +45,7 @@ export default function TransactionModal({ isOpen, onClose, asset, category }) {
     <Modal isOpen={isOpen} onClose={handleClose} title={`Transactions — ${assetName}`} size="lg">
       {showForm ? (
         <div>
-          <h3 className="text-gray-300 text-sm font-medium mb-4">
+          <h3 className="text-gray-700 text-sm font-medium mb-4">
             {editingTx ? 'Edit Transaction' : 'Add Transaction'}
           </h3>
           <TransactionForm
@@ -58,7 +58,7 @@ export default function TransactionModal({ isOpen, onClose, asset, category }) {
       ) : (
         <div>
           <div className="flex justify-between items-center mb-4">
-            <p className="text-gray-400 text-sm">{(asset.transactions || []).length} transactions</p>
+            <p className="text-gray-500 text-sm">{(asset.transactions || []).length} transactions</p>
             <button
               onClick={() => setShowForm(true)}
               className="flex items-center gap-2 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-sm rounded-lg transition-colors"

@@ -28,8 +28,8 @@ function FDForm({ onSubmit, onCancel, initial = null }) {
     onSubmit({ ...form, principal: Number(form.principal), interestRate: Number(form.interestRate) });
   };
 
-  const ic = 'w-full bg-gray-900 border border-gray-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500';
-  const lc = 'block text-gray-400 text-xs font-medium mb-1';
+  const ic = 'w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:border-indigo-500';
+  const lc = 'block text-gray-600 text-xs font-medium mb-1';
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
   return (
@@ -68,7 +68,7 @@ function FDForm({ onSubmit, onCancel, initial = null }) {
         <label className={lc}>Notes (optional)</label>
         <input className={ic} value={form.notes} onChange={e => set('notes', e.target.value)} placeholder="Account number, branch..." />
       </div>
-      {err && <p className="text-red-400 text-xs">{err}</p>}
+      {err && <p className="text-red-600 text-xs">{err}</p>}
       <div className="flex gap-3">
         <Button type="button" variant="secondary" onClick={onCancel} className="flex-1">Cancel</Button>
         <Button type="submit" className="flex-1">{initial ? 'Update' : 'Add FD'}</Button>
@@ -103,14 +103,14 @@ export default function FDsList() {
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
-        <p className="text-gray-400 text-sm">{fds.length} fixed deposits</p>
+        <p className="text-gray-500 text-sm">{fds.length} fixed deposits</p>
         <Button onClick={() => setAddModal(true)} icon="+" size="sm">Add FD</Button>
       </div>
 
       {fds.length === 0 ? (
-        <div className="text-center py-16 text-gray-500">
+        <div className="text-center py-16 text-gray-400">
           <div className="text-5xl mb-4">🏛️</div>
-          <p className="font-medium text-gray-400 mb-1">No fixed deposits added</p>
+          <p className="font-medium text-gray-500 mb-1">No fixed deposits added</p>
           <p className="text-sm">Add your FDs to track their maturity and returns</p>
         </div>
       ) : (
@@ -121,16 +121,16 @@ export default function FDsList() {
             const daysLeft = fd.maturityDate ? Math.ceil((new Date(fd.maturityDate) - now) / (1000 * 60 * 60 * 24)) : null;
 
             return (
-              <div key={fd.id} className="bg-gray-900 rounded-xl border border-gray-700 p-4">
+              <div key={fd.id} className="bg-gray-50 rounded-xl border border-gray-200 p-4">
                 <div className="flex items-start justify-between mb-3">
                   <div>
                     <div className="flex items-center gap-2">
-                      <p className="text-white font-semibold">{fd.bankName}</p>
+                      <p className="text-gray-900 font-semibold">{fd.bankName}</p>
                       {isMatured
-                        ? <span className="text-xs px-2 py-0.5 bg-red-900/50 text-red-400 rounded-full">Matured</span>
+                        ? <span className="text-xs px-2 py-0.5 bg-red-50 text-red-700 border border-red-200 rounded-full">Matured</span>
                         : daysLeft !== null && daysLeft <= 30
-                        ? <span className="text-xs px-2 py-0.5 bg-yellow-900/50 text-yellow-400 rounded-full">Matures in {daysLeft}d</span>
-                        : <span className="text-xs px-2 py-0.5 bg-green-900/50 text-green-400 rounded-full">Active</span>
+                        ? <span className="text-xs px-2 py-0.5 bg-yellow-50 text-yellow-700 border border-yellow-200 rounded-full">Matures in {daysLeft}d</span>
+                        : <span className="text-xs px-2 py-0.5 bg-green-50 text-green-700 border border-green-200 rounded-full">Active</span>
                       }
                     </div>
                     <p className="text-gray-500 text-xs mt-0.5">
@@ -138,31 +138,31 @@ export default function FDsList() {
                     </p>
                   </div>
                   <div className="flex items-center gap-1">
-                    <button onClick={() => setEditAsset(fd)} className="p-1.5 text-gray-500 hover:text-indigo-400 hover:bg-gray-700 rounded-lg">✏️</button>
-                    <button onClick={() => handleDelete(fd.id)} className="p-1.5 text-gray-500 hover:text-red-400 hover:bg-gray-700 rounded-lg">🗑️</button>
+                    <button onClick={() => setEditAsset(fd)} className="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg">✏️</button>
+                    <button onClick={() => handleDelete(fd.id)} className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg">🗑️</button>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
                   <div>
-                    <p className="text-gray-500 text-xs">Principal</p>
-                    <p className="text-white font-medium">{formatCurrency(fd.principal)}</p>
+                    <p className="text-gray-400 text-xs">Principal</p>
+                    <p className="text-gray-900 font-medium">{formatCurrency(fd.principal)}</p>
                   </div>
                   <div>
-                    <p className="text-gray-500 text-xs">Current Value</p>
-                    <p className="text-green-400 font-medium">{formatCurrency(stats.currentValue)}</p>
+                    <p className="text-gray-400 text-xs">Current Value</p>
+                    <p className="text-green-600 font-medium">{formatCurrency(stats.currentValue)}</p>
                   </div>
                   <div>
-                    <p className="text-gray-500 text-xs">Interest Earned</p>
-                    <p className={`font-medium ${stats.pnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>{formatCurrency(stats.pnl)}</p>
+                    <p className="text-gray-400 text-xs">Interest Earned</p>
+                    <p className={`font-medium ${stats.pnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>{formatCurrency(stats.pnl)}</p>
                   </div>
                   <div>
-                    <p className="text-gray-500 text-xs">XIRR</p>
-                    <p className={`font-medium ${stats.xirr >= 0 ? 'text-green-400' : 'text-gray-400'}`}>{formatXIRR(stats.xirr)}</p>
+                    <p className="text-gray-400 text-xs">XIRR</p>
+                    <p className={`font-medium ${stats.xirr >= 0 ? 'text-green-600' : 'text-gray-500'}`}>{formatXIRR(stats.xirr)}</p>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 mt-3 pt-3 border-t border-gray-700 text-xs text-gray-500">
+                <div className="grid grid-cols-2 gap-4 mt-3 pt-3 border-t border-gray-200 text-xs text-gray-400">
                   <span>Start: {formatDate(fd.startDate)}</span>
                   <span>Maturity: {fd.maturityDate ? formatDate(fd.maturityDate) : '—'}</span>
                 </div>

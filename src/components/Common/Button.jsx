@@ -2,9 +2,9 @@ import React from 'react';
 
 const variants = {
   primary: 'bg-indigo-600 hover:bg-indigo-500 text-white',
-  secondary: 'bg-gray-700 hover:bg-gray-600 text-white',
+  secondary: 'bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300',
   danger: 'bg-red-600 hover:bg-red-500 text-white',
-  ghost: 'bg-transparent hover:bg-gray-700 text-gray-300',
+  ghost: 'bg-transparent hover:bg-gray-100 text-gray-600',
   success: 'bg-green-600 hover:bg-green-500 text-white',
 };
 
@@ -32,7 +32,7 @@ export default function Button({
       disabled={disabled}
       className={`
         inline-flex items-center gap-1.5 rounded-lg font-medium transition-colors
-        focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 focus:ring-offset-gray-800
+        focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 focus:ring-offset-white
         disabled:opacity-50 disabled:cursor-not-allowed
         ${variants[variant]} ${sizes[size]} ${className}
       `}
