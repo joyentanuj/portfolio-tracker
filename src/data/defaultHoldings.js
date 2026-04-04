@@ -49,12 +49,12 @@ export const defaultStocks = [
 ];
 
 // Scheme codes from mfapi.in — edit any entry via the UI if a code is incorrect.
-// NOTE: If you already have data loaded, go to Settings > Clear All Data in the app
-// (or clear your browser's localStorage) to re-seed with this updated data.
+// NOTE: Increment DATA_VERSION in src/utils/storage.js whenever this list changes
+// so that all users automatically get the updated data on their next page load.
 export const defaultMutualFunds = [
   {
     schemeCode: '122639',
-    schemeName: 'Parag Parikh Flexi Cap Fund - Direct Growth',
+    schemeName: 'Parag Parikh Flexi Cap Fund - Direct Plan Growth',
     units: 3647,
     avgCost: 86.33,
   },
@@ -65,26 +65,26 @@ export const defaultMutualFunds = [
     avgCost: 15.62,
   },
   {
-    schemeCode: '101539',
+    schemeCode: '120595',
     schemeName: 'ICICI Prudential All Seasons Bond Fund - Direct Plan Growth',
     units: 7476,
     avgCost: 40.12,
   },
   {
     schemeCode: '120828',
-    schemeName: 'Quant Small Cap Fund - Direct Growth',
+    schemeName: 'Quant Small Cap Fund - Direct Plan Growth',
     units: 896,
     avgCost: 273.89,
   },
   {
-    schemeCode: '120693',
+    schemeCode: '120684',
     schemeName: 'ICICI Prudential Nifty Next 50 Index Fund - Direct Plan Growth',
     units: 2782,
     avgCost: 61.74,
   },
   {
     schemeCode: '149470',
-    schemeName: 'Motilal Oswal Midcap Fund - Direct Growth',
+    schemeName: 'Motilal Oswal Midcap Fund - Direct Plan Growth',
     units: 1644,
     avgCost: 112.49,
   },
@@ -107,7 +107,7 @@ export const defaultMutualFunds = [
     avgCost: 29.93,
   },
   {
-    schemeCode: '119568',
+    schemeCode: '119598',
     schemeName: 'SBI Liquid Fund - Direct Plan Growth',
     units: 23,
     avgCost: 4206.91,
