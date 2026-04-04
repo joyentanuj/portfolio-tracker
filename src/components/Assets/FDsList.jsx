@@ -158,7 +158,7 @@ export default function FDsList() {
                   </div>
                   <div>
                     <p className="text-gray-400 text-xs">XIRR</p>
-                    <p className={`font-medium ${stats.xirr >= 0 ? 'text-green-600' : 'text-gray-500'}`}>{formatXIRR(stats.xirr)}</p>
+                    <p className={`font-medium ${stats.xirr >= 0 ? 'text-green-600' : 'text-red-600'}`}>{formatXIRR(stats.xirr)}</p>
                   </div>
                 </div>
 

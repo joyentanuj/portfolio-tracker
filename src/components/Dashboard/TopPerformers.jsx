@@ -38,7 +38,7 @@ export default function TopPerformers() {
         <p className={`text-sm font-semibold ${isGainer ? 'text-green-600' : 'text-red-600'}`}>
           {isGainer ? '+' : ''}{formatPercent(asset.pnlPercent)}
         </p>
-        <p className={`text-xs ${isGainer ? 'text-green-500' : 'text-red-500'}`}>
+        <p className={`text-xs ${isGainer ? 'text-green-600' : 'text-red-600'}`}>
           {isGainer ? '+' : ''}{formatCurrency(asset.pnl)}
         </p>
       </div>
