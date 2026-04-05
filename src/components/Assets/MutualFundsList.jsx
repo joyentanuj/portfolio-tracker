@@ -4,6 +4,8 @@ import { formatCurrency, formatNumber, formatXIRR, formatPercent } from '../../u
 import Button from '../Common/Button';
 import Modal from '../Common/Modal';
 import TransactionModal from '../Transactions/TransactionModal';
+import SortableHeader from '../Common/SortableHeader';
+import useSortState from '../../hooks/useSortState';
 
 function MFForm({ onSubmit, onCancel, initial = null }) {
   const [form, setForm] = useState({ schemeCode: '', schemeName: '', ...initial });
@@ -43,12 +45,14 @@ function MFForm({ onSubmit, onCancel, initial = null }) {
 }
 
 export default function MutualFundsList() {
-  const { data, getAssetStats, prices, addAsset, updateAsset, deleteAsset } = usePortfolio();
+  const { data, getAssetStats, getPortfolioStats, prices, addAsset, updateAsset, deleteAsset } = usePortfolio();
   const [addModal, setAddModal] = useState(false);
   const [editAsset, setEditAsset] = useState(null);
   const [txAsset, setTxAsset] = useState(null);
+  const { sortCol, sortDir, handleSort } = useSortState();
 
   const mfs = data.mutualFunds || [];
+  const totalPortfolioValue = getPortfolioStats().totalValue || 0;
 
   const handleAdd = (form) => {
     addAsset('mutualFunds', { ...form, category: 'mutualFunds', transactions: [] });
@@ -65,6 +69,34 @@ export default function MutualFundsList() {
       deleteAsset('mutualFunds', id);
     }
   };
+
+  // Pre-compute stats + weight for each fund so we can sort
+  const mfRows = mfs.map(mf => {
+    const stats = getAssetStats(mf, 'mutualFunds');
+    const weight = totalPortfolioValue > 0 ? (stats.currentValue / totalPortfolioValue) * 100 : 0;
+    return { mf, stats, weight };
+  });
+
+  // Sort
+  const sortedRows = [...mfRows].sort((a, b) => {
+    if (!sortCol || !sortDir) return 0;
+    let valA, valB;
+    switch (sortCol) {
+      case 'name':    valA = a.mf.schemeName?.toLowerCase() ?? ''; valB = b.mf.schemeName?.toLowerCase() ?? ''; break;
+      case 'units':   valA = a.stats.totalUnits; valB = b.stats.totalUnits; break;
+      case 'avgNav':  valA = a.stats.avgBuyPrice; valB = b.stats.avgBuyPrice; break;
+      case 'nav':     valA = a.stats.currentPrice ?? 0; valB = b.stats.currentPrice ?? 0; break;
+      case 'invested': valA = a.stats.investedValue; valB = b.stats.investedValue; break;
+      case 'currentValue': valA = a.stats.currentValue; valB = b.stats.currentValue; break;
+      case 'weight':  valA = a.weight; valB = b.weight; break;
+      case 'pnl':     valA = a.stats.pnl; valB = b.stats.pnl; break;
+      case 'xirr':    valA = a.stats.xirr ?? -Infinity; valB = b.stats.xirr ?? -Infinity; break;
+      default: return 0;
+    }
+    if (valA < valB) return sortDir === 'asc' ? -1 : 1;
+    if (valA > valB) return sortDir === 'asc' ? 1 : -1;
+    return 0;
+  });
 
   return (
     <div>
@@ -84,14 +116,20 @@ export default function MutualFundsList() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-gray-200">
-                {['Fund', 'Units', 'Avg NAV', 'Current NAV', 'Invested', 'Current Value', 'P&L', 'XIRR', ''].map(h => (
-                  <th key={h} className="text-left text-gray-500 text-xs font-medium py-3 pr-4 last:pr-0">{h}</th>
-                ))}
+                <SortableHeader label="Fund" colKey="name" sortCol={sortCol} sortDir={sortDir} onSort={handleSort} />
+                <SortableHeader label="Units" colKey="units" sortCol={sortCol} sortDir={sortDir} onSort={handleSort} />
+                <SortableHeader label="Avg NAV" colKey="avgNav" sortCol={sortCol} sortDir={sortDir} onSort={handleSort} />
+                <SortableHeader label="Current NAV" colKey="nav" sortCol={sortCol} sortDir={sortDir} onSort={handleSort} />
+                <SortableHeader label="Invested" colKey="invested" sortCol={sortCol} sortDir={sortDir} onSort={handleSort} />
+                <SortableHeader label="Current Value" colKey="currentValue" sortCol={sortCol} sortDir={sortDir} onSort={handleSort} />
+                <SortableHeader label="Weight" colKey="weight" sortCol={sortCol} sortDir={sortDir} onSort={handleSort} />
+                <SortableHeader label="P&L" colKey="pnl" sortCol={sortCol} sortDir={sortDir} onSort={handleSort} />
+                <SortableHeader label="XIRR" colKey="xirr" sortCol={sortCol} sortDir={sortDir} onSort={handleSort} />
+                <th className="text-left text-gray-500 text-xs font-medium py-3"></th>
               </tr>
             </thead>
             <tbody>
-              {mfs.map(mf => {
-                const stats = getAssetStats(mf, 'mutualFunds');
+              {sortedRows.map(({ mf, stats, weight }) => {
                 const priceInfo = prices[mf.schemeCode];
                 return (
                   <tr key={mf.id} className="border-b border-gray-100 hover:bg-gray-50">
@@ -112,6 +150,9 @@ export default function MutualFundsList() {
                     </td>
                     <td className="py-3 pr-4 text-gray-700">{formatCurrency(stats.investedValue)}</td>
                     <td className="py-3 pr-4 text-gray-900 font-medium">{formatCurrency(stats.currentValue)}</td>
+                    <td className="py-3 pr-4 text-gray-600">
+                      {totalPortfolioValue > 0 ? `${weight.toFixed(2)}%` : '—'}
+                    </td>
                     <td className="py-3 pr-4">
                       <p className={stats.pnl >= 0 ? 'text-green-600' : 'text-red-600'}>
                         {stats.pnl >= 0 ? '+' : ''}{formatCurrency(stats.pnl)}

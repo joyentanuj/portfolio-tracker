@@ -4,6 +4,8 @@ import { formatCurrency, formatNumber, formatXIRR, formatPercent } from '../../u
 import Button from '../Common/Button';
 import Modal from '../Common/Modal';
 import TransactionModal from '../Transactions/TransactionModal';
+import SortableHeader from '../Common/SortableHeader';
+import useSortState from '../../hooks/useSortState';
 
 function StockForm({ onSubmit, onCancel, initial = null }) {
   const [form, setForm] = useState({
@@ -63,12 +65,14 @@ function StockForm({ onSubmit, onCancel, initial = null }) {
 }
 
 export default function StocksList() {
-  const { data, getAssetStats, prices, addAsset, updateAsset, deleteAsset } = usePortfolio();
+  const { data, getAssetStats, getPortfolioStats, prices, addAsset, updateAsset, deleteAsset } = usePortfolio();
   const [addModal, setAddModal] = useState(false);
   const [editAsset, setEditAsset] = useState(null);
   const [txAsset, setTxAsset] = useState(null);
+  const { sortCol, sortDir, handleSort } = useSortState();
 
   const stocks = data.stocks || [];
+  const totalPortfolioValue = getPortfolioStats().totalValue || 0;
 
   const handleAdd = (form) => {
     addAsset('stocks', { ...form, category: 'stocks', transactions: [] });
@@ -85,6 +89,36 @@ export default function StocksList() {
       deleteAsset('stocks', id);
     }
   };
+
+  // Pre-compute stats + weight for each stock so we can sort
+  const stockRows = stocks.map(stock => {
+    const stats = getAssetStats(stock, 'stocks');
+    const weight = totalPortfolioValue > 0 ? (stats.currentValue / totalPortfolioValue) * 100 : 0;
+    return { stock, stats, weight };
+  });
+
+  // Sort
+  const sortedRows = [...stockRows].sort((a, b) => {
+    if (!sortCol || !sortDir) return 0;
+    let valA, valB;
+    switch (sortCol) {
+      case 'name':    valA = a.stock.name?.toLowerCase() ?? ''; valB = b.stock.name?.toLowerCase() ?? ''; break;
+      case 'symbol':  valA = a.stock.symbol?.toLowerCase() ?? ''; valB = b.stock.symbol?.toLowerCase() ?? ''; break;
+      case 'units':   valA = a.stats.totalUnits; valB = b.stats.totalUnits; break;
+      case 'avgCost': valA = a.stats.avgBuyPrice; valB = b.stats.avgBuyPrice; break;
+      case 'ltp':     valA = a.stats.currentPrice ?? 0; valB = b.stats.currentPrice ?? 0; break;
+      case 'invested': valA = a.stats.investedValue; valB = b.stats.investedValue; break;
+      case 'currentValue': valA = a.stats.currentValue; valB = b.stats.currentValue; break;
+      case 'weight':  valA = a.weight; valB = b.weight; break;
+      case 'pnl':     valA = a.stats.pnl; valB = b.stats.pnl; break;
+      case 'pnlPct':  valA = a.stats.pnlPercent; valB = b.stats.pnlPercent; break;
+      case 'xirr':    valA = a.stats.xirr ?? -Infinity; valB = b.stats.xirr ?? -Infinity; break;
+      default: return 0;
+    }
+    if (valA < valB) return sortDir === 'asc' ? -1 : 1;
+    if (valA > valB) return sortDir === 'asc' ? 1 : -1;
+    return 0;
+  });
 
   return (
     <div>
@@ -104,22 +138,30 @@ export default function StocksList() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-gray-200">
-                {['Stock', 'Holdings', 'Avg Price', 'LTP', 'Invested', 'Current Value', 'P&L', 'XIRR', ''].map(h => (
-                  <th key={h} className="text-left text-gray-500 text-xs font-medium py-3 pr-4 last:pr-0">{h}</th>
-                ))}
+                <SortableHeader label="Stock" colKey="name" sortCol={sortCol} sortDir={sortDir} onSort={handleSort} />
+                <SortableHeader label="Symbol" colKey="symbol" sortCol={sortCol} sortDir={sortDir} onSort={handleSort} />
+                <SortableHeader label="Holdings" colKey="units" sortCol={sortCol} sortDir={sortDir} onSort={handleSort} />
+                <SortableHeader label="Avg Price" colKey="avgCost" sortCol={sortCol} sortDir={sortDir} onSort={handleSort} />
+                <SortableHeader label="LTP" colKey="ltp" sortCol={sortCol} sortDir={sortDir} onSort={handleSort} />
+                <SortableHeader label="Invested" colKey="invested" sortCol={sortCol} sortDir={sortDir} onSort={handleSort} />
+                <SortableHeader label="Current Value" colKey="currentValue" sortCol={sortCol} sortDir={sortDir} onSort={handleSort} />
+                <SortableHeader label="Weight" colKey="weight" sortCol={sortCol} sortDir={sortDir} onSort={handleSort} />
+                <SortableHeader label="P&L" colKey="pnl" sortCol={sortCol} sortDir={sortDir} onSort={handleSort} />
+                <SortableHeader label="P&L %" colKey="pnlPct" sortCol={sortCol} sortDir={sortDir} onSort={handleSort} />
+                <SortableHeader label="XIRR" colKey="xirr" sortCol={sortCol} sortDir={sortDir} onSort={handleSort} />
+                <th className="text-left text-gray-500 text-xs font-medium py-3"></th>
               </tr>
             </thead>
             <tbody>
-              {stocks.map(stock => {
-                const stats = getAssetStats(stock, 'stocks');
+              {sortedRows.map(({ stock, stats, weight }) => {
                 const priceInfo = prices[stock.symbol];
                 return (
                   <tr key={stock.id} className="border-b border-gray-100 hover:bg-gray-50">
                     <td className="py-3 pr-4">
-                      <div>
-                        <p className="text-gray-900 font-semibold">{stock.symbol}</p>
-                        <p className="text-gray-400 text-xs">{stock.name}</p>
-                      </div>
+                      <p className="text-gray-900 font-medium text-xs leading-snug">{stock.name}</p>
+                    </td>
+                    <td className="py-3 pr-4">
+                      <p className="text-gray-900 font-semibold">{stock.symbol}</p>
                     </td>
                     <td className="py-3 pr-4 text-gray-700">{formatNumber(stats.totalUnits, 2)}</td>
                     <td className="py-3 pr-4 text-gray-700">{formatCurrency(stats.avgBuyPrice)}</td>
@@ -135,10 +177,15 @@ export default function StocksList() {
                     </td>
                     <td className="py-3 pr-4 text-gray-700">{formatCurrency(stats.investedValue)}</td>
                     <td className="py-3 pr-4 text-gray-900 font-medium">{formatCurrency(stats.currentValue)}</td>
+                    <td className="py-3 pr-4 text-gray-600">
+                      {totalPortfolioValue > 0 ? `${weight.toFixed(2)}%` : '—'}
+                    </td>
                     <td className="py-3 pr-4">
                       <p className={stats.pnl >= 0 ? 'text-green-600' : 'text-red-600'}>
                         {stats.pnl >= 0 ? '+' : ''}{formatCurrency(stats.pnl)}
                       </p>
+                    </td>
+                    <td className="py-3 pr-4">
                       <p className={`text-xs ${stats.pnl >= 0 ? 'text-green-500' : 'text-red-500'}`}>
                         {formatPercent(stats.pnlPercent)}
                       </p>
