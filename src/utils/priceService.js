@@ -74,31 +74,59 @@ export const fetchMFPrice = async (schemeCode) => {
   }
 };
 
-// Gold/Silver prices in INR per gram (approximate MCX rates)
-// In a real app, this would come from a metals API like metals-api.com
+// Gold/Silver prices in INR per gram via Yahoo Finance commodity tickers
+const TROY_OZ_TO_GRAM = 31.1035;
+// Fallback USD/INR rate if live forex fetch fails (last updated April 2026)
+const FALLBACK_USD_INR_RATE = 85.0;
+
 export const fetchGoldSilverPrice = async () => {
   try {
-    // Try to fetch from a free gold API
-    const response = await fetchWithFallback('https://data-asg.goldprice.org/dbXRates/INR', 8000);
-    if (response) {
-      const data = await response.json();
-      const goldPerOz = data.items?.[0]?.xauPrice;
-      const silverPerOz = data.items?.[0]?.xagPrice;
-      if (goldPerOz && silverPerOz) {
-        const TROY_OZ_TO_GRAM = 31.1035;
-        return {
-          gold: goldPerOz / TROY_OZ_TO_GRAM,
-          silver: silverPerOz / TROY_OZ_TO_GRAM,
-          source: 'live',
-        };
-      }
+    // Fetch gold, silver, and USD/INR in parallel from Yahoo Finance
+    const [goldData, silverData, forexData] = await Promise.all([
+      fetchStockPrice('GC=F'),
+      fetchStockPrice('SI=F'),
+      fetchStockPrice('USDINR=X'),
+    ]);
+
+    const usdInr = forexData?.price || FALLBACK_USD_INR_RATE;
+    const goldPerGramINR = goldData?.price ? (goldData.price / TROY_OZ_TO_GRAM) * usdInr : null;
+    const silverPerGramINR = silverData?.price ? (silverData.price / TROY_OZ_TO_GRAM) * usdInr : null;
+
+    if (goldPerGramINR && silverPerGramINR) {
+      return {
+        gold: Math.round(goldPerGramINR * 100) / 100,
+        silver: Math.round(silverPerGramINR * 100) / 100,
+        source: 'live',
+      };
+    }
+  } catch (err) {
+    console.warn('[priceService] Gold/Silver fetch error:', err);
+  }
+
+  // Fallback: use MCX ETF prices as proxy
+  try {
+    const [goldETF, silverETF] = await Promise.all([
+      fetchStockPrice('GOLDBEES.NS'),
+      fetchStockPrice('SILVERIETF.NS'),
+    ]);
+
+    if (goldETF?.price || silverETF?.price) {
+      return {
+        // GOLDBEES tracks ~1/100th of 1g gold; ~125 converts unit price to INR/gram (approximate)
+        gold: goldETF?.price ? Math.round(goldETF.price * 125 * 100) / 100 : 15000,
+        // SILVERIETF tracks ~1/100th of 1g silver; ~5.2 converts unit price to INR/gram (approximate)
+        silver: silverETF?.price ? Math.round(silverETF.price * 5.2 * 100) / 100 : 500,
+        source: 'etf-proxy',
+      };
     }
   } catch {
     // fall through to static
   }
+
+  // Last resort static fallback (updated April 2026)
   return {
-    gold: 9200,   // per gram INR (approximate)
-    silver: 105,  // per gram INR (approximate)
+    gold: 15000,  // per gram INR (approximate)
+    silver: 500,  // per gram INR (approximate)
     source: 'static',
   };
 };
