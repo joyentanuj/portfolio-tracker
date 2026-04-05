@@ -5,7 +5,7 @@ A professional dark-themed portfolio tracker built with React 18 + Vite + Tailwi
 ## Features
 
 - **Dashboard** — Total value, invested amount, P&L, overall XIRR, allocation pie chart, top gainers/losers
-- **Live Prices** — Yahoo Finance (stocks), MFAPI.in (mutual funds), goldprice.org (metals), auto-refresh every 60s
+- **Live Prices** — Yahoo Finance (stocks & metals), MFAPI.in (mutual funds), auto-refresh every 60s
 - **8 Asset Categories** — Stocks (Indian & US), Mutual Funds, Fixed Deposits, Gold, Silver, Cash, Real Estate, Others
 - **XIRR Calculation** — Newton-Raphson method per asset, per category, and overall portfolio
 - **Transaction Management** — Buy/sell transactions with full CRUD
@@ -40,4 +40,4 @@ npm run build   # production build
 
 - Stock symbols for NSE: `RELIANCE.NS`, for BSE: `RELIANCE.BO`, for US: `AAPL`
 - Mutual fund scheme codes are from [mfapi.in](https://mfapi.in) (e.g. `120503`)
-- Gold/Silver prices are fetched from goldprice.org; a static fallback is used if the API is unavailable
+- Gold/Silver prices are fetched from Yahoo Finance (`GC=F`, `SI=F`) with USD/INR conversion via `USDINR=X`; MCX ETF proxies (GOLDBEES.NS, SILVERIETF.NS) are used as fallback if Yahoo Finance is unavailable
