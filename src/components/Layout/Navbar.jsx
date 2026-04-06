@@ -4,9 +4,10 @@ import { useLivePrices } from '../../hooks/useLivePrices';
 import { formatCurrency } from '../../utils/formatters';
 
 export default function Navbar({ onMenuClick, title }) {
-  const { getPortfolioStats, lastUpdated } = usePortfolio();
+  const { getPortfolioStats, getDailyChange, lastUpdated } = usePortfolio();
   const { fetchPrices } = useLivePrices();
   const stats = getPortfolioStats();
+  const todayPnl = getDailyChange();
 
   return (
     <header className="h-14 bg-white border-b border-gray-200 flex items-center px-4 gap-4 sticky top-0 z-10">
@@ -24,9 +25,9 @@ export default function Navbar({ onMenuClick, title }) {
           <p className="text-gray-500 text-[10px] uppercase tracking-wider">Portfolio Value</p>
           <p className="text-gray-900 font-bold">{formatCurrency(stats.totalValue)}</p>
         </div>
-        <div className={`text-right ${stats.pnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+        <div className={`text-right ${todayPnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
           <p className="text-gray-500 text-[10px] uppercase tracking-wider">Today's P&L</p>
-          <p className="font-semibold">{stats.pnl >= 0 ? '+' : ''}{formatCurrency(stats.pnl)}</p>
+          <p className="font-semibold">{todayPnl >= 0 ? '+' : ''}{formatCurrency(todayPnl)}</p>
         </div>
       </div>
 
