@@ -8,6 +8,7 @@ export default function Navbar({ onMenuClick, title }) {
   const { fetchPrices } = useLivePrices();
   const stats = getPortfolioStats();
   const todayPnl = getDailyChange();
+  const todayPnlPercent = stats.totalValue > 0 ? (todayPnl / (stats.totalValue - todayPnl)) * 100 : 0;
 
   return (
     <header className="h-14 bg-white border-b border-gray-200 flex items-center px-4 gap-4 sticky top-0 z-10">
@@ -28,6 +29,9 @@ export default function Navbar({ onMenuClick, title }) {
         <div className={`text-right ${todayPnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
           <p className="text-gray-500 text-[10px] uppercase tracking-wider">Today's P&L</p>
           <p className="font-semibold">{todayPnl >= 0 ? '+' : ''}{formatCurrency(todayPnl)}</p>
+          {todayPnlPercent !== 0 && (
+            <p className="text-[10px]">{todayPnl >= 0 ? '+' : ''}{todayPnlPercent.toFixed(2)}%</p>
+          )}
         </div>
       </div>
 

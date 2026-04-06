@@ -45,7 +45,7 @@ function MFForm({ onSubmit, onCancel, initial = null }) {
 }
 
 export default function MutualFundsList() {
-  const { data, getAssetStats, getPortfolioStats, prices, addAsset, updateAsset, deleteAsset } = usePortfolio();
+  const { data, getAssetStats, getPortfolioStats, getCategoryStats, getCategoryDailyChange, prices, addAsset, updateAsset, deleteAsset } = usePortfolio();
   const [addModal, setAddModal] = useState(false);
   const [editAsset, setEditAsset] = useState(null);
   const [txAsset, setTxAsset] = useState(null);
@@ -53,6 +53,9 @@ export default function MutualFundsList() {
 
   const mfs = data.mutualFunds || [];
   const totalPortfolioValue = getPortfolioStats().totalValue || 0;
+  const todayPnl = getCategoryDailyChange('mutualFunds');
+  const catStats = getCategoryStats('mutualFunds');
+  const todayPct = catStats.totalValue > 0 ? (todayPnl / (catStats.totalValue - todayPnl)) * 100 : 0;
 
   const handleAdd = (form) => {
     addAsset('mutualFunds', { ...form, category: 'mutualFunds', transactions: [] });
@@ -112,7 +115,18 @@ export default function MutualFundsList() {
           <p className="text-sm">Add your first mutual fund to start tracking</p>
         </div>
       ) : (
-        <div className="overflow-x-auto">
+        <div>
+          {/* Section Today's P&L Summary */}
+          <div className="flex items-center gap-6 mb-3 px-1">
+            <div>
+              <p className="text-gray-500 text-xs">Today's P&L</p>
+              <p className={`text-sm font-semibold ${todayPnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {todayPnl >= 0 ? '+' : ''}{formatCurrency(todayPnl)}
+                <span className="text-xs ml-1">({todayPnl >= 0 ? '+' : ''}{todayPct.toFixed(2)}%)</span>
+              </p>
+            </div>
+          </div>
+          <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-gray-200">
@@ -176,6 +190,7 @@ export default function MutualFundsList() {
               })}
             </tbody>
           </table>
+        </div>
         </div>
       )}
 
