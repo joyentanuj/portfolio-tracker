@@ -6,6 +6,9 @@ import Modal from '../Common/Modal';
 import TransactionModal from '../Transactions/TransactionModal';
 import SortableHeader from '../Common/SortableHeader';
 import useSortState from '../../hooks/useSortState';
+import { usePriceFlash } from '../../hooks/usePriceFlash';
+import { SkeletonTable } from '../Common/Skeleton';
+import EmptyState from '../Common/EmptyState';
 
 function StockForm({ onSubmit, onCancel, initial = null }) {
   const [form, setForm] = useState({
@@ -64,6 +67,68 @@ function StockForm({ onSubmit, onCancel, initial = null }) {
   );
 }
 
+function StockRow({ stock, stats, weight, priceInfo, totalPortfolioValue, onTxn, onEdit, onDelete }) {
+  const flash = usePriceFlash(stats.currentPrice);
+  return (
+    <tr
+      className={`border-b transition-colors
+        ${stats.pnl > 0
+          ? 'border-gray-100 dark:border-gray-700 hover:bg-green-50/60 dark:hover:bg-green-900/10 bg-green-50/20 dark:bg-green-900/5'
+          : stats.pnl < 0
+          ? 'border-gray-100 dark:border-gray-700 hover:bg-red-50/60 dark:hover:bg-red-900/10 bg-red-50/20 dark:bg-red-900/5'
+          : 'border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50'
+        }
+      `}
+    >
+      <td className="py-3 pr-4">
+        <p className="text-gray-900 dark:text-gray-100 font-medium text-xs leading-snug">{stock.name}</p>
+      </td>
+      <td className="py-3 pr-4">
+        <p className="text-gray-900 dark:text-gray-100 font-semibold">{stock.symbol}</p>
+      </td>
+      <td className="py-3 pr-4 text-gray-700 dark:text-gray-300">{formatNumber(stats.totalUnits, 2)}</td>
+      <td className="py-3 pr-4 text-gray-700 dark:text-gray-300">{formatCurrency(stats.avgBuyPrice)}</td>
+      <td className={`py-3 pr-4 rounded transition-colors ${flash === 'up' ? 'price-flash-up' : flash === 'down' ? 'price-flash-down' : ''}`}>
+        <div>
+          <p className="text-gray-900 dark:text-gray-100">{stats.currentPrice ? formatCurrency(stats.currentPrice) : '—'}</p>
+          {priceInfo?.changePercent != null && (
+            <p className={`text-xs ${priceInfo.changePercent >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              {priceInfo.changePercent >= 0 ? '+' : ''}{priceInfo.changePercent.toFixed(2)}%
+            </p>
+          )}
+        </div>
+      </td>
+      <td className="py-3 pr-4 text-gray-700 dark:text-gray-300">{formatCurrency(stats.investedValue)}</td>
+      <td className="py-3 pr-4 text-gray-900 dark:text-gray-100 font-medium">{formatCurrency(stats.currentValue)}</td>
+      <td className="py-3 pr-4 text-gray-600 dark:text-gray-400">
+        {totalPortfolioValue > 0 ? `${weight.toFixed(2)}%` : '—'}
+      </td>
+      <td className="py-3 pr-4">
+        <p className={stats.pnl >= 0 ? 'text-green-600' : 'text-red-600'}>
+          {stats.pnl >= 0 ? '+' : ''}{formatCurrency(stats.pnl)}
+        </p>
+      </td>
+      <td className="py-3 pr-4">
+        <p className={`text-xs ${stats.pnl >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+          {formatPercent(stats.pnlPercent)}
+        </p>
+      </td>
+      <td className="py-3 pr-4">
+        <span className={`text-sm font-medium ${stats.xirr === null ? 'text-gray-400 dark:text-gray-500' : stats.xirr >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+          {formatXIRR(stats.xirr)}
+        </span>
+      </td>
+      <td className="py-3">
+        <div className="flex items-center gap-1">
+          <button onClick={onTxn} className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300 rounded-md transition-colors">Txns</button>
+          <button onClick={onEdit} className="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-colors">✏️</button>
+          <button onClick={onDelete} className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">🗑️</button>
+        </div>
+      </td>
+    </tr>
+  );
+}
+
 export default function StocksList() {
   const { data, getAssetStats, getPortfolioStats, getCategoryStats, getCategoryDailyChange, prices, addAsset, updateAsset, deleteAsset } = usePortfolio();
   const [addModal, setAddModal] = useState(false);
@@ -100,6 +165,12 @@ export default function StocksList() {
     return { stock, stats, weight };
   });
 
+  // Totals for footer
+  const totalInvested = stockRows.reduce((s, r) => s + r.stats.investedValue, 0);
+  const totalCurrentValue = stockRows.reduce((s, r) => s + r.stats.currentValue, 0);
+  const totalPnl = totalCurrentValue - totalInvested;
+  const totalPnlPercent = totalInvested > 0 ? totalPnl / totalInvested : 0;
+
   // Sort
   const sortedRows = [...stockRows].sort((a, b) => {
     if (!sortCol || !sortDir) return 0;
@@ -131,11 +202,15 @@ export default function StocksList() {
       </div>
 
       {stocks.length === 0 ? (
-        <div className="text-center py-16 text-gray-400 dark:text-gray-500">
-          <div className="text-5xl mb-4">📈</div>
-          <p className="font-medium text-gray-500 dark:text-gray-400 mb-1">No stocks added yet</p>
-          <p className="text-sm">Add your first stock to start tracking</p>
-        </div>
+        <EmptyState
+          icon="📈"
+          title="No stocks yet"
+          description="Start tracking your Indian stock holdings by adding your first position."
+          actionLabel="Add Stock"
+          onAction={() => setAddModal(true)}
+        />
+      ) : Object.keys(prices).length === 0 ? (
+        <SkeletonTable rows={stocks.length || 5} cols={12} />
       ) : (
         <div>
           {/* Section Today's P&L Summary */}
@@ -150,7 +225,7 @@ export default function StocksList() {
           </div>
           <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead>
+            <thead className="sticky top-0 z-10 bg-white dark:bg-gray-800">
               <tr className="border-b border-gray-200 dark:border-gray-700">
                 <SortableHeader label="Stock" colKey="name" sortCol={sortCol} sortDir={sortDir} onSort={handleSort} />
                 <SortableHeader label="Symbol" colKey="symbol" sortCol={sortCol} sortDir={sortDir} onSort={handleSort} />
@@ -170,56 +245,41 @@ export default function StocksList() {
               {sortedRows.map(({ stock, stats, weight }) => {
                 const priceInfo = prices[stock.symbol];
                 return (
-                  <tr key={stock.id} className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                    <td className="py-3 pr-4">
-                      <p className="text-gray-900 dark:text-gray-100 font-medium text-xs leading-snug">{stock.name}</p>
-                    </td>
-                    <td className="py-3 pr-4">
-                      <p className="text-gray-900 dark:text-gray-100 font-semibold">{stock.symbol}</p>
-                    </td>
-                    <td className="py-3 pr-4 text-gray-700 dark:text-gray-300">{formatNumber(stats.totalUnits, 2)}</td>
-                    <td className="py-3 pr-4 text-gray-700 dark:text-gray-300">{formatCurrency(stats.avgBuyPrice)}</td>
-                    <td className="py-3 pr-4">
-                      <div>
-                        <p className="text-gray-900 dark:text-gray-100">{stats.currentPrice ? formatCurrency(stats.currentPrice) : '—'}</p>
-                        {priceInfo?.changePercent != null && (
-                          <p className={`text-xs ${priceInfo.changePercent >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                            {priceInfo.changePercent >= 0 ? '+' : ''}{priceInfo.changePercent.toFixed(2)}%
-                          </p>
-                        )}
-                      </div>
-                    </td>
-                    <td className="py-3 pr-4 text-gray-700 dark:text-gray-300">{formatCurrency(stats.investedValue)}</td>
-                    <td className="py-3 pr-4 text-gray-900 dark:text-gray-100 font-medium">{formatCurrency(stats.currentValue)}</td>
-                    <td className="py-3 pr-4 text-gray-600 dark:text-gray-400">
-                      {totalPortfolioValue > 0 ? `${weight.toFixed(2)}%` : '—'}
-                    </td>
-                    <td className="py-3 pr-4">
-                      <p className={stats.pnl >= 0 ? 'text-green-600' : 'text-red-600'}>
-                        {stats.pnl >= 0 ? '+' : ''}{formatCurrency(stats.pnl)}
-                      </p>
-                    </td>
-                    <td className="py-3 pr-4">
-                      <p className={`text-xs ${stats.pnl >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                        {formatPercent(stats.pnlPercent)}
-                      </p>
-                    </td>
-                    <td className="py-3 pr-4">
-                      <span className={`text-sm font-medium ${stats.xirr === null ? 'text-gray-400 dark:text-gray-500' : stats.xirr >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                        {formatXIRR(stats.xirr)}
-                      </span>
-                    </td>
-                    <td className="py-3">
-                      <div className="flex items-center gap-1">
-                        <button onClick={() => setTxAsset(stock)} className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300 rounded-md transition-colors">Txns</button>
-                        <button onClick={() => setEditAsset(stock)} className="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-colors">✏️</button>
-                        <button onClick={() => handleDelete(stock.id)} className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">🗑️</button>
-                      </div>
-                    </td>
-                  </tr>
+                  <StockRow
+                    key={stock.id}
+                    stock={stock}
+                    stats={stats}
+                    weight={weight}
+                    priceInfo={priceInfo}
+                    totalPortfolioValue={totalPortfolioValue}
+                    onTxn={() => setTxAsset(stock)}
+                    onEdit={() => setEditAsset(stock)}
+                    onDelete={() => handleDelete(stock.id)}
+                  />
                 );
               })}
             </tbody>
+            <tfoot className="sticky bottom-0 bg-gray-50 dark:bg-gray-900 border-t-2 border-gray-200 dark:border-gray-700">
+              <tr>
+                <td colSpan={2} className="py-3 text-gray-700 dark:text-gray-300 text-xs font-bold uppercase tracking-wide">
+                  Total ({stocks.length} stocks)
+                </td>
+                <td className="py-3 pr-4" />
+                <td className="py-3 pr-4" />
+                <td className="py-3 pr-4" />
+                <td className="py-3 pr-4 text-gray-900 dark:text-gray-100 text-sm font-bold">{formatCurrency(totalInvested)}</td>
+                <td className="py-3 pr-4 text-gray-900 dark:text-gray-100 text-sm font-bold">{formatCurrency(totalCurrentValue)}</td>
+                <td className="py-3 pr-4" />
+                <td className={`py-3 pr-4 text-sm font-bold ${totalPnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {totalPnl >= 0 ? '+' : ''}{formatCurrency(totalPnl)}
+                </td>
+                <td className={`py-3 pr-4 text-sm font-bold ${totalPnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {formatPercent(totalPnlPercent)}
+                </td>
+                <td className="py-3 pr-4" />
+                <td />
+              </tr>
+            </tfoot>
           </table>
         </div>
         </div>

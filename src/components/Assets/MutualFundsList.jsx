@@ -6,6 +6,9 @@ import Modal from '../Common/Modal';
 import TransactionModal from '../Transactions/TransactionModal';
 import SortableHeader from '../Common/SortableHeader';
 import useSortState from '../../hooks/useSortState';
+import { usePriceFlash } from '../../hooks/usePriceFlash';
+import { SkeletonTable } from '../Common/Skeleton';
+import EmptyState from '../Common/EmptyState';
 
 function MFForm({ onSubmit, onCancel, initial = null }) {
   const [form, setForm] = useState({ schemeCode: '', schemeName: '', ...initial });
@@ -41,6 +44,61 @@ function MFForm({ onSubmit, onCancel, initial = null }) {
         <Button type="submit" className="flex-1">{initial ? 'Update' : 'Add Fund'}</Button>
       </div>
     </form>
+  );
+}
+
+function MFRow({ mf, stats, weight, priceInfo, totalPortfolioValue, onTxn, onEdit, onDelete }) {
+  const flash = usePriceFlash(stats.currentPrice);
+  return (
+    <tr
+      className={`border-b transition-colors
+        ${stats.pnl > 0
+          ? 'border-gray-100 dark:border-gray-700 hover:bg-green-50/60 dark:hover:bg-green-900/10 bg-green-50/20 dark:bg-green-900/5'
+          : stats.pnl < 0
+          ? 'border-gray-100 dark:border-gray-700 hover:bg-red-50/60 dark:hover:bg-red-900/10 bg-red-50/20 dark:bg-red-900/5'
+          : 'border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50'
+        }
+      `}
+    >
+      <td className="py-3 pr-4 max-w-[200px]">
+        <p className="text-gray-900 dark:text-gray-100 font-medium text-xs leading-snug truncate">{mf.schemeName}</p>
+        <p className="text-gray-400 dark:text-gray-500 text-xs mt-0.5">Code: {mf.schemeCode}</p>
+        {priceInfo?.date && <p className="text-gray-400 dark:text-gray-500 text-[10px]">NAV: {priceInfo.date}</p>}
+      </td>
+      <td className="py-3 pr-4 text-gray-700 dark:text-gray-300">{formatNumber(stats.totalUnits, 3)}</td>
+      <td className="py-3 pr-4 text-gray-700 dark:text-gray-300">{formatCurrency(stats.avgBuyPrice)}</td>
+      <td className={`py-3 pr-4 rounded transition-colors ${flash === 'up' ? 'price-flash-up' : flash === 'down' ? 'price-flash-down' : ''}`}>
+        <p className="text-gray-900 dark:text-gray-100">{stats.currentPrice ? formatCurrency(stats.currentPrice) : '—'}</p>
+        {priceInfo?.changePercent != null && (
+          <p className={`text-xs ${priceInfo.changePercent >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+            {priceInfo.changePercent >= 0 ? '+' : ''}{priceInfo.changePercent.toFixed(2)}%
+          </p>
+        )}
+      </td>
+      <td className="py-3 pr-4 text-gray-700 dark:text-gray-300">{formatCurrency(stats.investedValue)}</td>
+      <td className="py-3 pr-4 text-gray-900 dark:text-gray-100 font-medium">{formatCurrency(stats.currentValue)}</td>
+      <td className="py-3 pr-4 text-gray-600 dark:text-gray-400">
+        {totalPortfolioValue > 0 ? `${weight.toFixed(2)}%` : '—'}
+      </td>
+      <td className="py-3 pr-4">
+        <p className={stats.pnl >= 0 ? 'text-green-600' : 'text-red-600'}>
+          {stats.pnl >= 0 ? '+' : ''}{formatCurrency(stats.pnl)}
+        </p>
+        <p className={`text-xs ${stats.pnl >= 0 ? 'text-green-500' : 'text-red-500'}`}>{formatPercent(stats.pnlPercent)}</p>
+      </td>
+      <td className="py-3 pr-4">
+        <span className={`text-sm font-medium ${stats.xirr === null ? 'text-gray-400 dark:text-gray-500' : stats.xirr >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+          {formatXIRR(stats.xirr)}
+        </span>
+      </td>
+      <td className="py-3">
+        <div className="flex items-center gap-1">
+          <button onClick={onTxn} className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300 rounded-md">Txns</button>
+          <button onClick={onEdit} className="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg">✏️</button>
+          <button onClick={onDelete} className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg">🗑️</button>
+        </div>
+      </td>
+    </tr>
   );
 }
 
@@ -80,6 +138,12 @@ export default function MutualFundsList() {
     return { mf, stats, weight };
   });
 
+  // Totals for footer
+  const totalInvested = mfRows.reduce((s, r) => s + r.stats.investedValue, 0);
+  const totalCurrentValue = mfRows.reduce((s, r) => s + r.stats.currentValue, 0);
+  const totalPnl = totalCurrentValue - totalInvested;
+  const totalPnlPercent = totalInvested > 0 ? totalPnl / totalInvested : 0;
+
   // Sort
   const sortedRows = [...mfRows].sort((a, b) => {
     if (!sortCol || !sortDir) return 0;
@@ -109,11 +173,15 @@ export default function MutualFundsList() {
       </div>
 
       {mfs.length === 0 ? (
-        <div className="text-center py-16 text-gray-400 dark:text-gray-500">
-          <div className="text-5xl mb-4">🏦</div>
-          <p className="font-medium text-gray-500 dark:text-gray-400 mb-1">No mutual funds added yet</p>
-          <p className="text-sm">Add your first mutual fund to start tracking</p>
-        </div>
+        <EmptyState
+          icon="🏦"
+          title="No mutual funds yet"
+          description="Add your mutual fund holdings using MFAPI scheme codes to track NAV and returns."
+          actionLabel="Add Fund"
+          onAction={() => setAddModal(true)}
+        />
+      ) : Object.keys(prices).length === 0 ? (
+        <SkeletonTable rows={mfs.length || 5} cols={10} />
       ) : (
         <div>
           {/* Section Today's P&L Summary */}
@@ -128,7 +196,7 @@ export default function MutualFundsList() {
           </div>
           <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead>
+            <thead className="sticky top-0 z-10 bg-white dark:bg-gray-800">
               <tr className="border-b border-gray-200 dark:border-gray-700">
                 <SortableHeader label="Fund" colKey="name" sortCol={sortCol} sortDir={sortDir} onSort={handleSort} />
                 <SortableHeader label="Units" colKey="units" sortCol={sortCol} sortDir={sortDir} onSort={handleSort} />
@@ -146,49 +214,39 @@ export default function MutualFundsList() {
               {sortedRows.map(({ mf, stats, weight }) => {
                 const priceInfo = prices[mf.schemeCode];
                 return (
-                  <tr key={mf.id} className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                    <td className="py-3 pr-4 max-w-[200px]">
-                      <p className="text-gray-900 dark:text-gray-100 font-medium text-xs leading-snug truncate">{mf.schemeName}</p>
-                      <p className="text-gray-400 dark:text-gray-500 text-xs mt-0.5">Code: {mf.schemeCode}</p>
-                      {priceInfo?.date && <p className="text-gray-400 dark:text-gray-500 text-[10px]">NAV: {priceInfo.date}</p>}
-                    </td>
-                    <td className="py-3 pr-4 text-gray-700 dark:text-gray-300">{formatNumber(stats.totalUnits, 3)}</td>
-                    <td className="py-3 pr-4 text-gray-700 dark:text-gray-300">{formatCurrency(stats.avgBuyPrice)}</td>
-                    <td className="py-3 pr-4">
-                      <p className="text-gray-900 dark:text-gray-100">{stats.currentPrice ? formatCurrency(stats.currentPrice) : '—'}</p>
-                      {priceInfo?.changePercent != null && (
-                        <p className={`text-xs ${priceInfo.changePercent >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                          {priceInfo.changePercent >= 0 ? '+' : ''}{priceInfo.changePercent.toFixed(2)}%
-                        </p>
-                      )}
-                    </td>
-                    <td className="py-3 pr-4 text-gray-700 dark:text-gray-300">{formatCurrency(stats.investedValue)}</td>
-                    <td className="py-3 pr-4 text-gray-900 dark:text-gray-100 font-medium">{formatCurrency(stats.currentValue)}</td>
-                    <td className="py-3 pr-4 text-gray-600 dark:text-gray-400">
-                      {totalPortfolioValue > 0 ? `${weight.toFixed(2)}%` : '—'}
-                    </td>
-                    <td className="py-3 pr-4">
-                      <p className={stats.pnl >= 0 ? 'text-green-600' : 'text-red-600'}>
-                        {stats.pnl >= 0 ? '+' : ''}{formatCurrency(stats.pnl)}
-                      </p>
-                      <p className={`text-xs ${stats.pnl >= 0 ? 'text-green-500' : 'text-red-500'}`}>{formatPercent(stats.pnlPercent)}</p>
-                    </td>
-                    <td className="py-3 pr-4">
-                      <span className={`text-sm font-medium ${stats.xirr === null ? 'text-gray-400 dark:text-gray-500' : stats.xirr >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                        {formatXIRR(stats.xirr)}
-                      </span>
-                    </td>
-                    <td className="py-3">
-                      <div className="flex items-center gap-1">
-                        <button onClick={() => setTxAsset(mf)} className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300 rounded-md">Txns</button>
-                        <button onClick={() => setEditAsset(mf)} className="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg">✏️</button>
-                        <button onClick={() => handleDelete(mf.id)} className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg">🗑️</button>
-                      </div>
-                    </td>
-                  </tr>
+                  <MFRow
+                    key={mf.id}
+                    mf={mf}
+                    stats={stats}
+                    weight={weight}
+                    priceInfo={priceInfo}
+                    totalPortfolioValue={totalPortfolioValue}
+                    onTxn={() => setTxAsset(mf)}
+                    onEdit={() => setEditAsset(mf)}
+                    onDelete={() => handleDelete(mf.id)}
+                  />
                 );
               })}
             </tbody>
+            <tfoot className="sticky bottom-0 bg-gray-50 dark:bg-gray-900 border-t-2 border-gray-200 dark:border-gray-700">
+              <tr>
+                <td colSpan={1} className="py-3 text-gray-700 dark:text-gray-300 text-xs font-bold uppercase tracking-wide">
+                  Total ({mfs.length} funds)
+                </td>
+                <td className="py-3 pr-4" />
+                <td className="py-3 pr-4" />
+                <td className="py-3 pr-4" />
+                <td className="py-3 pr-4 text-gray-900 dark:text-gray-100 text-sm font-bold">{formatCurrency(totalInvested)}</td>
+                <td className="py-3 pr-4 text-gray-900 dark:text-gray-100 text-sm font-bold">{formatCurrency(totalCurrentValue)}</td>
+                <td className="py-3 pr-4" />
+                <td className={`py-3 pr-4 text-sm font-bold ${totalPnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {totalPnl >= 0 ? '+' : ''}{formatCurrency(totalPnl)}
+                  <p className={`text-xs font-bold ${totalPnl >= 0 ? 'text-green-500' : 'text-red-500'}`}>{formatPercent(totalPnlPercent)}</p>
+                </td>
+                <td className="py-3 pr-4" />
+                <td />
+              </tr>
+            </tfoot>
           </table>
         </div>
         </div>

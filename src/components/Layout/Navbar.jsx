@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { usePortfolio } from '../../context/PortfolioContext';
 import { useLivePrices } from '../../hooks/useLivePrices';
 import { formatCurrency } from '../../utils/formatters';
@@ -9,6 +9,28 @@ export default function Navbar({ onMenuClick, title, isDark, onToggleDark }) {
   const stats = getPortfolioStats();
   const todayPnl = getDailyChange();
   const todayPnlPercent = stats.totalValue > 0 ? (todayPnl / (stats.totalValue - todayPnl)) * 100 : 0;
+
+  // Freshness indicator
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 10000);
+    return () => clearInterval(t);
+  }, []);
+
+  const secondsAgo = lastUpdated ? Math.floor((now - lastUpdated.getTime()) / 1000) : null;
+  const freshnessColor = secondsAgo === null
+    ? 'bg-gray-300 dark:bg-gray-600'
+    : secondsAgo < 30
+    ? 'bg-green-400 animate-pulse'
+    : secondsAgo < 120
+    ? 'bg-amber-400'
+    : 'bg-gray-400 dark:bg-gray-600';
+
+  const freshnessLabel = secondsAgo === null
+    ? 'Never updated'
+    : secondsAgo < 60
+    ? `Updated ${secondsAgo}s ago`
+    : `Updated ${Math.floor(secondsAgo / 60)}m ago`;
 
   return (
     <header className="h-14 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center px-4 gap-4 sticky top-0 z-10">
@@ -35,6 +57,12 @@ export default function Navbar({ onMenuClick, title, isDark, onToggleDark }) {
         </div>
       </div>
 
+      {/* Freshness indicator */}
+      <div className="hidden md:flex items-center gap-1.5" title={freshnessLabel}>
+        <div className={`w-2 h-2 rounded-full ${freshnessColor}`} />
+        <span className="text-gray-400 dark:text-gray-500 text-[10px]">{freshnessLabel}</span>
+      </div>
+
       {/* Dark mode toggle */}
       <button
         onClick={onToggleDark}
@@ -51,12 +79,6 @@ export default function Navbar({ onMenuClick, title, isDark, onToggleDark }) {
       >
         🔄
       </button>
-
-      {lastUpdated && (
-        <span className="hidden md:block text-gray-400 dark:text-gray-500 text-[10px]">
-          Updated {lastUpdated.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
-        </span>
-      )}
     </header>
   );
 }
