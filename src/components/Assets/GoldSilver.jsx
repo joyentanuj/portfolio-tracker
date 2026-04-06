@@ -60,57 +60,57 @@ function EtfTable({ holdings, prices, onAddTx }) {
             color: totalPnl >= 0 ? 'text-green-600' : 'text-red-600',
           },
         ].map((s) => (
-          <div key={s.label} className="bg-amber-50 rounded-lg border border-amber-100 p-3">
-            <p className="text-gray-500 text-xs font-medium mb-1">{s.label}</p>
-            <p className={`font-bold text-sm ${s.color || 'text-gray-900'}`}>{s.value}</p>
-            {s.sub && <p className={`text-xs ${s.color || 'text-gray-500'}`}>{s.sub}</p>}
+          <div key={s.label} className="bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-100 dark:border-amber-800 p-3">
+            <p className="text-gray-500 dark:text-gray-400 text-xs font-medium mb-1">{s.label}</p>
+            <p className={`font-bold text-sm ${s.color || 'text-gray-900 dark:text-gray-100'}`}>{s.value}</p>
+            {s.sub && <p className={`text-xs ${s.color || 'text-gray-500 dark:text-gray-400'}`}>{s.sub}</p>}
           </div>
         ))}
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto rounded-lg border border-gray-200">
+      <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
         <table className="w-full min-w-[760px]">
-          <thead className="bg-gray-50 border-b border-gray-200">
+          <thead className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
             <tr>
-              <th className="text-left text-gray-500 text-xs font-medium py-3 pl-4 pr-4 w-6">#</th>
+              <th className="text-left text-gray-500 dark:text-gray-400 text-xs font-medium py-3 pl-4 pr-4 w-6">#</th>
               {sh('Symbol', 'symbol')}
               {sh('Name', 'name')}
               {sh('Units', 'units')}
               {sh('Avg Cost (₹)', 'avgCost')}
-              <th className="text-left text-gray-500 text-xs font-medium py-3 pr-4 whitespace-nowrap">
+              <th className="text-left text-gray-500 dark:text-gray-400 text-xs font-medium py-3 pr-4 whitespace-nowrap">
                 Live Price (₹)
               </th>
               {sh('Invested', 'invested')}
               {sh('Current Value', 'current')}
               {sh('P&L', 'pnl')}
               {sh('P&L %', 'pnlPct')}
-              <th className="text-left text-gray-500 text-xs font-medium py-3 pr-4"></th>
+              <th className="text-left text-gray-500 dark:text-gray-400 text-xs font-medium py-3 pr-4"></th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
             {sorted.map((row, idx) => (
-              <tr key={row.asset.id} className="hover:bg-gray-50 transition-colors">
-                <td className="py-3 pl-4 pr-4 text-gray-400 text-xs">{idx + 1}</td>
-                <td className="py-3 pr-4 text-gray-700 text-sm font-mono font-medium">
+              <tr key={row.asset.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                <td className="py-3 pl-4 pr-4 text-gray-400 dark:text-gray-500 text-xs">{idx + 1}</td>
+                <td className="py-3 pr-4 text-gray-700 dark:text-gray-300 text-sm font-mono font-medium">
                   {row.asset.symbol || '—'}
                 </td>
-                <td className="py-3 pr-4 text-gray-900 text-sm font-medium whitespace-nowrap">
+                <td className="py-3 pr-4 text-gray-900 dark:text-gray-100 text-sm font-medium whitespace-nowrap">
                   {row.asset.name}
                 </td>
-                <td className="py-3 pr-4 text-gray-700 text-sm">
+                <td className="py-3 pr-4 text-gray-700 dark:text-gray-300 text-sm">
                   {formatNumber(row.units, 0)}
                 </td>
-                <td className="py-3 pr-4 text-gray-700 text-sm">
+                <td className="py-3 pr-4 text-gray-700 dark:text-gray-300 text-sm">
                   {formatCurrency(row.avgBuyPrice)}
                 </td>
                 <td className="py-3 pr-4 text-amber-700 text-sm font-medium">
                   {row.livePrice ? formatCurrency(row.livePrice) : '—'}
                 </td>
-                <td className="py-3 pr-4 text-gray-700 text-sm">
+                <td className="py-3 pr-4 text-gray-700 dark:text-gray-300 text-sm">
                   {formatCurrency(row.invested)}
                 </td>
-                <td className="py-3 pr-4 text-gray-900 text-sm font-semibold">
+                <td className="py-3 pr-4 text-gray-900 dark:text-gray-100 text-sm font-semibold">
                   {formatCurrency(row.current)}
                 </td>
                 <td className={`py-3 pr-4 text-sm font-semibold ${row.pnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
@@ -127,15 +127,15 @@ function EtfTable({ holdings, prices, onAddTx }) {
               </tr>
             ))}
           </tbody>
-          <tfoot className="bg-gray-50 border-t-2 border-gray-200">
+          <tfoot className="bg-gray-50 dark:bg-gray-900 border-t-2 border-gray-200 dark:border-gray-700">
             <tr>
-              <td colSpan={6} className="py-3 pl-4 pr-4 text-gray-600 text-xs font-semibold uppercase tracking-wide">
+              <td colSpan={6} className="py-3 pl-4 pr-4 text-gray-600 dark:text-gray-400 text-xs font-semibold uppercase tracking-wide">
                 Total
               </td>
-              <td className="py-3 pr-4 text-gray-900 text-sm font-bold">
+              <td className="py-3 pr-4 text-gray-900 dark:text-gray-100 text-sm font-bold">
                 {formatCurrency(totalInvested)}
               </td>
-              <td className="py-3 pr-4 text-gray-900 text-sm font-bold">
+              <td className="py-3 pr-4 text-gray-900 dark:text-gray-100 text-sm font-bold">
                 {formatCurrency(totalCurrent)}
               </td>
               <td className={`py-3 pr-4 text-sm font-bold ${totalPnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
@@ -208,16 +208,16 @@ function GoldTable({ holdings, livePrice, onAddTx }) {
             color: totalPnl >= 0 ? 'text-green-600' : 'text-red-600',
           },
         ].map((s) => (
-          <div key={s.label} className="bg-amber-50 rounded-lg border border-amber-100 p-3">
-            <p className="text-gray-500 text-xs font-medium mb-1">{s.label}</p>
-            <p className={`font-bold text-sm ${s.color || 'text-gray-900'}`}>{s.value}</p>
-            {s.sub && <p className={`text-xs ${s.color || 'text-gray-500'}`}>{s.sub}</p>}
+          <div key={s.label} className="bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-100 dark:border-amber-800 p-3">
+            <p className="text-gray-500 dark:text-gray-400 text-xs font-medium mb-1">{s.label}</p>
+            <p className={`font-bold text-sm ${s.color || 'text-gray-900 dark:text-gray-100'}`}>{s.value}</p>
+            {s.sub && <p className={`text-xs ${s.color || 'text-gray-500 dark:text-gray-400'}`}>{s.sub}</p>}
           </div>
         ))}
       </div>
 
       {/* Live price */}
-      <p className="text-xs text-gray-500 mb-3">
+      <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
         Live gold price:{' '}
         <span className="font-semibold text-amber-700">
           {livePrice ? `${formatCurrency(livePrice)}/gm` : 'Loading…'}
@@ -225,30 +225,30 @@ function GoldTable({ holdings, livePrice, onAddTx }) {
       </p>
 
       {/* Table */}
-      <div className="overflow-x-auto rounded-lg border border-gray-200">
+      <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
         <table className="w-full min-w-[780px]">
-          <thead className="bg-gray-50 border-b border-gray-200">
+          <thead className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
             <tr>
-              <th className="text-left text-gray-500 text-xs font-medium py-3 pl-4 pr-4 w-6">#</th>
+              <th className="text-left text-gray-500 dark:text-gray-400 text-xs font-medium py-3 pl-4 pr-4 w-6">#</th>
               {sh('Name', 'name')}
               {sh('Type', 'type')}
               {sh('Grams', 'grams')}
               {sh('Avg Buy (₹/gm)', 'avgBuyPrice')}
-              <th className="text-left text-gray-500 text-xs font-medium py-3 pr-4 whitespace-nowrap">
+              <th className="text-left text-gray-500 dark:text-gray-400 text-xs font-medium py-3 pr-4 whitespace-nowrap">
                 Live (₹/gm)
               </th>
               {sh('Invested', 'invested')}
               {sh('Current Value', 'current')}
               {sh('P&L', 'pnl')}
               {sh('P&L %', 'pnlPct')}
-              <th className="text-left text-gray-500 text-xs font-medium py-3 pr-4"></th>
+              <th className="text-left text-gray-500 dark:text-gray-400 text-xs font-medium py-3 pr-4"></th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
             {sorted.map((row, idx) => (
-              <tr key={row.asset.id} className="hover:bg-gray-50 transition-colors">
-                <td className="py-3 pl-4 pr-4 text-gray-400 text-xs">{idx + 1}</td>
-                <td className="py-3 pr-4 text-gray-900 text-sm font-medium whitespace-nowrap">
+              <tr key={row.asset.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                <td className="py-3 pl-4 pr-4 text-gray-400 dark:text-gray-500 text-xs">{idx + 1}</td>
+                <td className="py-3 pr-4 text-gray-900 dark:text-gray-100 text-sm font-medium whitespace-nowrap">
                   {row.asset.name}
                 </td>
                 <td className="py-3 pr-4">
@@ -260,19 +260,19 @@ function GoldTable({ holdings, livePrice, onAddTx }) {
                     {row.asset.type === 'sgb' ? 'SGB' : 'Digital'}
                   </span>
                 </td>
-                <td className="py-3 pr-4 text-gray-700 text-sm">
+                <td className="py-3 pr-4 text-gray-700 dark:text-gray-300 text-sm">
                   {formatNumber(row.grams, 4)} gm
                 </td>
-                <td className="py-3 pr-4 text-gray-700 text-sm">
+                <td className="py-3 pr-4 text-gray-700 dark:text-gray-300 text-sm">
                   {formatCurrency(row.avgBuyPrice)}
                 </td>
                 <td className="py-3 pr-4 text-amber-700 text-sm font-medium">
                   {livePrice ? formatCurrency(livePrice) : '—'}
                 </td>
-                <td className="py-3 pr-4 text-gray-700 text-sm">
+                <td className="py-3 pr-4 text-gray-700 dark:text-gray-300 text-sm">
                   {formatCurrency(row.invested)}
                 </td>
-                <td className="py-3 pr-4 text-gray-900 text-sm font-semibold">
+                <td className="py-3 pr-4 text-gray-900 dark:text-gray-100 text-sm font-semibold">
                   {formatCurrency(row.current)}
                 </td>
                 <td className={`py-3 pr-4 text-sm font-semibold ${row.pnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
@@ -290,20 +290,20 @@ function GoldTable({ holdings, livePrice, onAddTx }) {
             ))}
           </tbody>
           {/* Totals footer */}
-          <tfoot className="bg-gray-50 border-t-2 border-gray-200">
+          <tfoot className="bg-gray-50 dark:bg-gray-900 border-t-2 border-gray-200 dark:border-gray-700">
             <tr>
-              <td colSpan={3} className="py-3 pl-4 pr-4 text-gray-600 text-xs font-semibold uppercase tracking-wide">
+              <td colSpan={3} className="py-3 pl-4 pr-4 text-gray-600 dark:text-gray-400 text-xs font-semibold uppercase tracking-wide">
                 Total
               </td>
-              <td className="py-3 pr-4 text-gray-900 text-sm font-bold">
+              <td className="py-3 pr-4 text-gray-900 dark:text-gray-100 text-sm font-bold">
                 {formatNumber(totalGrams, 4)} gm
               </td>
               <td className="py-3 pr-4"></td>
               <td className="py-3 pr-4"></td>
-              <td className="py-3 pr-4 text-gray-900 text-sm font-bold">
+              <td className="py-3 pr-4 text-gray-900 dark:text-gray-100 text-sm font-bold">
                 {formatCurrency(totalInvested)}
               </td>
-              <td className="py-3 pr-4 text-gray-900 text-sm font-bold">
+              <td className="py-3 pr-4 text-gray-900 dark:text-gray-100 text-sm font-bold">
                 {formatCurrency(totalCurrent)}
               </td>
               <td className={`py-3 pr-4 text-sm font-bold ${totalPnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
@@ -325,12 +325,12 @@ function GoldTable({ holdings, livePrice, onAddTx }) {
 
 function SilverCard({ stats, livePrice, onAddTx }) {
   return (
-    <div className="bg-gray-50 rounded-xl border border-gray-200 p-5">
+    <div className="bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
       <div className="flex items-center gap-3 mb-4">
         <span className="text-3xl">🥈</span>
         <div>
-          <h3 className="text-gray-900 font-bold text-lg">Silver</h3>
-          <p className="text-gray-500 text-sm">
+          <h3 className="text-gray-900 dark:text-gray-100 font-bold text-lg">Silver</h3>
+          <p className="text-gray-500 dark:text-gray-400 text-sm">
             Live: {livePrice ? `${formatCurrency(livePrice)}/gm` : 'Loading…'}
           </p>
         </div>
@@ -341,19 +341,19 @@ function SilverCard({ stats, livePrice, onAddTx }) {
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div>
-          <p className="text-gray-400 text-xs">Total Weight</p>
-          <p className="text-gray-900 font-semibold">{formatNumber(stats.totalUnits, 3)} gm</p>
+          <p className="text-gray-400 dark:text-gray-500 text-xs">Total Weight</p>
+          <p className="text-gray-900 dark:text-gray-100 font-semibold">{formatNumber(stats.totalUnits, 3)} gm</p>
         </div>
         <div>
-          <p className="text-gray-400 text-xs">Avg Buy Price</p>
-          <p className="text-gray-900 font-semibold">{formatCurrency(stats.avgBuyPrice)}/gm</p>
+          <p className="text-gray-400 dark:text-gray-500 text-xs">Avg Buy Price</p>
+          <p className="text-gray-900 dark:text-gray-100 font-semibold">{formatCurrency(stats.avgBuyPrice)}/gm</p>
         </div>
         <div>
-          <p className="text-gray-400 text-xs">Current Value</p>
-          <p className="text-gray-900 font-semibold">{formatCurrency(stats.currentValue)}</p>
+          <p className="text-gray-400 dark:text-gray-500 text-xs">Current Value</p>
+          <p className="text-gray-900 dark:text-gray-100 font-semibold">{formatCurrency(stats.currentValue)}</p>
         </div>
         <div>
-          <p className="text-gray-400 text-xs">P&L</p>
+          <p className="text-gray-400 dark:text-gray-500 text-xs">P&L</p>
           <p className={`font-semibold ${stats.pnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
             {stats.pnl >= 0 ? '+' : ''}{formatCurrency(stats.pnl)}
             <span className="text-xs ml-1">({formatPercent(stats.pnlPercent)})</span>
@@ -439,7 +439,7 @@ export default function GoldSilver() {
       <div>
         <div className="flex items-center gap-2 mb-4">
           <span className="text-2xl">🥇</span>
-          <h2 className="text-gray-900 font-bold text-xl">Gold</h2>
+          <h2 className="text-gray-900 dark:text-gray-100 font-bold text-xl">Gold</h2>
           {goldTodayPnl !== 0 && (
             <span className={`ml-auto text-sm font-semibold ${goldTodayPnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
               Today: {goldTodayPnl >= 0 ? '+' : ''}{formatCurrency(goldTodayPnl)}
@@ -449,13 +449,13 @@ export default function GoldSilver() {
         </div>
 
         {physicalGoldHoldings.length === 0 && goldEtfHoldings.length === 0 ? (
-          <p className="text-gray-500 text-sm">No gold holdings yet.</p>
+          <p className="text-gray-500 dark:text-gray-400 text-sm">No gold holdings yet.</p>
         ) : (
           <div className="space-y-6">
             {/* Physical gold (digital / SGB) */}
             {physicalGoldHoldings.length > 0 && (
               <div>
-                <h3 className="text-gray-700 font-semibold text-sm mb-3 uppercase tracking-wide">
+                <h3 className="text-gray-700 dark:text-gray-300 font-semibold text-sm mb-3 uppercase tracking-wide">
                   Physical & Digital Gold
                 </h3>
                 <GoldTable
@@ -470,7 +470,7 @@ export default function GoldSilver() {
             {goldEtfHoldings.length > 0 && (
               <div>
                 <div className="flex items-center gap-2 mb-3">
-                  <h3 className="text-gray-700 font-semibold text-sm uppercase tracking-wide">
+                  <h3 className="text-gray-700 dark:text-gray-300 font-semibold text-sm uppercase tracking-wide">
                     Gold ETFs
                   </h3>
                   <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-medium">
@@ -492,7 +492,7 @@ export default function GoldSilver() {
       <div>
         <div className="flex items-center gap-2 mb-4">
           <span className="text-2xl">🥈</span>
-          <h2 className="text-gray-900 font-bold text-xl">Silver</h2>
+          <h2 className="text-gray-900 dark:text-gray-100 font-bold text-xl">Silver</h2>
           {silverTodayPnl !== 0 && (
             <span className={`ml-auto text-sm font-semibold ${silverTodayPnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
               Today: {silverTodayPnl >= 0 ? '+' : ''}{formatCurrency(silverTodayPnl)}
@@ -512,12 +512,12 @@ export default function GoldSilver() {
           )}
 
           {physicalSilverAssets.length === 0 && silverEtfHoldings.length === 0 && (
-            <div className="bg-gray-50 rounded-xl border border-gray-200 p-5">
+            <div className="bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
               <div className="flex items-center gap-3 mb-4">
                 <span className="text-3xl">🥈</span>
                 <div>
-                  <h3 className="text-gray-900 font-bold text-lg">Silver</h3>
-                  <p className="text-gray-500 text-sm">
+                  <h3 className="text-gray-900 dark:text-gray-100 font-bold text-lg">Silver</h3>
+                  <p className="text-gray-500 dark:text-gray-400 text-sm">
                     Live: {silverLivePrice ? `${formatCurrency(silverLivePrice)}/gm` : 'Loading…'}
                   </p>
                 </div>
@@ -525,7 +525,7 @@ export default function GoldSilver() {
                   <Button size="sm" onClick={handleAddSilverHolding} icon="+">Add Transaction</Button>
                 </div>
               </div>
-              <p className="text-gray-500 text-sm">No silver holdings yet.</p>
+              <p className="text-gray-500 dark:text-gray-400 text-sm">No silver holdings yet.</p>
             </div>
           )}
 
@@ -533,10 +533,10 @@ export default function GoldSilver() {
           {silverEtfHoldings.length > 0 && (
             <div>
               <div className="flex items-center gap-2 mb-3">
-                <h3 className="text-gray-700 font-semibold text-sm uppercase tracking-wide">
+                <h3 className="text-gray-700 dark:text-gray-300 font-semibold text-sm uppercase tracking-wide">
                   Silver ETFs
                 </h3>
-                <span className="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full font-medium">
+                <span className="text-xs bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-2 py-0.5 rounded-full font-medium">
                   Live price via Google Finance
                 </span>
               </div>

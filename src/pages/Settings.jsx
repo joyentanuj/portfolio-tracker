@@ -61,8 +61,8 @@ export default function Settings() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-900 font-medium text-sm">Auto-refresh prices</p>
-              <p className="text-gray-500 text-xs">Automatically fetch live prices on a timer</p>
+              <p className="text-gray-900 dark:text-gray-100 font-medium text-sm">Auto-refresh prices</p>
+              <p className="text-gray-500 dark:text-gray-400 text-xs">Automatically fetch live prices on a timer</p>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
               <input
@@ -77,9 +77,9 @@ export default function Settings() {
 
           {settings.autoRefresh && (
             <div>
-              <label className="block text-gray-600 text-xs font-medium mb-1">Refresh interval (seconds)</label>
+              <label className="block text-gray-600 dark:text-gray-400 text-xs font-medium mb-1">Refresh interval (seconds)</label>
               <select
-                className="bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:border-indigo-500"
+                className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-gray-100 text-sm focus:outline-none focus:border-indigo-500"
                 value={settings.refreshInterval ?? 60}
                 onChange={e => updateSettings({ refreshInterval: Number(e.target.value) })}
               >
@@ -97,18 +97,18 @@ export default function Settings() {
       {/* Data Management */}
       <Card title="💾 Data Management">
         <div className="space-y-4">
-          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200">
+          <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600">
             <div>
-              <p className="text-gray-900 font-medium text-sm">Export Portfolio</p>
-              <p className="text-gray-500 text-xs">Download your data as JSON for backup</p>
+              <p className="text-gray-900 dark:text-gray-100 font-medium text-sm">Export Portfolio</p>
+              <p className="text-gray-500 dark:text-gray-400 text-xs">Download your data as JSON for backup</p>
             </div>
             <Button onClick={handleExport} size="sm" icon="⬇️">Export JSON</Button>
           </div>
 
-          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200">
+          <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600">
             <div>
-              <p className="text-gray-900 font-medium text-sm">Import Portfolio</p>
-              <p className="text-gray-500 text-xs">Restore from a previously exported backup</p>
+              <p className="text-gray-900 dark:text-gray-100 font-medium text-sm">Import Portfolio</p>
+              <p className="text-gray-500 dark:text-gray-400 text-xs">Restore from a previously exported backup</p>
             </div>
             <div>
               <input ref={fileInputRef} type="file" accept=".json" onChange={handleImport} className="hidden" />
@@ -116,10 +116,10 @@ export default function Settings() {
             </div>
           </div>
 
-          <div className="flex items-center justify-between p-4 bg-red-50 rounded-xl border border-red-200">
+          <div className="flex items-center justify-between p-4 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-200 dark:border-red-700">
             <div>
               <p className="text-red-600 font-medium text-sm">Clear All Data</p>
-              <p className="text-gray-500 text-xs">Permanently delete all portfolio data</p>
+              <p className="text-gray-500 dark:text-gray-400 text-xs">Permanently delete all portfolio data</p>
             </div>
             <Button onClick={handleClear} size="sm" variant="danger" icon="🗑️">Clear Data</Button>
           </div>
@@ -128,17 +128,17 @@ export default function Settings() {
 
       {/* About */}
       <Card title="ℹ️ About">
-        <div className="space-y-3 text-sm text-gray-600">
-          <p>📊 <strong className="text-gray-900">Live Portfolio Tracker</strong> v1.0</p>
+        <div className="space-y-3 text-sm text-gray-600 dark:text-gray-400">
+          <p>📊 <strong className="text-gray-900 dark:text-gray-100">Live Portfolio Tracker</strong> v1.0</p>
           <p>All data is stored locally in your browser's localStorage. No data is sent to any server.</p>
           <div className="space-y-1">
-            <p className="text-gray-400 text-xs font-semibold uppercase tracking-wider">Data Sources</p>
+            <p className="text-gray-400 dark:text-gray-500 text-xs font-semibold uppercase tracking-wider">Data Sources</p>
             <p>• Stocks: Yahoo Finance API (via CORS proxy)</p>
             <p>• Mutual Funds: MFAPI.in</p>
             <p>• Gold/Silver: Goldprice.org (with fallback)</p>
           </div>
           <div className="space-y-1">
-            <p className="text-gray-400 text-xs font-semibold uppercase tracking-wider">Calculations</p>
+            <p className="text-gray-400 dark:text-gray-500 text-xs font-semibold uppercase tracking-wider">Calculations</p>
             <p>• XIRR uses Newton-Raphson method</p>
             <p>• FD values use compound interest formula</p>
             <p>• All amounts in Indian Rupees (₹)</p>

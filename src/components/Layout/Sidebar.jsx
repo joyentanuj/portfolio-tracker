@@ -16,24 +16,24 @@ export default function Sidebar({ isOpen, onClose }) {
 
       <aside
         className={`
-          fixed top-0 left-0 h-full w-64 bg-white border-r border-gray-200 z-30
+          fixed top-0 left-0 h-full w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 z-30
           flex flex-col transition-transform duration-300
           ${isOpen ? 'translate-x-0' : '-translate-x-full'}
           lg:translate-x-0 lg:static lg:z-auto
         `}
       >
         {/* Logo */}
-        <div className="flex items-center gap-3 px-5 py-5 border-b border-gray-200">
+        <div className="flex items-center gap-3 px-5 py-5 border-b border-gray-200 dark:border-gray-700">
           <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-lg">
             📊
           </div>
           <div>
-            <div className="text-gray-900 font-bold text-sm leading-none">Portfolio</div>
-            <div className="text-indigo-600 text-xs font-medium">Tracker</div>
+            <div className="text-gray-900 dark:text-gray-100 font-bold text-sm leading-none">Portfolio</div>
+            <div className="text-indigo-400 text-xs font-medium">Tracker</div>
           </div>
           <button
             onClick={onClose}
-            className="ml-auto text-gray-400 hover:text-gray-700 lg:hidden"
+            className="ml-auto text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 lg:hidden"
           >
             ✕
           </button>
@@ -42,7 +42,7 @@ export default function Sidebar({ isOpen, onClose }) {
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto py-4 scrollbar-thin">
           <div className="px-3 mb-2">
-            <p className="text-gray-500 text-[10px] font-semibold uppercase tracking-widest px-2 mb-2">Menu</p>
+            <p className="text-gray-500 dark:text-gray-400 text-[10px] font-semibold uppercase tracking-widest px-2 mb-2">Menu</p>
             {NAV_LINKS.map(link => (
               <NavLink
                 key={link.path}
@@ -51,8 +51,8 @@ export default function Sidebar({ isOpen, onClose }) {
                 className={({ isActive }) => `
                   flex items-center gap-3 px-3 py-2.5 rounded-lg mb-0.5 text-sm font-medium transition-colors
                   ${isActive
-                    ? 'bg-indigo-50 text-indigo-700 border border-indigo-200'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                    ? 'bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-700'
+                    : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700'
                   }
                 `}
               >
@@ -64,8 +64,8 @@ export default function Sidebar({ isOpen, onClose }) {
         </nav>
 
         {/* Footer */}
-        <div className="px-5 py-4 border-t border-gray-200">
-          <p className="text-gray-400 text-[10px] text-center">Live Portfolio Tracker v1.0</p>
+        <div className="px-5 py-4 border-t border-gray-200 dark:border-gray-700">
+          <p className="text-gray-400 dark:text-gray-500 text-[10px] text-center">Live Portfolio Tracker v1.0</p>
         </div>
       </aside>
     </>

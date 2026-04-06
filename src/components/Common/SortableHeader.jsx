@@ -15,14 +15,14 @@ export default function SortableHeader({ label, colKey, sortCol, sortDir, onSort
 
   return (
     <th
-      className={`text-left text-gray-500 text-xs font-medium py-3 pr-4 last:pr-0 cursor-pointer select-none whitespace-nowrap ${className}`}
+      className={`text-left text-gray-500 dark:text-gray-400 text-xs font-medium py-3 pr-4 last:pr-0 cursor-pointer select-none whitespace-nowrap ${className}`}
       onClick={() => onSort(colKey)}
     >
       <span className="inline-flex items-center gap-1">
         {label}
         <span className="inline-flex flex-col leading-none text-[8px]">
-          <span className={isActive && sortDir === 'asc' ? 'text-indigo-600' : 'text-gray-300'}>▲</span>
-          <span className={isActive && sortDir === 'desc' ? 'text-indigo-600' : 'text-gray-300'}>▼</span>
+          <span className={isActive && sortDir === 'asc' ? 'text-indigo-600' : 'text-gray-300 dark:text-gray-600'}>▲</span>
+          <span className={isActive && sortDir === 'desc' ? 'text-indigo-600' : 'text-gray-300 dark:text-gray-600'}>▼</span>
         </span>
       </span>
     </th>

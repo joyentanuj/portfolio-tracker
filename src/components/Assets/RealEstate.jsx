@@ -28,8 +28,8 @@ function REForm({ onSubmit, onCancel, initial = null }) {
     });
   };
 
-  const ic = 'w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:border-indigo-500';
-  const lc = 'block text-gray-600 text-xs font-medium mb-1';
+  const ic = 'w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-gray-100 text-sm focus:outline-none focus:border-indigo-500 dark:placeholder-gray-400';
+  const lc = 'block text-gray-600 dark:text-gray-400 text-xs font-medium mb-1';
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
   return (
@@ -93,14 +93,14 @@ export default function RealEstate() {
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
-        <p className="text-gray-500 text-sm">{properties.length} properties</p>
+        <p className="text-gray-500 dark:text-gray-400 text-sm">{properties.length} properties</p>
         <Button onClick={() => setAddModal(true)} icon="+" size="sm">Add Property</Button>
       </div>
 
       {properties.length === 0 ? (
-        <div className="text-center py-16 text-gray-400">
+        <div className="text-center py-16 text-gray-400 dark:text-gray-500">
           <div className="text-5xl mb-4">🏠</div>
-          <p className="font-medium text-gray-500 mb-1">No real estate added</p>
+          <p className="font-medium text-gray-500 dark:text-gray-400 mb-1">No real estate added</p>
           <p className="text-sm">Track your properties, plots, and real estate investments</p>
         </div>
       ) : (
@@ -108,41 +108,41 @@ export default function RealEstate() {
           {properties.map(prop => {
             const stats = getAssetStats(prop, 'realEstate');
             return (
-              <div key={prop.id} className="bg-gray-50 rounded-xl border border-gray-200 p-5">
+              <div key={prop.id} className="bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
                 <div className="flex items-start justify-between mb-4">
                   <div>
-                    <p className="text-gray-900 font-bold text-base">{prop.name}</p>
-                    {prop.location && <p className="text-gray-500 text-sm">📍 {prop.location}</p>}
-                    <p className="text-gray-400 text-xs mt-0.5">Purchased: {formatDate(prop.purchaseDate)}</p>
+                    <p className="text-gray-900 dark:text-gray-100 font-bold text-base">{prop.name}</p>
+                    {prop.location && <p className="text-gray-500 dark:text-gray-400 text-sm">📍 {prop.location}</p>}
+                    <p className="text-gray-400 dark:text-gray-500 text-xs mt-0.5">Purchased: {formatDate(prop.purchaseDate)}</p>
                   </div>
                   <div className="flex items-center gap-1">
-                    <button onClick={() => setEditAsset(prop)} className="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg">✏️</button>
-                    <button onClick={() => handleDelete(prop.id)} className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg">🗑️</button>
+                    <button onClick={() => setEditAsset(prop)} className="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg">✏️</button>
+                    <button onClick={() => handleDelete(prop.id)} className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg">🗑️</button>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                   <div>
-                    <p className="text-gray-400 text-xs">Purchase Price</p>
-                    <p className="text-gray-900 font-medium">{formatCurrency(prop.purchasePrice)}</p>
+                    <p className="text-gray-400 dark:text-gray-500 text-xs">Purchase Price</p>
+                    <p className="text-gray-900 dark:text-gray-100 font-medium">{formatCurrency(prop.purchasePrice)}</p>
                   </div>
                   <div>
-                    <p className="text-gray-400 text-xs">Current Value</p>
-                    <p className="text-gray-900 font-medium">{formatCurrency(stats.currentValue)}</p>
+                    <p className="text-gray-400 dark:text-gray-500 text-xs">Current Value</p>
+                    <p className="text-gray-900 dark:text-gray-100 font-medium">{formatCurrency(stats.currentValue)}</p>
                   </div>
                   <div>
-                    <p className="text-gray-400 text-xs">Appreciation</p>
+                    <p className="text-gray-400 dark:text-gray-500 text-xs">Appreciation</p>
                     <p className={`font-medium ${stats.pnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                       {stats.pnl >= 0 ? '+' : ''}{formatCurrency(stats.pnl)} ({formatPercent(stats.pnlPercent)})
                     </p>
                   </div>
                   <div>
-                    <p className="text-gray-400 text-xs">CAGR (approx)</p>
-                    <p className={`font-medium ${stats.xirr !== null && stats.xirr >= 0 ? 'text-green-600' : 'text-gray-400'}`}>
+                    <p className="text-gray-400 dark:text-gray-500 text-xs">CAGR (approx)</p>
+                    <p className={`font-medium ${stats.xirr !== null && stats.xirr >= 0 ? 'text-green-600' : 'text-gray-400 dark:text-gray-500'}`}>
                       {formatXIRR(stats.xirr)}
                     </p>
                   </div>
                 </div>
-                {prop.notes && <p className="text-gray-400 text-xs mt-3 pt-3 border-t border-gray-200">{prop.notes}</p>}
+                {prop.notes && <p className="text-gray-400 dark:text-gray-500 text-xs mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">{prop.notes}</p>}
               </div>
             );
           })}
