@@ -13,13 +13,24 @@ export function useLivePrices() {
     try {
       const priceMap = {};
 
-      // Stocks
+      // Indian Stocks
       const stockSymbols = (data.stocks || []).map(s => s.symbol).filter(Boolean);
       if (stockSymbols.length > 0) {
         const stockPrices = await fetchMultipleStocks(stockSymbols);
         for (const [sym, info] of Object.entries(stockPrices)) {
           priceMap[sym] = { price: info.price, change: info.change, changePercent: info.changePercent, previousClose: info.previousClose };
         }
+      }
+
+      // US Stocks (plain symbols, no .NS suffix)
+      const usStockSymbols = (data.usStocks || []).map(s => s.symbol).filter(Boolean);
+      // Also fetch USD/INR exchange rate for portfolio total conversion
+      const usSymbolsWithForex = usStockSymbols.length > 0
+        ? [...usStockSymbols, 'USDINR=X']
+        : ['USDINR=X'];
+      const usPrices = await fetchMultipleStocks(usSymbolsWithForex);
+      for (const [sym, info] of Object.entries(usPrices)) {
+        priceMap[sym] = { price: info.price, change: info.change, changePercent: info.changePercent, previousClose: info.previousClose, currency: sym === 'USDINR=X' ? 'INR' : 'USD' };
       }
 
       // Mutual Funds
@@ -62,7 +73,7 @@ export function useLivePrices() {
     } finally {
       fetchingRef.current = false;
     }
-  }, [data.stocks, data.mutualFunds, data.gold, data.silver, updatePrices]);
+  }, [data.stocks, data.usStocks, data.mutualFunds, data.gold, data.silver, updatePrices]);
 
   // Fetch on mount and whenever assets change
   useEffect(() => {

@@ -1,5 +1,6 @@
 export const ASSET_CATEGORIES = {
   STOCKS: 'stocks',
+  US_STOCKS: 'usStocks',
   MUTUAL_FUNDS: 'mutualFunds',
   FIXED_DEPOSITS: 'fixedDeposits',
   GOLD: 'gold',
@@ -16,6 +17,7 @@ export const TRANSACTION_TYPES = {
 
 export const CATEGORY_COLORS = {
   stocks: '#6366f1',
+  usStocks: '#3b82f6',
   mutualFunds: '#8b5cf6',
   fixedDeposits: '#06b6d4',
   gold: '#f59e0b',
@@ -26,7 +28,8 @@ export const CATEGORY_COLORS = {
 };
 
 export const CATEGORY_LABELS = {
-  stocks: 'Stocks',
+  stocks: 'Indian Stocks',
+  usStocks: 'US Stocks',
   mutualFunds: 'Mutual Funds',
   fixedDeposits: 'Fixed Deposits',
   gold: 'Gold',
@@ -38,6 +41,7 @@ export const CATEGORY_LABELS = {
 
 export const CATEGORY_ICONS = {
   stocks: '📈',
+  usStocks: '🇺🇸',
   mutualFunds: '🏦',
   fixedDeposits: '🏛️',
   gold: '🥇',
@@ -49,7 +53,8 @@ export const CATEGORY_ICONS = {
 
 export const NAV_LINKS = [
   { path: '/', label: 'Dashboard', icon: '🏠' },
-  { path: '/stocks', label: 'Stocks', icon: '📈' },
+  { path: '/stocks', label: 'Indian Stocks', icon: '📈' },
+  { path: '/us-stocks', label: 'US Stocks', icon: '🇺🇸' },
   { path: '/mutual-funds', label: 'Mutual Funds', icon: '🏦' },
   { path: '/fixed-deposits', label: 'Fixed Deposits', icon: '🏛️' },
   { path: '/gold-silver', label: 'Gold & Silver', icon: '🥇' },

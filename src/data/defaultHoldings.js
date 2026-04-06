@@ -47,6 +47,16 @@ export const defaultStocks = [
   { symbol: 'WELCORP.NS',     name: 'Welspun Corp',                    exchange: 'NSE', qty: 28,    avgCost: 852.57  },
 ];
 
+export const defaultUSStocks = [
+  { symbol: 'QQQ',  name: 'Invesco QQQ Trust Series 1',  exchange: 'NASDAQ', qty: 1.862977474, avgCost: 609.73 },
+  { symbol: 'TSLA', name: 'Tesla, Inc.',                  exchange: 'NASDAQ', qty: 1,           avgCost: 183.22 },
+  { symbol: 'META', name: 'Meta Platforms Inc',            exchange: 'NASDAQ', qty: 0.605856569, avgCost: 188.66 },
+  { symbol: 'MSFT', name: 'Microsoft Corporation',        exchange: 'NASDAQ', qty: 0.394432173, avgCost: 245.92 },
+  { symbol: 'AAPL', name: 'Apple, Inc.',                   exchange: 'NASDAQ', qty: 0.641494286, avgCost: 140.30 },
+  { symbol: 'AMZN', name: 'Amazon.com Inc.',               exchange: 'NASDAQ', qty: 0.560077192, avgCost: 112.48 },
+];
+
+
 export const defaultGoldETFs = [
   { symbol: 'GOLDBEES', name: 'Nippon India ETF Gold BeES', exchange: 'NSE', qty: 4090,  avgCost: 112.38 },
   { symbol: 'GOLDCASE',  name: 'Zerodha Gold ETF',           exchange: 'NSE', qty: 60000, avgCost: 13.49  },

@@ -1,9 +1,9 @@
-import { defaultStocks, defaultMutualFunds, defaultGold, defaultGoldETFs, defaultSilverETFs } from '../data/defaultHoldings';
+import { defaultStocks, defaultMutualFunds, defaultGold, defaultGoldETFs, defaultSilverETFs, defaultUSStocks } from '../data/defaultHoldings';
 
 const PORTFOLIO_KEY = 'portfolio_tracker_data';
 // Increment DATA_VERSION whenever defaultHoldings.js changes so that all users
 // automatically receive the corrected data on their next page load.
-const DATA_VERSION = 9;
+const DATA_VERSION = 10;
 const VERSION_KEY = 'portfolio_tracker_data_version';
 
 // Maps old (wrong) scheme codes → new (correct) scheme codes introduced in each version.
@@ -64,6 +64,7 @@ export const generateId = () =>
 
 export const getInitialData = () => ({
   stocks: [],
+  usStocks: [],
   mutualFunds: [],
   fixedDeposits: [],
   gold: [],
@@ -84,6 +85,26 @@ function buildSeededData() {
     name: s.name,
     exchange: s.exchange,
     category: 'stocks',
+    transactions: [
+      {
+        id: generateId(),
+        type: 'buy',
+        date: buyDate,
+        quantity: s.qty,
+        price: s.avgCost,
+        amount: parseFloat((s.qty * s.avgCost).toFixed(2)),
+        notes: 'Initial import',
+      },
+    ],
+  }));
+
+  data.usStocks = defaultUSStocks.map((s) => ({
+    id: generateId(),
+    symbol: s.symbol,
+    name: s.name,
+    exchange: s.exchange,
+    category: 'usStocks',
+    currency: 'USD',
     transactions: [
       {
         id: generateId(),
@@ -359,6 +380,33 @@ export const getPortfolioData = () => {
                   quantity: etf.qty,
                   price: etf.avgCost,
                   amount: parseFloat((etf.qty * etf.avgCost).toFixed(2)),
+                  notes: 'Initial import',
+                },
+              ],
+            });
+          }
+        }
+
+        // v10: Seed US stocks for existing users.
+        data.usStocks = data.usStocks || [];
+        for (const s of defaultUSStocks) {
+          const exists = data.usStocks.some((u) => u.symbol === s.symbol);
+          if (!exists) {
+            data.usStocks.push({
+              id: generateId(),
+              symbol: s.symbol,
+              name: s.name,
+              exchange: s.exchange,
+              category: 'usStocks',
+              currency: 'USD',
+              transactions: [
+                {
+                  id: generateId(),
+                  type: 'buy',
+                  date: buyDate,
+                  quantity: s.qty,
+                  price: s.avgCost,
+                  amount: parseFloat((s.qty * s.avgCost).toFixed(2)),
                   notes: 'Initial import',
                 },
               ],
