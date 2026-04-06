@@ -1,9 +1,9 @@
-import { defaultStocks, defaultMutualFunds } from '../data/defaultHoldings';
+import { defaultStocks, defaultMutualFunds, defaultGold } from '../data/defaultHoldings';
 
 const PORTFOLIO_KEY = 'portfolio_tracker_data';
 // Increment DATA_VERSION whenever defaultHoldings.js changes so that all users
 // automatically receive the corrected data on their next page load.
-const DATA_VERSION = 7;
+const DATA_VERSION = 8;
 const VERSION_KEY = 'portfolio_tracker_data_version';
 
 // Maps old (wrong) scheme codes → new (correct) scheme codes introduced in each version.
@@ -115,6 +115,24 @@ function buildSeededData() {
     ],
   }));
 
+  data.gold = defaultGold.map((g) => ({
+    id: generateId(),
+    name: g.name,
+    type: g.type,
+    category: 'gold',
+    transactions: [
+      {
+        id: generateId(),
+        type: 'buy',
+        date: buyDate,
+        quantity: g.grams,
+        price: g.avgCost,
+        amount: parseFloat((g.grams * g.avgCost).toFixed(2)),
+        notes: 'Initial import',
+      },
+    ],
+  }));
+
   return data;
 }
 
@@ -180,6 +198,28 @@ export const getPortfolioData = () => {
             const correctedName = STOCK_NAME_MIGRATIONS[stock.symbol];
             return correctedName ? { ...stock, name: correctedName } : stock;
           });
+        }
+
+        // v8: Seed default gold holdings for users who have none yet.
+        if (!Array.isArray(data.gold) || data.gold.length === 0) {
+          const buyDate = '2024-01-01';
+          data.gold = defaultGold.map((g) => ({
+            id: generateId(),
+            name: g.name,
+            type: g.type,
+            category: 'gold',
+            transactions: [
+              {
+                id: generateId(),
+                type: 'buy',
+                date: buyDate,
+                quantity: g.grams,
+                price: g.avgCost,
+                amount: parseFloat((g.grams * g.avgCost).toFixed(2)),
+                notes: 'Initial import',
+              },
+            ],
+          }));
         }
 
         localStorage.setItem(PORTFOLIO_KEY, JSON.stringify(data));

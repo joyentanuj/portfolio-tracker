@@ -48,6 +48,18 @@ export const defaultStocks = [
   { symbol: 'WELCORP.NS',     name: 'Welspun Corp',                    exchange: 'NSE', qty: 28,    avgCost: 852.57  },
 ];
 
+export const defaultGold = [
+  { name: 'Digital Gold',    type: 'digital', grams: 1.4397, avgCost: 10420 },
+  { name: 'SGB Tranche 1',   type: 'sgb',     grams: 10,     avgCost: 6150  },
+  { name: 'SGB Tranche 2',   type: 'sgb',     grams: 10,     avgCost: 4210  },
+  { name: 'SGB Tranche 3',   type: 'sgb',     grams: 10,     avgCost: 4590  },
+  { name: 'SGB Tranche 4',   type: 'sgb',     grams: 10,     avgCost: 5280  },
+  { name: 'SGB Tranche 5',   type: 'sgb',     grams: 10,     avgCost: 5280  },
+  { name: 'SGB Tranche 6',   type: 'sgb',     grams: 10,     avgCost: 4730  },
+  { name: 'SGB Tranche 7',   type: 'sgb',     grams: 10,     avgCost: 5870  },
+  { name: 'SGB Tranche 8',   type: 'sgb',     grams: 10,     avgCost: 6210  },
+];
+
 // Scheme codes from mfapi.in — edit any entry via the UI if a code is incorrect.
 // NOTE: Increment DATA_VERSION in src/utils/storage.js whenever this list changes
 // so that all users automatically get the updated data on their next page load.
