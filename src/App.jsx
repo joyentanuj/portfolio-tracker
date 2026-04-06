@@ -7,6 +7,7 @@ import Toast from './components/Common/Toast';
 
 import Dashboard from './pages/Dashboard';
 import Stocks from './pages/Stocks';
+import USStocks from './pages/USStocks';
 import MutualFunds from './pages/MutualFunds';
 import FixedDeposits from './pages/FixedDeposits';
 import GoldSilver from './pages/GoldSilver';
@@ -17,7 +18,8 @@ import Settings from './pages/Settings';
 
 const PAGE_TITLES = {
   '/': 'Dashboard',
-  '/stocks': 'Stocks',
+  '/stocks': 'Indian Stocks',
+  '/us-stocks': 'US Stocks',
   '/mutual-funds': 'Mutual Funds',
   '/fixed-deposits': 'Fixed Deposits',
   '/gold-silver': 'Gold & Silver',
@@ -41,6 +43,7 @@ function AppLayout() {
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/stocks" element={<Stocks />} />
+            <Route path="/us-stocks" element={<USStocks />} />
             <Route path="/mutual-funds" element={<MutualFunds />} />
             <Route path="/fixed-deposits" element={<FixedDeposits />} />
             <Route path="/gold-silver" element={<GoldSilver />} />

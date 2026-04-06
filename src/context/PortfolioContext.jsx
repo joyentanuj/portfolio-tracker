@@ -185,9 +185,9 @@ export function PortfolioProvider({ children }) {
   // ─── Computed portfolio stats ─────────────────────────────────────────────
 
   const getAssetStats = useCallback((asset, category) => {
-    if (['stocks', 'mutualFunds', 'gold', 'silver'].includes(category)) {
+    if (['stocks', 'usStocks', 'mutualFunds', 'gold', 'silver'].includes(category)) {
       const { totalUnits, avgBuyPrice, totalBuyAmount } = calcHoldings(asset.transactions);
-      const priceKey = category === 'stocks' ? asset.symbol
+      const priceKey = (category === 'stocks' || category === 'usStocks') ? asset.symbol
         : category === 'mutualFunds' ? asset.schemeCode
         : (asset.type === 'etf' && asset.symbol) ? asset.symbol // ETF in gold/silver section
         : category; // 'gold' or 'silver'
@@ -258,7 +258,7 @@ export function PortfolioProvider({ children }) {
       totalValue += stats.currentValue || 0;
       totalInvested += stats.investedValue || 0;
 
-      if (['stocks', 'mutualFunds', 'gold', 'silver'].includes(category) && asset.transactions) {
+      if (['stocks', 'usStocks', 'mutualFunds', 'gold', 'silver'].includes(category) && asset.transactions) {
         const flows = buildCashFlows(asset.transactions, stats.currentValue);
         if (flows) allCashFlows.push(...flows);
       }
@@ -277,21 +277,24 @@ export function PortfolioProvider({ children }) {
   }, [state.data, getAssetStats]);
 
   const getPortfolioStats = useCallback(() => {
-    const categories = ['stocks', 'mutualFunds', 'fixedDeposits', 'gold', 'silver', 'cash', 'realEstate', 'others'];
+    const categories = ['stocks', 'usStocks', 'mutualFunds', 'fixedDeposits', 'gold', 'silver', 'cash', 'realEstate', 'others'];
+    const usdInrRate = state.prices['USDINR=X']?.price || 85.0;
     let totalValue = 0, totalInvested = 0;
     const allCashFlows = [];
     const categoryBreakdown = {};
 
     for (const cat of categories) {
       const stats = getCategoryStats(cat);
-      totalValue += stats.totalValue;
-      totalInvested += stats.totalInvested;
+      const isUSD = cat === 'usStocks';
+      const fxRate = isUSD ? usdInrRate : 1;
+      totalValue += stats.totalValue * fxRate;
+      totalInvested += stats.totalInvested * fxRate;
       categoryBreakdown[cat] = stats;
 
-      if (['stocks', 'mutualFunds', 'gold', 'silver'].includes(cat)) {
+      if (['stocks', 'usStocks', 'mutualFunds', 'gold', 'silver'].includes(cat)) {
         for (const asset of (state.data[cat] || [])) {
           const aStats = getAssetStats(asset, cat);
-          const flows = buildCashFlows(asset.transactions, aStats.currentValue);
+          const flows = buildCashFlows(asset.transactions, aStats.currentValue * fxRate);
           if (flows) allCashFlows.push(...flows);
         }
       }
@@ -307,7 +310,7 @@ export function PortfolioProvider({ children }) {
     }
 
     return { totalValue, totalInvested, pnl, pnlPercent, xirr: overallXirr, categoryBreakdown };
-  }, [state.data, getCategoryStats, getAssetStats]);
+  }, [state.data, state.prices, getCategoryStats, getAssetStats]);
 
   const value = {
     data: state.data,

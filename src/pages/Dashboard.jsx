@@ -10,6 +10,7 @@ import { Link } from 'react-router-dom';
 
 const CATEGORY_PATHS = {
   stocks: '/stocks',
+  usStocks: '/us-stocks',
   mutualFunds: '/mutual-funds',
   fixedDeposits: '/fixed-deposits',
   gold: '/gold-silver',
@@ -21,7 +22,7 @@ const CATEGORY_PATHS = {
 
 export default function Dashboard() {
   const { getCategoryStats } = usePortfolio();
-  const categories = ['stocks', 'mutualFunds', 'fixedDeposits', 'gold', 'silver', 'cash', 'realEstate', 'others'];
+  const categories = ['stocks', 'usStocks', 'mutualFunds', 'fixedDeposits', 'gold', 'silver', 'cash', 'realEstate', 'others'];
 
   return (
     <div className="space-y-6">
