@@ -7,7 +7,7 @@ export default function TopPerformers() {
   const { data, getAssetStats } = usePortfolio();
 
   const allAssets = [];
-  const transactionalCategories = ['stocks', 'mutualFunds', 'gold', 'silver'];
+  const transactionalCategories = ['stocks', 'usStocks', 'mutualFunds', 'gold', 'silver'];
 
   for (const cat of transactionalCategories) {
     for (const asset of (data[cat] || [])) {
@@ -25,8 +25,8 @@ export default function TopPerformers() {
   }
 
   const sorted = [...allAssets].sort((a, b) => b.pnlPercent - a.pnlPercent);
-  const gainers = sorted.filter(a => a.pnl > 0).slice(0, 5);
-  const losers = [...sorted].reverse().filter(a => a.pnl < 0).slice(0, 5);
+  const gainers = sorted.filter(a => a.pnl > 0).slice(0, 10);
+  const losers = [...sorted].reverse().filter(a => a.pnl < 0).slice(0, 10);
 
   const AssetRow = ({ asset, isGainer }) => (
     <div className="flex items-center justify-between py-2.5 border-b border-gray-100 last:border-0">

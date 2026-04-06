@@ -217,6 +217,35 @@ export const fetchGoogleFinancePrice = async (symbol) => {
   }
 };
 
+// Fetch a forex rate from Google Finance (e.g. USD-INR) with Yahoo Finance as fallback.
+const FOREX_FETCH_TIMEOUT_MS = 8000;
+export const fetchGoogleForexRate = async (fromCurrency, toCurrency) => {
+  try {
+    const url = `https://www.google.com/finance/quote/${fromCurrency}-${toCurrency}`;
+    const response = await fetchWithFallback(url, FOREX_FETCH_TIMEOUT_MS);
+    if (response) {
+      const html = await response.text();
+      const priceMatch = html.match(/data-last-price="([^"]+)"/);
+      if (priceMatch) {
+        const price = parseFloat(priceMatch[1]);
+        const prevCloseMatch = html.match(/data-previous-close="([^"]+)"/);
+        const prevClose = prevCloseMatch ? parseFloat(prevCloseMatch[1]) : price;
+        return {
+          price,
+          previousClose: prevClose,
+          change: price - prevClose,
+          changePercent: prevClose ? ((price - prevClose) / prevClose) * 100 : 0,
+          source: 'google',
+        };
+      }
+    }
+  } catch (err) {
+    console.warn(`[priceService] Google Finance forex error for ${fromCurrency}-${toCurrency}:`, err);
+  }
+  // Fallback to Yahoo Finance
+  return fetchStockPrice(`${fromCurrency}${toCurrency}=X`);
+};
+
 export const fetchMultipleStocks = async (symbols) => {
   const results = {};
   await Promise.allSettled(
