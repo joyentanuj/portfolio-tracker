@@ -18,34 +18,97 @@ async function fetchWithFallback(url, timeoutMs = 10000) {
   return null;
 }
 
+async function fetchStockPriceFromYahoo(symbol) {
+  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}`;
+  const response = await fetchWithFallback(url);
+  if (!response) {
+    console.warn(`[priceService] No response for ${symbol} from Yahoo Finance via any proxy`);
+    return null;
+  }
+  const data = await response.json();
+  const result = data.chart?.result?.[0];
+  if (!result) {
+    console.warn(`[priceService] No chart result for ${symbol} from Yahoo Finance`);
+    return null;
+  }
+  const price = result.meta?.regularMarketPrice;
+  const prevClose = result.meta?.chartPreviousClose || result.meta?.previousClose || price;
+  const change = price - prevClose;
+  const changePercent = prevClose ? (change / prevClose) * 100 : 0;
+  return {
+    price,
+    previousClose: prevClose,
+    change,
+    changePercent,
+    currency: result.meta?.currency || 'INR',
+    exchangeName: result.meta?.exchangeName,
+  };
+}
+
+// Convert a Yahoo Finance symbol to a Google Finance quote URL.
+// Returns null if the symbol type is not supported by Google Finance.
+function getGoogleFinanceUrl(symbol) {
+  if (symbol.endsWith('=F') || symbol.endsWith('=X')) {
+    // Commodity futures and forex are not reliably supported by Google Finance
+    return null;
+  }
+  if (symbol.endsWith('.NS')) {
+    const base = symbol.slice(0, -3);
+    return `https://www.google.com/finance/quote/${base}:NSE`;
+  }
+  // US stocks and other plain symbols — Google auto-resolves the exchange
+  return `https://www.google.com/finance/quote/${symbol}`;
+}
+
 export const fetchStockPrice = async (symbol) => {
+  // Commodity futures (GC=F, SI=F) and forex (USDINR=X) are not supported
+  // by Google Finance, so go directly to Yahoo Finance for those.
+  if (symbol.endsWith('=F') || symbol.endsWith('=X')) {
+    try {
+      return await fetchStockPriceFromYahoo(symbol);
+    } catch (err) {
+      console.warn(`[priceService] Error fetching ${symbol} from Yahoo Finance:`, err);
+      return null;
+    }
+  }
+
+  // For all other symbols, try Google Finance first (with Yahoo Finance as fallback).
+  const googleUrl = getGoogleFinanceUrl(symbol);
+  if (googleUrl) {
+    try {
+      const response = await fetchWithFallback(googleUrl, 8000);
+      if (response) {
+        const html = await response.text();
+        const priceMatch = html.match(/data-last-price="([^"]+)"/);
+        if (priceMatch) {
+          const price = parseFloat(priceMatch[1]);
+          const prevCloseMatch = html.match(/data-previous-close="([^"]+)"/);
+          const prevClose = prevCloseMatch ? parseFloat(prevCloseMatch[1]) : price;
+          const change = price - prevClose;
+          const changePercent = prevClose ? (change / prevClose) * 100 : 0;
+          return {
+            price,
+            previousClose: prevClose,
+            change,
+            changePercent,
+            // Currency is inferred from symbol pattern; .NS → INR (NSE), otherwise USD (US/global stocks).
+            // Google Finance HTML does not expose the currency directly in the parsed attributes.
+            currency: symbol.endsWith('.NS') ? 'INR' : 'USD',
+            exchangeName: symbol.endsWith('.NS') ? 'NSE' : undefined,
+          };
+        }
+      }
+    } catch (err) {
+      console.warn(`[priceService] Google Finance error for ${symbol}:`, err);
+    }
+  }
+
+  // Fallback to Yahoo Finance
   try {
-    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}`;
-    const response = await fetchWithFallback(url);
-    if (!response) {
-      console.warn(`[priceService] No response for ${symbol} from any proxy`);
-      return null;
-    }
-    const data = await response.json();
-    const result = data.chart?.result?.[0];
-    if (!result) {
-      console.warn(`[priceService] No chart result for ${symbol}`);
-      return null;
-    }
-    const price = result.meta?.regularMarketPrice;
-    const prevClose = result.meta?.chartPreviousClose || result.meta?.previousClose || price;
-    const change = price - prevClose;
-    const changePercent = prevClose ? (change / prevClose) * 100 : 0;
-    return {
-      price,
-      previousClose: prevClose,
-      change,
-      changePercent,
-      currency: result.meta?.currency || 'INR',
-      exchangeName: result.meta?.exchangeName,
-    };
+    console.warn(`[priceService] Falling back to Yahoo Finance for ${symbol}`);
+    return await fetchStockPriceFromYahoo(symbol);
   } catch (err) {
-    console.warn(`[priceService] Error fetching ${symbol}:`, err);
+    console.warn(`[priceService] Error fetching ${symbol} from Yahoo Finance:`, err);
     return null;
   }
 };
@@ -74,7 +137,8 @@ export const fetchMFPrice = async (schemeCode) => {
   }
 };
 
-// Gold/Silver prices in INR per gram via Yahoo Finance commodity tickers
+// Gold/Silver prices in INR per gram via Yahoo Finance commodity tickers (GC=F, SI=F).
+// Google Finance does not support commodity futures, so Yahoo Finance is used directly.
 const TROY_OZ_TO_GRAM = 31.1035;
 // Fallback USD/INR rate if live forex fetch fails (last updated April 2026)
 const FALLBACK_USD_INR_RATE = 85.0;
@@ -185,6 +249,8 @@ export const fetchGoldSilverPrice = async () => {
 };
 
 // Fetch an Indian ETF price from Google Finance (NSE) with Yahoo Finance as fallback.
+// Note: fetchStockPrice now also uses Google Finance for .NS symbols; this function
+// is kept for backward compatibility and direct NSE lookups without the .NS suffix.
 export const fetchGoogleFinancePrice = async (symbol) => {
   try {
     const url = `https://www.google.com/finance/quote/${symbol}:NSE`;
