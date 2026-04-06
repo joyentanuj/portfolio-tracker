@@ -14,16 +14,14 @@ function StatCard({ label, value, sub, positive, neutral = false, large = false 
 }
 
 export default function DashboardSummary() {
-  const { getPortfolioStats, getDailyChange } = usePortfolio();
+  const { getPortfolioStats } = usePortfolio();
   const stats = getPortfolioStats();
   const { totalValue, totalInvested, pnl, pnlPercent, xirr } = stats;
 
   const pnlPositive = pnl >= 0;
-  const todayPnl = getDailyChange();
-  const todayPositive = todayPnl >= 0;
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
       <StatCard
         label="Total Portfolio Value"
         value={formatCurrencyCompact(totalValue)}
@@ -43,13 +41,6 @@ export default function DashboardSummary() {
         value={`${pnlPositive ? '+' : ''}${formatCurrencyCompact(pnl)}`}
         sub={`${pnlPositive ? '+' : ''}${(pnlPercent * 100).toFixed(2)}% returns`}
         positive={pnlPositive}
-      />
-      <StatCard
-        label="Today's P&L"
-        value={`${todayPositive ? '+' : ''}${formatCurrencyCompact(todayPnl)}`}
-        sub={formatCurrency(todayPnl)}
-        positive={todayPositive}
-        neutral={todayPnl === 0}
       />
       <StatCard
         label="Overall XIRR"
