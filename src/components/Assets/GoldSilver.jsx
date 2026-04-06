@@ -86,7 +86,7 @@ function GoldTable({ holdings, livePrice, onAddTx }) {
               {sh('Name', 'name')}
               {sh('Type', 'type')}
               {sh('Grams', 'grams')}
-              {sh('Avg Buy (₹/gm)', 'avgCost')}
+              {sh('Avg Buy (₹/gm)', 'avgBuyPrice')}
               <th className="text-left text-gray-500 text-xs font-medium py-3 pr-4 whitespace-nowrap">
                 Live (₹/gm)
               </th>
