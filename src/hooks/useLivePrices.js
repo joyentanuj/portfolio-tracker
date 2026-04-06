@@ -84,13 +84,12 @@ export function useLivePrices() {
     fetchPrices();
   }, [fetchPrices]);
 
-  // Auto-refresh
+  // Auto-refresh every 5 seconds (fast polling for near-live prices)
   useEffect(() => {
     if (!data.settings?.autoRefresh) return;
-    const interval = (data.settings?.refreshInterval || 60) * 1000;
-    const timer = setInterval(fetchPrices, interval);
+    const timer = setInterval(fetchPrices, 5000); // 5 second fast poll
     return () => clearInterval(timer);
-  }, [fetchPrices, data.settings?.autoRefresh, data.settings?.refreshInterval]);
+  }, [fetchPrices, data.settings?.autoRefresh]);
 
   return { fetchPrices };
 }

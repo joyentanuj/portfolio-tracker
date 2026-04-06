@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { usePortfolio } from '../../context/PortfolioContext';
-import { formatNumber, formatXIRR, formatPercent } from '../../utils/formatters';
+import { formatCurrency, formatNumber, formatXIRR, formatPercent } from '../../utils/formatters';
 import Button from '../Common/Button';
 import Modal from '../Common/Modal';
 import TransactionModal from '../Transactions/TransactionModal';
@@ -75,7 +75,7 @@ function USStockForm({ onSubmit, onCancel, initial = null }) {
 }
 
 export default function USStocksList() {
-  const { data, getAssetStats, getPortfolioStats, prices, addAsset, updateAsset, deleteAsset } = usePortfolio();
+  const { data, getAssetStats, getPortfolioStats, getCategoryStats, getCategoryDailyChange, prices, addAsset, updateAsset, deleteAsset } = usePortfolio();
   const [addModal, setAddModal] = useState(false);
   const [editAsset, setEditAsset] = useState(null);
   const [txAsset, setTxAsset] = useState(null);
@@ -84,6 +84,9 @@ export default function USStocksList() {
   const stocks = data.usStocks || [];
   const usdInrRate = prices['USDINR=X']?.price || 85.0;
   const totalPortfolioValue = getPortfolioStats().totalValue || 0;
+  const todayPnl = getCategoryDailyChange('usStocks');
+  const catStats = getCategoryStats('usStocks');
+  const todayPct = catStats.totalValue > 0 ? (todayPnl / (catStats.totalValue * usdInrRate - todayPnl)) * 100 : 0;
 
   const handleAdd = (form) => {
     addAsset('usStocks', { ...form, category: 'usStocks', currency: 'USD', transactions: [] });
@@ -144,7 +147,18 @@ export default function USStocksList() {
           <p className="text-sm">Add your first US stock to start tracking</p>
         </div>
       ) : (
-        <div className="overflow-x-auto">
+        <div>
+          {/* Section Today's P&L Summary */}
+          <div className="flex items-center gap-6 mb-3 px-1">
+            <div>
+              <p className="text-gray-500 text-xs">Today's P&L</p>
+              <p className={`text-sm font-semibold ${todayPnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {todayPnl >= 0 ? '+' : ''}{formatCurrency(todayPnl)}
+                <span className="text-xs ml-1">({todayPnl >= 0 ? '+' : ''}{todayPct.toFixed(2)}%)</span>
+              </p>
+            </div>
+          </div>
+          <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-gray-200">
@@ -220,6 +234,7 @@ export default function USStocksList() {
               })}
             </tbody>
           </table>
+        </div>
         </div>
       )}
 

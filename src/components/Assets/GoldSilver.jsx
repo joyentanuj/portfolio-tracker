@@ -373,7 +373,7 @@ function SilverCard({ stats, livePrice, onAddTx }) {
 // ─── Main export ─────────────────────────────────────────────────────────────
 
 export default function GoldSilver() {
-  const { data, getAssetStats, prices, addAsset } = usePortfolio();
+  const { data, getAssetStats, getCategoryStats, getCategoryDailyChange, prices, addAsset } = usePortfolio();
   const [txAsset, setTxAsset] = useState(null);   // { asset, category }
 
   const goldAssets = data.gold || [];
@@ -414,6 +414,14 @@ export default function GoldSilver() {
   const goldLivePrice   = prices.gold?.price ?? null;
   const silverLivePrice = prices.silver?.price ?? null;
 
+  // Today's P&L for gold and silver ETFs
+  const goldTodayPnl = getCategoryDailyChange('gold');
+  const silverTodayPnl = getCategoryDailyChange('silver');
+  const goldCatStats = getCategoryStats('gold');
+  const silverCatStats = getCategoryStats('silver');
+  const goldTodayPct = goldCatStats.totalValue > 0 ? (goldTodayPnl / (goldCatStats.totalValue - goldTodayPnl)) * 100 : 0;
+  const silverTodayPct = silverCatStats.totalValue > 0 ? (silverTodayPnl / (silverCatStats.totalValue - silverTodayPnl)) * 100 : 0;
+
   const handleOpenGoldTx   = (asset) => setTxAsset({ asset, category: 'gold' });
   const handleOpenSilverTx = (asset) => setTxAsset({ asset, category: 'silver' });
 
@@ -432,6 +440,12 @@ export default function GoldSilver() {
         <div className="flex items-center gap-2 mb-4">
           <span className="text-2xl">🥇</span>
           <h2 className="text-gray-900 font-bold text-xl">Gold</h2>
+          {goldTodayPnl !== 0 && (
+            <span className={`ml-auto text-sm font-semibold ${goldTodayPnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              Today: {goldTodayPnl >= 0 ? '+' : ''}{formatCurrency(goldTodayPnl)}
+              <span className="text-xs ml-1">({goldTodayPnl >= 0 ? '+' : ''}{goldTodayPct.toFixed(2)}%)</span>
+            </span>
+          )}
         </div>
 
         {physicalGoldHoldings.length === 0 && goldEtfHoldings.length === 0 ? (
@@ -479,6 +493,12 @@ export default function GoldSilver() {
         <div className="flex items-center gap-2 mb-4">
           <span className="text-2xl">🥈</span>
           <h2 className="text-gray-900 font-bold text-xl">Silver</h2>
+          {silverTodayPnl !== 0 && (
+            <span className={`ml-auto text-sm font-semibold ${silverTodayPnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              Today: {silverTodayPnl >= 0 ? '+' : ''}{formatCurrency(silverTodayPnl)}
+              <span className="text-xs ml-1">({silverTodayPnl >= 0 ? '+' : ''}{silverTodayPct.toFixed(2)}%)</span>
+            </span>
+          )}
         </div>
 
         <div className="space-y-6">

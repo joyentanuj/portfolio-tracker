@@ -373,6 +373,47 @@ export function PortfolioProvider({ children }) {
     return todayPnl;
   }, [state.data, state.prices]);
 
+  const getCategoryDailyChange = useCallback((category) => {
+    let todayPnl = 0;
+    const usdInrRate = state.prices['USDINR=X']?.price || FALLBACK_USD_INR_RATE;
+
+    if (category === 'stocks') {
+      for (const asset of (state.data.stocks || [])) {
+        const { totalUnits } = calcHoldings(asset.transactions);
+        const priceData = state.prices[asset.symbol];
+        if (priceData?.change) todayPnl += totalUnits * priceData.change;
+      }
+    } else if (category === 'usStocks') {
+      for (const asset of (state.data.usStocks || [])) {
+        const { totalUnits } = calcHoldings(asset.transactions);
+        const priceData = state.prices[asset.symbol];
+        if (priceData?.change) todayPnl += totalUnits * priceData.change * usdInrRate;
+      }
+    } else if (category === 'mutualFunds') {
+      for (const asset of (state.data.mutualFunds || [])) {
+        const { totalUnits } = calcHoldings(asset.transactions);
+        const priceData = state.prices[asset.schemeCode];
+        if (priceData?.change) todayPnl += totalUnits * priceData.change;
+      }
+    } else if (category === 'gold') {
+      for (const asset of (state.data.gold || [])) {
+        if (asset.type !== 'etf' || !asset.symbol) continue;
+        const { totalUnits } = calcHoldings(asset.transactions);
+        const priceData = state.prices[asset.symbol];
+        if (priceData?.change) todayPnl += totalUnits * priceData.change;
+      }
+    } else if (category === 'silver') {
+      for (const asset of (state.data.silver || [])) {
+        if (asset.type !== 'etf' || !asset.symbol) continue;
+        const { totalUnits } = calcHoldings(asset.transactions);
+        const priceData = state.prices[asset.symbol];
+        if (priceData?.change) todayPnl += totalUnits * priceData.change;
+      }
+    }
+
+    return todayPnl;
+  }, [state.data, state.prices]);
+
   const value = {
     data: state.data,
     prices: state.prices,
@@ -396,6 +437,7 @@ export function PortfolioProvider({ children }) {
     getCategoryStats,
     getPortfolioStats,
     getDailyChange,
+    getCategoryDailyChange,
     // UI
     showToast,
     dispatch,
