@@ -21,7 +21,8 @@ const CATEGORY_PATHS = {
 };
 
 export default function Dashboard() {
-  const { getCategoryStats } = usePortfolio();
+  const { getPortfolioStats } = usePortfolio();
+  const portfolioStats = getPortfolioStats();
   const categories = ['stocks', 'usStocks', 'mutualFunds', 'fixedDeposits', 'gold', 'silver', 'cash', 'realEstate', 'others'];
 
   return (
@@ -39,8 +40,8 @@ export default function Dashboard() {
         <Card title="Category Breakdown">
           <div className="space-y-3">
             {categories.map(cat => {
-              const stats = getCategoryStats(cat);
-              if (stats.count === 0 && stats.totalValue === 0) return null;
+              const stats = portfolioStats.categoryBreakdown[cat];
+              if (!stats || (stats.count === 0 && stats.totalValue === 0)) return null;
               return (
                 <Link
                   key={cat}

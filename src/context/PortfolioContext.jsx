@@ -289,7 +289,12 @@ export function PortfolioProvider({ children }) {
       const fxRate = isUSD ? usdInrRate : 1;
       totalValue += stats.totalValue * fxRate;
       totalInvested += stats.totalInvested * fxRate;
-      categoryBreakdown[cat] = stats;
+      categoryBreakdown[cat] = isUSD ? {
+        ...stats,
+        totalValue: stats.totalValue * fxRate,
+        totalInvested: stats.totalInvested * fxRate,
+        pnl: (stats.totalValue - stats.totalInvested) * fxRate,
+      } : stats;
 
       if (['stocks', 'usStocks', 'mutualFunds', 'gold', 'silver'].includes(cat)) {
         for (const asset of (state.data[cat] || [])) {
@@ -311,6 +316,60 @@ export function PortfolioProvider({ children }) {
 
     return { totalValue, totalInvested, pnl, pnlPercent, xirr: overallXirr, categoryBreakdown };
   }, [state.data, state.prices, getCategoryStats, getAssetStats]);
+
+  const getDailyChange = useCallback(() => {
+    let todayPnl = 0;
+    const usdInrRate = state.prices['USDINR=X']?.price || 85.0;
+
+    // Indian Stocks
+    for (const asset of (state.data.stocks || [])) {
+      const { totalUnits } = calcHoldings(asset.transactions);
+      const priceData = state.prices[asset.symbol];
+      if (priceData?.change) {
+        todayPnl += totalUnits * priceData.change;
+      }
+    }
+
+    // US Stocks (convert to INR)
+    for (const asset of (state.data.usStocks || [])) {
+      const { totalUnits } = calcHoldings(asset.transactions);
+      const priceData = state.prices[asset.symbol];
+      if (priceData?.change) {
+        todayPnl += totalUnits * priceData.change * usdInrRate;
+      }
+    }
+
+    // Mutual Funds
+    for (const asset of (state.data.mutualFunds || [])) {
+      const { totalUnits } = calcHoldings(asset.transactions);
+      const priceData = state.prices[asset.schemeCode];
+      if (priceData?.change) {
+        todayPnl += totalUnits * priceData.change;
+      }
+    }
+
+    // Gold ETFs
+    for (const asset of (state.data.gold || [])) {
+      if (asset.type !== 'etf' || !asset.symbol) continue;
+      const { totalUnits } = calcHoldings(asset.transactions);
+      const priceData = state.prices[asset.symbol];
+      if (priceData?.change) {
+        todayPnl += totalUnits * priceData.change;
+      }
+    }
+
+    // Silver ETFs
+    for (const asset of (state.data.silver || [])) {
+      if (asset.type !== 'etf' || !asset.symbol) continue;
+      const { totalUnits } = calcHoldings(asset.transactions);
+      const priceData = state.prices[asset.symbol];
+      if (priceData?.change) {
+        todayPnl += totalUnits * priceData.change;
+      }
+    }
+
+    return todayPnl;
+  }, [state.data, state.prices]);
 
   const value = {
     data: state.data,
@@ -334,6 +393,7 @@ export function PortfolioProvider({ children }) {
     getAssetStats,
     getCategoryStats,
     getPortfolioStats,
+    getDailyChange,
     // UI
     showToast,
     dispatch,

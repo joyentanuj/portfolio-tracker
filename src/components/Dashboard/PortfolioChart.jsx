@@ -11,20 +11,20 @@ const CustomTooltip = ({ active, payload }) => {
     <div className="bg-white border border-gray-200 rounded-xl px-4 py-3 shadow-xl">
       <p className="text-gray-900 font-semibold text-sm">{d.name}</p>
       <p className="text-indigo-600 text-sm">{formatCurrency(d.value)}</p>
-      <p className="text-gray-500 text-xs">{d.payload.percent?.toFixed(1)}% of portfolio</p>
+      <p className="text-gray-500 text-xs">{d.payload.allocation?.toFixed(1)}% of portfolio</p>
     </div>
   );
 };
 
 const RADIAN = Math.PI / 180;
 const renderCustomLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
-  if (percent < 0.05) return null;
+  if (percent < 0.03) return null;
   const r = innerRadius + (outerRadius - innerRadius) * 0.5;
   const x = cx + r * Math.cos(-midAngle * RADIAN);
   const y = cy + r * Math.sin(-midAngle * RADIAN);
   return (
     <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central" fontSize={11} fontWeight="600">
-      {`${(percent * 100).toFixed(0)}%`}
+      {`${(percent * 100).toFixed(1)}%`}
     </text>
   );
 };
@@ -39,7 +39,7 @@ export default function PortfolioChart() {
       name: CATEGORY_LABELS[cat],
       value: s.totalValue,
       color: CATEGORY_COLORS[cat],
-      percent: stats.totalValue > 0 ? (s.totalValue / stats.totalValue) * 100 : 0,
+      allocation: stats.totalValue > 0 ? (s.totalValue / stats.totalValue) * 100 : 0,
     }))
     .sort((a, b) => b.value - a.value);
 
@@ -90,11 +90,11 @@ export default function PortfolioChart() {
                 <div className="w-full bg-gray-100 rounded-full h-1.5">
                   <div
                     className="h-1.5 rounded-full transition-all"
-                    style={{ width: `${item.percent}%`, background: item.color }}
+                    style={{ width: `${item.allocation}%`, background: item.color }}
                   />
                 </div>
               </div>
-              <span className="text-gray-400 text-xs w-10 text-right">{item.percent.toFixed(1)}%</span>
+              <span className="text-gray-400 text-xs w-10 text-right">{item.allocation.toFixed(1)}%</span>
             </div>
           ))}
         </div>
