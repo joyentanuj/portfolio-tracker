@@ -36,3 +36,14 @@
     background-color: #4b5563;
   }
 }
+
+@keyframes flash-green {
+  0%   { background-color: rgba(34, 197, 94, 0.3); }
+  100% { background-color: transparent; }
+}
+@keyframes flash-red {
+  0%   { background-color: rgba(239, 68, 68, 0.3); }
+  100% { background-color: transparent; }
+}
+.price-flash-up   { animation: flash-green 1.2s ease-out; }
+.price-flash-down { animation: flash-red   1.2s ease-out; }

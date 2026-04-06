@@ -2,7 +2,7 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { NAV_LINKS } from '../../utils/constants';
 
-export default function Sidebar({ isOpen, onClose }) {
+export default function Sidebar({ isOpen, onClose, isDark, onToggleDark }) {
 
   return (
     <>
@@ -64,8 +64,15 @@ export default function Sidebar({ isOpen, onClose }) {
         </nav>
 
         {/* Footer */}
-        <div className="px-5 py-4 border-t border-gray-200 dark:border-gray-700">
-          <p className="text-gray-400 dark:text-gray-500 text-[10px] text-center">Live Portfolio Tracker v1.0</p>
+        <div className="px-5 py-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
+          <p className="text-gray-400 dark:text-gray-500 text-[10px]">Live Portfolio Tracker v1.0</p>
+          <button
+            onClick={onToggleDark}
+            title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+            className="text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 text-sm transition-colors p-1 rounded"
+          >
+            {isDark ? '☀️' : '🌙'}
+          </button>
         </div>
       </aside>
     </>
