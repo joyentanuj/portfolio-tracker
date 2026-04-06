@@ -78,6 +78,9 @@ export const fetchMFPrice = async (schemeCode) => {
 const TROY_OZ_TO_GRAM = 31.1035;
 // Fallback USD/INR rate if live forex fetch fails (last updated April 2026)
 const FALLBACK_USD_INR_RATE = 85.0;
+// Sanity check bounds for USD/INR rate (historically between 40 and 150; bounds set wide for future-proofing)
+const MIN_VALID_USD_INR_RATE = 50;
+const MAX_VALID_USD_INR_RATE = 200;
 
 export const fetchUSDINRFromGoogle = async () => {
   try {
@@ -90,7 +93,7 @@ export const fetchUSDINRFromGoogle = async () => {
       const priceMatch = html.match(/data-last-price="([^"]+)"/);
       if (priceMatch) {
         const rate = parseFloat(priceMatch[1]);
-        if (rate > 50 && rate < 200) { // sanity check for INR range
+        if (rate > MIN_VALID_USD_INR_RATE && rate < MAX_VALID_USD_INR_RATE) {
           const prevCloseMatch = html.match(/data-previous-close="([^"]+)"/);
           const prevClose = prevCloseMatch ? parseFloat(prevCloseMatch[1]) : rate;
           return {
