@@ -5,6 +5,8 @@ import { xirr, buildCashFlows } from '../utils/xirr';
 const PortfolioContext = createContext(null);
 
 const PRICES_CACHE_KEY = 'portfolio_tracker_prices';
+// Fallback USD/INR rate when live forex fetch hasn't completed yet (update periodically)
+const FALLBACK_USD_INR_RATE = 85.0;
 
 function getCachedPrices() {
   try {
@@ -278,7 +280,7 @@ export function PortfolioProvider({ children }) {
 
   const getPortfolioStats = useCallback(() => {
     const categories = ['stocks', 'usStocks', 'mutualFunds', 'fixedDeposits', 'gold', 'silver', 'cash', 'realEstate', 'others'];
-    const usdInrRate = state.prices['USDINR=X']?.price || 85.0;
+    const usdInrRate = state.prices['USDINR=X']?.price || FALLBACK_USD_INR_RATE;
     let totalValue = 0, totalInvested = 0;
     const allCashFlows = [];
     const categoryBreakdown = {};
@@ -319,7 +321,7 @@ export function PortfolioProvider({ children }) {
 
   const getDailyChange = useCallback(() => {
     let todayPnl = 0;
-    const usdInrRate = state.prices['USDINR=X']?.price || 85.0;
+    const usdInrRate = state.prices['USDINR=X']?.price || FALLBACK_USD_INR_RATE;
 
     // Indian Stocks
     for (const asset of (state.data.stocks || [])) {

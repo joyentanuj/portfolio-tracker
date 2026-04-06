@@ -17,8 +17,10 @@ const CustomTooltip = ({ active, payload }) => {
 };
 
 const RADIAN = Math.PI / 180;
+// Hide pie label if the slice represents less than this fraction of the total (Recharts passes 0-1)
+const MIN_LABEL_PERCENT_THRESHOLD = 0.03;
 const renderCustomLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
-  if (percent < 0.03) return null;
+  if (percent < MIN_LABEL_PERCENT_THRESHOLD) return null;
   const r = innerRadius + (outerRadius - innerRadius) * 0.5;
   const x = cx + r * Math.cos(-midAngle * RADIAN);
   const y = cy + r * Math.sin(-midAngle * RADIAN);

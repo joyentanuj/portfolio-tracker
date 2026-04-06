@@ -165,10 +165,11 @@ export const fetchGoogleFinancePrice = async (symbol) => {
 };
 
 // Fetch a forex rate from Google Finance (e.g. USD-INR) with Yahoo Finance as fallback.
+const FOREX_FETCH_TIMEOUT_MS = 8000;
 export const fetchGoogleForexRate = async (fromCurrency, toCurrency) => {
   try {
     const url = `https://www.google.com/finance/quote/${fromCurrency}-${toCurrency}`;
-    const response = await fetchWithFallback(url, 8000);
+    const response = await fetchWithFallback(url, FOREX_FETCH_TIMEOUT_MS);
     if (response) {
       const html = await response.text();
       const priceMatch = html.match(/data-last-price="([^"]+)"/);
