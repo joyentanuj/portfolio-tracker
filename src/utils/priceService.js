@@ -78,14 +78,67 @@ export const fetchMFPrice = async (schemeCode) => {
 const TROY_OZ_TO_GRAM = 31.1035;
 // Fallback USD/INR rate if live forex fetch fails (last updated April 2026)
 const FALLBACK_USD_INR_RATE = 85.0;
+// Sanity check bounds for USD/INR rate (historically between 40 and 150; bounds set wide for future-proofing)
+const MIN_VALID_USD_INR_RATE = 50;
+const MAX_VALID_USD_INR_RATE = 200;
+
+export const fetchUSDINRFromGoogle = async () => {
+  try {
+    // Google Finance currency page
+    const url = 'https://www.google.com/finance/quote/USD-INR';
+    const response = await fetchWithFallback(url, 8000);
+    if (response) {
+      const html = await response.text();
+      // Parse the exchange rate from data-last-price attribute
+      const priceMatch = html.match(/data-last-price="([^"]+)"/);
+      if (priceMatch) {
+        const rate = parseFloat(priceMatch[1]);
+        if (rate > MIN_VALID_USD_INR_RATE && rate < MAX_VALID_USD_INR_RATE) {
+          const prevCloseMatch = html.match(/data-previous-close="([^"]+)"/);
+          const prevClose = prevCloseMatch ? parseFloat(prevCloseMatch[1]) : rate;
+          return {
+            price: rate,
+            previousClose: prevClose,
+            change: rate - prevClose,
+            changePercent: prevClose ? ((rate - prevClose) / prevClose) * 100 : 0,
+            source: 'google',
+            currency: 'INR',
+          };
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('[priceService] Google Finance USD/INR error:', err);
+  }
+
+  // Fallback to Yahoo Finance
+  try {
+    const yahooData = await fetchStockPrice('USDINR=X');
+    if (yahooData?.price) {
+      return { ...yahooData, source: 'yahoo', currency: 'INR' };
+    }
+  } catch {
+    // fall through
+  }
+
+  // Last resort static fallback
+  return {
+    price: 85.0,
+    previousClose: 85.0,
+    change: 0,
+    changePercent: 0,
+    source: 'static',
+    currency: 'INR',
+  };
+};
 
 export const fetchGoldSilverPrice = async () => {
   try {
-    // Fetch gold, silver, and USD/INR in parallel from Yahoo Finance
+    // Fetch gold, silver, and USD/INR in parallel
     const [goldData, silverData, forexData] = await Promise.all([
       fetchStockPrice('GC=F'),
       fetchStockPrice('SI=F'),
-      fetchStockPrice('USDINR=X'),
+      fetchUSDINRFromGoogle(),
     ]);
 
     const usdInr = forexData?.price || FALLBACK_USD_INR_RATE;
