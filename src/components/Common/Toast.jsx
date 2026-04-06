@@ -15,10 +15,10 @@ export default function Toast() {
             flex items-center gap-3 px-4 py-3 rounded-xl shadow-2xl border pointer-events-auto
             animate-[fadeInUp_0.3s_ease] min-w-[220px] max-w-xs
             ${toast.type === 'error'
-              ? 'bg-red-50 border-red-300 text-red-800'
+              ? 'bg-red-50 dark:bg-red-900/30 border-red-300 dark:border-red-700 text-red-800 dark:text-red-200'
               : toast.type === 'warning'
-              ? 'bg-yellow-50 border-yellow-300 text-yellow-800'
-              : 'bg-white border-gray-200 text-gray-900'
+              ? 'bg-yellow-50 dark:bg-yellow-900/30 border-yellow-300 dark:border-yellow-700 text-yellow-800 dark:text-yellow-200'
+              : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100'
             }
           `}
         >

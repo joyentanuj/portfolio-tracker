@@ -39,8 +39,8 @@ export default function TransactionForm({ onSubmit, onCancel, initialData = null
 
   const set = (field, value) => setForm(f => ({ ...f, [field]: value }));
 
-  const inputClass = 'w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:border-indigo-500 transition-colors';
-  const labelClass = 'block text-gray-600 text-xs font-medium mb-1';
+  const inputClass = 'w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-gray-100 text-sm focus:outline-none focus:border-indigo-500 transition-colors dark:placeholder-gray-400';
+  const labelClass = 'block text-gray-600 dark:text-gray-400 text-xs font-medium mb-1';
   const errorClass = 'text-red-600 text-xs mt-0.5';
 
   return (
@@ -57,7 +57,7 @@ export default function TransactionForm({ onSubmit, onCancel, initialData = null
                 ? t === 'buy'
                   ? 'bg-green-50 border-green-500 text-green-700'
                   : 'bg-red-50 border-red-500 text-red-700'
-                : 'bg-white border-gray-300 text-gray-500 hover:border-gray-400'
+                : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:border-gray-400 dark:hover:border-gray-500'
             }`}
           >
             {t === 'buy' ? '↑ Buy' : '↓ Sell'}
@@ -106,9 +106,9 @@ export default function TransactionForm({ onSubmit, onCancel, initialData = null
 
       {/* Total */}
       {form.quantity && form.price && (
-        <div className="bg-gray-50 rounded-lg px-3 py-2 text-sm border border-gray-200">
-          <span className="text-gray-600">Total: </span>
-          <span className="text-gray-900 font-semibold">
+        <div className="bg-gray-50 dark:bg-gray-700 rounded-lg px-3 py-2 text-sm border border-gray-200 dark:border-gray-600">
+          <span className="text-gray-600 dark:text-gray-400">Total: </span>
+          <span className="text-gray-900 dark:text-gray-100 font-semibold">
             ₹{(Number(form.quantity) * Number(form.price)).toLocaleString('en-IN', { maximumFractionDigits: 2 })}
           </span>
         </div>

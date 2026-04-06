@@ -34,8 +34,8 @@ function USStockForm({ onSubmit, onCancel, initial = null }) {
     onSubmit({ ...form, symbol: form.symbol.toUpperCase().trim() });
   };
 
-  const ic = 'w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:border-blue-500';
-  const lc = 'block text-gray-600 text-xs font-medium mb-1';
+  const ic = 'w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-gray-100 text-sm focus:outline-none focus:border-blue-500 dark:placeholder-gray-400';
+  const lc = 'block text-gray-600 dark:text-gray-400 text-xs font-medium mb-1';
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -63,7 +63,7 @@ function USStockForm({ onSubmit, onCancel, initial = null }) {
         <input className={ic} value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="e.g. Apple, Inc." />
       </div>
       {err && <p className="text-red-600 text-xs">{err}</p>}
-      <div className="text-xs text-gray-500 bg-gray-50 rounded-lg p-3 border border-gray-200">
+      <div className="text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700 rounded-lg p-3 border border-gray-200 dark:border-gray-600">
         💡 Use plain US ticker symbols (e.g. <code className="text-blue-600">AAPL</code>, <code className="text-blue-600">TSLA</code>) - no exchange suffix needed.
       </div>
       <div className="flex gap-3">
@@ -136,14 +136,14 @@ export default function USStocksList() {
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
-        <p className="text-gray-500 text-sm">{stocks.length} stocks</p>
+        <p className="text-gray-500 dark:text-gray-400 text-sm">{stocks.length} stocks</p>
         <Button onClick={() => setAddModal(true)} icon="+" size="sm">Add US Stock</Button>
       </div>
 
       {stocks.length === 0 ? (
-        <div className="text-center py-16 text-gray-400">
+        <div className="text-center py-16 text-gray-400 dark:text-gray-500">
           <div className="text-5xl mb-4">🇺🇸</div>
-          <p className="font-medium text-gray-500 mb-1">No US stocks added yet</p>
+          <p className="font-medium text-gray-500 dark:text-gray-400 mb-1">No US stocks added yet</p>
           <p className="text-sm">Add your first US stock to start tracking</p>
         </div>
       ) : (
@@ -151,7 +151,7 @@ export default function USStocksList() {
           {/* Section Today's P&L Summary */}
           <div className="flex items-center gap-6 mb-3 px-1">
             <div>
-              <p className="text-gray-500 text-xs">Today's P&L</p>
+              <p className="text-gray-500 dark:text-gray-400 text-xs">Today's P&L</p>
               <p className={`text-sm font-semibold ${todayPnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                 {todayPnl >= 0 ? '+' : ''}{formatCurrency(todayPnl)}
                 <span className="text-xs ml-1">({todayPnl >= 0 ? '+' : ''}{todayPct.toFixed(2)}%)</span>
@@ -161,7 +161,7 @@ export default function USStocksList() {
           <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-200">
+              <tr className="border-b border-gray-200 dark:border-gray-700">
                 <SortableHeader label="Stock" colKey="name" sortCol={sortCol} sortDir={sortDir} onSort={handleSort} />
                 <SortableHeader label="Symbol" colKey="symbol" sortCol={sortCol} sortDir={sortDir} onSort={handleSort} />
                 <SortableHeader label="Holdings" colKey="units" sortCol={sortCol} sortDir={sortDir} onSort={handleSort} />
@@ -173,25 +173,25 @@ export default function USStocksList() {
                 <SortableHeader label="P&L ($)" colKey="pnl" sortCol={sortCol} sortDir={sortDir} onSort={handleSort} />
                 <SortableHeader label="P&L %" colKey="pnlPct" sortCol={sortCol} sortDir={sortDir} onSort={handleSort} />
                 <SortableHeader label="XIRR" colKey="xirr" sortCol={sortCol} sortDir={sortDir} onSort={handleSort} />
-                <th className="text-left text-gray-500 text-xs font-medium py-3"></th>
+                <th className="text-left text-gray-500 dark:text-gray-400 text-xs font-medium py-3"></th>
               </tr>
             </thead>
             <tbody>
               {sortedRows.map(({ stock, stats, weight }) => {
                 const priceInfo = prices[stock.symbol];
                 return (
-                  <tr key={stock.id} className="border-b border-gray-100 hover:bg-gray-50">
+                  <tr key={stock.id} className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50">
                     <td className="py-3 pr-4">
-                      <p className="text-gray-900 font-medium text-xs leading-snug">{stock.name}</p>
+                      <p className="text-gray-900 dark:text-gray-100 font-medium text-xs leading-snug">{stock.name}</p>
                     </td>
                     <td className="py-3 pr-4">
-                      <p className="text-gray-900 font-semibold">{stock.symbol}</p>
+                      <p className="text-gray-900 dark:text-gray-100 font-semibold">{stock.symbol}</p>
                     </td>
-                    <td className="py-3 pr-4 text-gray-700">{formatNumber(stats.totalUnits, 9).replace(/\.?0+$/, '')}</td>
-                    <td className="py-3 pr-4 text-gray-700">{formatUSD(stats.avgBuyPrice)}</td>
+                    <td className="py-3 pr-4 text-gray-700 dark:text-gray-300">{formatNumber(stats.totalUnits, 9).replace(/\.?0+$/, '')}</td>
+                    <td className="py-3 pr-4 text-gray-700 dark:text-gray-300">{formatUSD(stats.avgBuyPrice)}</td>
                     <td className="py-3 pr-4">
                       <div>
-                        <p className="text-gray-900">{stats.currentPrice ? formatUSD(stats.currentPrice) : '—'}</p>
+                        <p className="text-gray-900 dark:text-gray-100">{stats.currentPrice ? formatUSD(stats.currentPrice) : '—'}</p>
                         {priceInfo?.changePercent != null && (
                           <p className={`text-xs ${priceInfo.changePercent >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                             {priceInfo.changePercent >= 0 ? '+' : ''}{priceInfo.changePercent.toFixed(2)}%
@@ -199,12 +199,12 @@ export default function USStocksList() {
                         )}
                       </div>
                     </td>
-                    <td className="py-3 pr-4 text-gray-700">{formatUSD(stats.investedValue)}</td>
+                    <td className="py-3 pr-4 text-gray-700 dark:text-gray-300">{formatUSD(stats.investedValue)}</td>
                     <td className="py-3 pr-4">
-                      <p className="text-gray-900 font-medium">{formatUSD(stats.currentValue)}</p>
-                      <p className="text-gray-400 text-xs">≈ ₹{Math.round(stats.currentValue * usdInrRate).toLocaleString('en-IN')}</p>
+                      <p className="text-gray-900 dark:text-gray-100 font-medium">{formatUSD(stats.currentValue)}</p>
+                      <p className="text-gray-400 dark:text-gray-500 text-xs">≈ ₹{Math.round(stats.currentValue * usdInrRate).toLocaleString('en-IN')}</p>
                     </td>
-                    <td className="py-3 pr-4 text-gray-600">
+                    <td className="py-3 pr-4 text-gray-600 dark:text-gray-400">
                       {totalPortfolioValue > 0 ? `${weight.toFixed(2)}%` : '—'}
                     </td>
                     <td className="py-3 pr-4">
@@ -218,15 +218,15 @@ export default function USStocksList() {
                       </p>
                     </td>
                     <td className="py-3 pr-4">
-                      <span className={`text-sm font-medium ${stats.xirr === null ? 'text-gray-400' : stats.xirr >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      <span className={`text-sm font-medium ${stats.xirr === null ? 'text-gray-400 dark:text-gray-500' : stats.xirr >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                         {formatXIRR(stats.xirr)}
                       </span>
                     </td>
                     <td className="py-3">
                       <div className="flex items-center gap-1">
-                        <button onClick={() => setTxAsset(stock)} className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-md transition-colors">Txns</button>
-                        <button onClick={() => setEditAsset(stock)} className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">✏️</button>
-                        <button onClick={() => handleDelete(stock.id)} className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">🗑️</button>
+                        <button onClick={() => setTxAsset(stock)} className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300 rounded-md transition-colors">Txns</button>
+                        <button onClick={() => setEditAsset(stock)} className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors">✏️</button>
+                        <button onClick={() => handleDelete(stock.id)} className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">🗑️</button>
                       </div>
                     </td>
                   </tr>

@@ -8,10 +8,10 @@ const CustomTooltip = ({ active, payload }) => {
   if (!active || !payload?.length) return null;
   const d = payload[0];
   return (
-    <div className="bg-white border border-gray-200 rounded-xl px-4 py-3 shadow-xl">
-      <p className="text-gray-900 font-semibold text-sm">{d.name}</p>
+    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 shadow-xl">
+      <p className="text-gray-900 dark:text-gray-100 font-semibold text-sm">{d.name}</p>
       <p className="text-indigo-600 text-sm">{formatCurrency(d.value)}</p>
-      <p className="text-gray-500 text-xs">{d.payload.allocation?.toFixed(1)}% of portfolio</p>
+      <p className="text-gray-500 dark:text-gray-400 text-xs">{d.payload.allocation?.toFixed(1)}% of portfolio</p>
     </div>
   );
 };
@@ -86,17 +86,17 @@ export default function PortfolioChart() {
               <div className="w-3 h-3 rounded-full shrink-0" style={{ background: item.color }} />
               <div className="flex-1 min-w-0">
                 <div className="flex justify-between items-center mb-0.5">
-                  <span className="text-gray-700 text-xs font-medium truncate">{item.name}</span>
-                  <span className="text-gray-900 text-xs font-semibold ml-2">{formatCurrencyCompact(item.value)}</span>
+                  <span className="text-gray-700 dark:text-gray-300 text-xs font-medium truncate">{item.name}</span>
+                  <span className="text-gray-900 dark:text-gray-100 text-xs font-semibold ml-2">{formatCurrencyCompact(item.value)}</span>
                 </div>
-                <div className="w-full bg-gray-100 rounded-full h-1.5">
+                <div className="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-1.5">
                   <div
                     className="h-1.5 rounded-full transition-all"
                     style={{ width: `${item.allocation}%`, background: item.color }}
                   />
                 </div>
               </div>
-              <span className="text-gray-400 text-xs w-10 text-right">{item.allocation.toFixed(1)}%</span>
+              <span className="text-gray-400 dark:text-gray-500 text-xs w-10 text-right">{item.allocation.toFixed(1)}%</span>
             </div>
           ))}
         </div>
