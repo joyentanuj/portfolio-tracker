@@ -1,6 +1,6 @@
 import { useEffect, useCallback, useRef } from 'react';
 import { usePortfolio } from '../context/PortfolioContext';
-import { fetchMultipleStocks, fetchMultipleMFs, fetchGoldSilverPrice } from '../utils/priceService';
+import { fetchMultipleStocks, fetchMultipleMFs, fetchGoldSilverPrice, fetchGoogleFinancePrice } from '../utils/priceService';
 
 export function useLivePrices() {
   const { data, updatePrices } = usePortfolio();
@@ -31,10 +31,30 @@ export function useLivePrices() {
         }
       }
 
-      // Gold & Silver
+      // Gold & Silver commodity prices
       const gs = await fetchGoldSilverPrice();
       priceMap['gold'] = { price: gs.gold, source: gs.source };
       priceMap['silver'] = { price: gs.silver, source: gs.source };
+
+      // Gold ETF prices (via Google Finance)
+      const goldEtfs = (data.gold || []).filter(a => a.type === 'etf' && a.symbol);
+      const silverEtfs = (data.silver || []).filter(a => a.type === 'etf' && a.symbol);
+      const allEtfs = [...goldEtfs, ...silverEtfs];
+
+      await Promise.allSettled(
+        allEtfs.map(async (etf) => {
+          const info = await fetchGoogleFinancePrice(etf.symbol);
+          if (info) {
+            priceMap[etf.symbol] = {
+              price: info.price,
+              change: info.change,
+              changePercent: info.changePercent,
+              previousClose: info.previousClose,
+              source: info.source,
+            };
+          }
+        })
+      );
 
       updatePrices(priceMap);
     } catch (err) {
@@ -42,7 +62,7 @@ export function useLivePrices() {
     } finally {
       fetchingRef.current = false;
     }
-  }, [data.stocks, data.mutualFunds, updatePrices]);
+  }, [data.stocks, data.mutualFunds, data.gold, data.silver, updatePrices]);
 
   // Fetch on mount and whenever assets change
   useEffect(() => {

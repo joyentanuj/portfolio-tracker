@@ -131,6 +131,39 @@ export const fetchGoldSilverPrice = async () => {
   };
 };
 
+// Fetch an Indian ETF price from Google Finance (NSE) with Yahoo Finance as fallback.
+export const fetchGoogleFinancePrice = async (symbol) => {
+  try {
+    const url = `https://www.google.com/finance/quote/${symbol}:NSE`;
+    const response = await fetchWithFallback(url, 8000);
+    if (response) {
+      const html = await response.text();
+      const priceMatch = html.match(/data-last-price="([^"]+)"/);
+      if (priceMatch) {
+        const price = parseFloat(priceMatch[1]);
+        const prevCloseMatch = html.match(/data-previous-close="([^"]+)"/);
+        const prevClose = prevCloseMatch ? parseFloat(prevCloseMatch[1]) : price;
+        return {
+          price,
+          previousClose: prevClose,
+          change: price - prevClose,
+          changePercent: prevClose ? ((price - prevClose) / prevClose) * 100 : 0,
+          source: 'google',
+        };
+      }
+    }
+  } catch (err) {
+    console.warn(`[priceService] Google Finance error for ${symbol}:`, err);
+  }
+
+  // Fallback: try Yahoo Finance with NSE ticker
+  try {
+    return await fetchStockPrice(`${symbol}.NS`);
+  } catch {
+    return null;
+  }
+};
+
 export const fetchMultipleStocks = async (symbols) => {
   const results = {};
   await Promise.allSettled(

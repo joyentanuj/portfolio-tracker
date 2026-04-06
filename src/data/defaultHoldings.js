@@ -14,8 +14,7 @@ export const defaultStocks = [
   { symbol: 'COROMANDEL.NS',  name: 'Coromandel International',        exchange: 'NSE', qty: 11,    avgCost: 1816.54 },
   { symbol: 'ENDURANCE.NS',   name: 'Endurance Technologies',          exchange: 'NSE', qty: 9,     avgCost: 2400.64 },
   { symbol: 'ETERNAL.NS',     name: 'Eternal (Zomato)',                 exchange: 'NSE', qty: 300,   avgCost: 97.91   },
-  { symbol: 'GOLDBEES.NS',    name: 'Nippon India ETF Gold BeES',      exchange: 'NSE', qty: 4090,  avgCost: 112.38  },
-  { symbol: 'GOLDCASE.NS',    name: 'Zerodha Gold ETF',               exchange: 'NSE', qty: 60000, avgCost: 13.49   },
+
   { symbol: 'HAPPYFORGE.NS',  name: 'Happy Forgings',                  exchange: 'NSE', qty: 17,    avgCost: 1289.4  },
   { symbol: 'HDFCBANK.NS',    name: 'HDFC Bank',                       exchange: 'NSE', qty: 340,   avgCost: 726.52  },
   { symbol: 'HDFCNEXT50.NS',  name: 'HDFC Nifty NEXT 50 ETF',        exchange: 'NSE', qty: 2600,  avgCost: 69.13   },
@@ -38,7 +37,7 @@ export const defaultStocks = [
   { symbol: 'PRIVISCL.NS',    name: 'Privi Speciality Chemicals',      exchange: 'NSE', qty: 9,     avgCost: 3209.6  },
   { symbol: 'RRKABEL.NS',     name: 'RR Kabel',                        exchange: 'NSE', qty: 16,    avgCost: 1382.67 },
   { symbol: 'SHRIPISTON.NS',  name: 'Shriram Pistons & Rings',         exchange: 'NSE', qty: 9,     avgCost: 2584.24 },
-  { symbol: 'SILVERIETF.NS',  name: 'Nippon India Silver ETF',         exchange: 'NSE', qty: 1800,  avgCost: 98.15   },
+
   { symbol: 'SMALLCAP.NS',    name: 'Mirae Asset Nifty Smallcap 250 Momentum Quality 100 ETF', exchange: 'NSE', qty: 5041,  avgCost: 43.86   },
   { symbol: 'SOUTHBANK.NS',   name: 'South Indian Bank',               exchange: 'NSE', qty: 4457,  avgCost: 39.63   },
   { symbol: 'TATASTEEL.NS',   name: 'Tata Steel',                      exchange: 'NSE', qty: 600,   avgCost: 126.15  },
@@ -46,6 +45,15 @@ export const defaultStocks = [
   { symbol: 'TMCV.NS',        name: 'Tata Motors Ltd',                 exchange: 'NSE', qty: 100,   avgCost: 250.12  },
   { symbol: 'UNIONBANK.NS',   name: 'Union Bank of India',             exchange: 'NSE', qty: 936,   avgCost: 118.43  },
   { symbol: 'WELCORP.NS',     name: 'Welspun Corp',                    exchange: 'NSE', qty: 28,    avgCost: 852.57  },
+];
+
+export const defaultGoldETFs = [
+  { symbol: 'GOLDBEES', name: 'Nippon India ETF Gold BeES', exchange: 'NSE', qty: 4090,  avgCost: 112.38 },
+  { symbol: 'GOLDCASE',  name: 'Zerodha Gold ETF',           exchange: 'NSE', qty: 60000, avgCost: 13.49  },
+];
+
+export const defaultSilverETFs = [
+  { symbol: 'SILVERIETF', name: 'Nippon India Silver ETF', exchange: 'NSE', qty: 1800, avgCost: 98.15 },
 ];
 
 export const defaultGold = [
