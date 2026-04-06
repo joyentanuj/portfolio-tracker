@@ -64,7 +64,7 @@ function USStockForm({ onSubmit, onCancel, initial = null }) {
       </div>
       {err && <p className="text-red-600 text-xs">{err}</p>}
       <div className="text-xs text-gray-500 bg-gray-50 rounded-lg p-3 border border-gray-200">
-        💡 Use plain US ticker symbols (e.g. <code className="text-blue-600">AAPL</code>, <code className="text-blue-600">TSLA</code>) — no exchange suffix needed.
+        💡 Use plain US ticker symbols (e.g. <code className="text-blue-600">AAPL</code>, <code className="text-blue-600">TSLA</code>) - no exchange suffix needed.
       </div>
       <div className="flex gap-3">
         <Button type="button" variant="secondary" onClick={onCancel} className="flex-1">Cancel</Button>
@@ -173,7 +173,7 @@ export default function USStocksList() {
                     <td className="py-3 pr-4">
                       <p className="text-gray-900 font-semibold">{stock.symbol}</p>
                     </td>
-                    <td className="py-3 pr-4 text-gray-700">{formatNumber(stats.totalUnits, 9).replace(/\.?0+$/, '') || '0'}</td>
+                    <td className="py-3 pr-4 text-gray-700">{formatNumber(stats.totalUnits, 9).replace(/\.?0+$/, '')}</td>
                     <td className="py-3 pr-4 text-gray-700">{formatUSD(stats.avgBuyPrice)}</td>
                     <td className="py-3 pr-4">
                       <div>
