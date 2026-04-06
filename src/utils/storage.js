@@ -289,7 +289,7 @@ export const getPortfolioData = () => {
           data.stocks = remainingStocks;
         }
 
-        // v8: Seed default gold holdings for users who have none yet (physical/SGB).
+        // v9: Seed default gold holdings for users who have none yet (physical/SGB).
         const hasPhysicalGold = (data.gold || []).some((g) => g.type !== 'etf');
         if (!hasPhysicalGold) {
           data.gold = data.gold || [];

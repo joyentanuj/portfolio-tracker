@@ -442,7 +442,7 @@ export default function GoldSilver() {
             {physicalGoldHoldings.length > 0 && (
               <div>
                 <h3 className="text-gray-700 font-semibold text-sm mb-3 uppercase tracking-wide">
-                  Physical &amp; Digital Gold
+                  Physical & Digital Gold
                 </h3>
                 <GoldTable
                   holdings={physicalGoldHoldings}
