@@ -1,6 +1,6 @@
 import { useEffect, useCallback, useRef } from 'react';
 import { usePortfolio } from '../context/PortfolioContext';
-import { fetchMultipleStocks, fetchMultipleMFs, fetchGoldSilverPrice, fetchGoogleFinancePrice } from '../utils/priceService';
+import { fetchMultipleStocks, fetchMultipleMFs, fetchGoldSilverPrice, fetchGoogleFinancePrice, fetchUSDINRFromGoogle } from '../utils/priceService';
 
 export function useLivePrices() {
   const { data, updatePrices } = usePortfolio();
@@ -24,13 +24,16 @@ export function useLivePrices() {
 
       // US Stocks (plain symbols, no .NS suffix)
       const usStockSymbols = (data.usStocks || []).map(s => s.symbol).filter(Boolean);
-      // Also fetch USD/INR exchange rate for portfolio total conversion
-      const usSymbolsWithForex = usStockSymbols.length > 0
-        ? [...usStockSymbols, 'USDINR=X']
-        : ['USDINR=X'];
-      const usPrices = await fetchMultipleStocks(usSymbolsWithForex);
-      for (const [sym, info] of Object.entries(usPrices)) {
-        priceMap[sym] = { price: info.price, change: info.change, changePercent: info.changePercent, previousClose: info.previousClose, currency: sym === 'USDINR=X' ? 'INR' : 'USD' };
+      // Fetch USD/INR from Google Finance (separate from US stock fetches)
+      const forexData = await fetchUSDINRFromGoogle();
+      priceMap['USDINR=X'] = forexData;
+
+      // Fetch US stock prices (without USDINR=X mixed in)
+      if (usStockSymbols.length > 0) {
+        const usPrices = await fetchMultipleStocks(usStockSymbols);
+        for (const [sym, info] of Object.entries(usPrices)) {
+          priceMap[sym] = { price: info.price, change: info.change, changePercent: info.changePercent, previousClose: info.previousClose, currency: 'USD' };
+        }
       }
 
       // Mutual Funds
