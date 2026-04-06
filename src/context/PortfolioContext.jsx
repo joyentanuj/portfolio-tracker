@@ -189,8 +189,9 @@ export function PortfolioProvider({ children }) {
       const { totalUnits, avgBuyPrice, totalBuyAmount } = calcHoldings(asset.transactions);
       const priceKey = category === 'stocks' ? asset.symbol
         : category === 'mutualFunds' ? asset.schemeCode
+        : (asset.type === 'etf' && asset.symbol) ? asset.symbol // ETF in gold/silver section
         : category; // 'gold' or 'silver'
-      const livePrice = category === 'gold' || category === 'silver'
+      const livePrice = (category === 'gold' || category === 'silver') && asset.type !== 'etf'
         ? state.prices[category]?.price
         : state.prices[priceKey]?.price ?? state.prices[priceKey]?.nav;
 

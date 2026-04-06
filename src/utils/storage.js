@@ -1,9 +1,9 @@
-import { defaultStocks, defaultMutualFunds, defaultGold } from '../data/defaultHoldings';
+import { defaultStocks, defaultMutualFunds, defaultGold, defaultGoldETFs, defaultSilverETFs } from '../data/defaultHoldings';
 
 const PORTFOLIO_KEY = 'portfolio_tracker_data';
 // Increment DATA_VERSION whenever defaultHoldings.js changes so that all users
 // automatically receive the corrected data on their next page load.
-const DATA_VERSION = 8;
+const DATA_VERSION = 9;
 const VERSION_KEY = 'portfolio_tracker_data_version';
 
 // Maps old (wrong) scheme codes → new (correct) scheme codes introduced in each version.
@@ -133,6 +133,48 @@ function buildSeededData() {
     ],
   }));
 
+  defaultGoldETFs.forEach((etf) => {
+    data.gold.push({
+      id: generateId(),
+      name: etf.name,
+      symbol: etf.symbol,
+      type: 'etf',
+      category: 'gold',
+      transactions: [
+        {
+          id: generateId(),
+          type: 'buy',
+          date: buyDate,
+          quantity: etf.qty,
+          price: etf.avgCost,
+          amount: parseFloat((etf.qty * etf.avgCost).toFixed(2)),
+          notes: 'Initial import',
+        },
+      ],
+    });
+  });
+
+  defaultSilverETFs.forEach((etf) => {
+    data.silver.push({
+      id: generateId(),
+      name: etf.name,
+      symbol: etf.symbol,
+      type: 'etf',
+      category: 'silver',
+      transactions: [
+        {
+          id: generateId(),
+          type: 'buy',
+          date: buyDate,
+          quantity: etf.qty,
+          price: etf.avgCost,
+          amount: parseFloat((etf.qty * etf.avgCost).toFixed(2)),
+          notes: 'Initial import',
+        },
+      ],
+    });
+  });
+
   return data;
 }
 
@@ -200,26 +242,128 @@ export const getPortfolioData = () => {
           });
         }
 
-        // v8: Seed default gold holdings for users who have none yet.
-        if (!Array.isArray(data.gold) || data.gold.length === 0) {
-          const buyDate = '2024-01-01';
-          data.gold = defaultGold.map((g) => ({
-            id: generateId(),
-            name: g.name,
-            type: g.type,
-            category: 'gold',
-            transactions: [
-              {
-                id: generateId(),
-                type: 'buy',
-                date: buyDate,
-                quantity: g.grams,
-                price: g.avgCost,
-                amount: parseFloat((g.grams * g.avgCost).toFixed(2)),
-                notes: 'Initial import',
-              },
-            ],
-          }));
+        // v9: Move gold/silver ETFs from stocks to their respective sections.
+        const ETF_TO_GOLD = { 'GOLDBEES.NS': 'GOLDBEES', 'GOLDCASE.NS': 'GOLDCASE' };
+        const ETF_TO_SILVER = { 'SILVERIETF.NS': 'SILVERIETF' };
+        const buyDate = '2024-01-01';
+
+        if (Array.isArray(data.stocks)) {
+          const remainingStocks = [];
+          for (const stock of data.stocks) {
+            if (ETF_TO_GOLD[stock.symbol]) {
+              // Move to gold section as ETF
+              const cleanSymbol = ETF_TO_GOLD[stock.symbol];
+              const alreadyInGold = (data.gold || []).some(
+                (g) => g.type === 'etf' && g.symbol === cleanSymbol
+              );
+              if (!alreadyInGold) {
+                data.gold = data.gold || [];
+                data.gold.push({
+                  ...stock,
+                  id: stock.id || generateId(),
+                  symbol: cleanSymbol,
+                  type: 'etf',
+                  category: 'gold',
+                });
+              }
+            } else if (ETF_TO_SILVER[stock.symbol]) {
+              // Move to silver section as ETF
+              const cleanSymbol = ETF_TO_SILVER[stock.symbol];
+              const alreadyInSilver = (data.silver || []).some(
+                (s) => s.type === 'etf' && s.symbol === cleanSymbol
+              );
+              if (!alreadyInSilver) {
+                data.silver = data.silver || [];
+                data.silver.push({
+                  ...stock,
+                  id: stock.id || generateId(),
+                  symbol: cleanSymbol,
+                  type: 'etf',
+                  category: 'silver',
+                });
+              }
+            } else {
+              remainingStocks.push(stock);
+            }
+          }
+          data.stocks = remainingStocks;
+        }
+
+        // v9: Seed default gold holdings for users who have none yet (physical/SGB).
+        const hasPhysicalGold = (data.gold || []).some((g) => g.type !== 'etf');
+        if (!hasPhysicalGold) {
+          data.gold = data.gold || [];
+          data.gold.unshift(
+            ...defaultGold.map((g) => ({
+              id: generateId(),
+              name: g.name,
+              type: g.type,
+              category: 'gold',
+              transactions: [
+                {
+                  id: generateId(),
+                  type: 'buy',
+                  date: buyDate,
+                  quantity: g.grams,
+                  price: g.avgCost,
+                  amount: parseFloat((g.grams * g.avgCost).toFixed(2)),
+                  notes: 'Initial import',
+                },
+              ],
+            }))
+          );
+        }
+
+        // Seed gold ETFs if missing.
+        for (const etf of defaultGoldETFs) {
+          const exists = (data.gold || []).some((g) => g.type === 'etf' && g.symbol === etf.symbol);
+          if (!exists) {
+            data.gold = data.gold || [];
+            data.gold.push({
+              id: generateId(),
+              name: etf.name,
+              symbol: etf.symbol,
+              type: 'etf',
+              category: 'gold',
+              transactions: [
+                {
+                  id: generateId(),
+                  type: 'buy',
+                  date: buyDate,
+                  quantity: etf.qty,
+                  price: etf.avgCost,
+                  amount: parseFloat((etf.qty * etf.avgCost).toFixed(2)),
+                  notes: 'Initial import',
+                },
+              ],
+            });
+          }
+        }
+
+        // Seed silver ETFs if missing.
+        for (const etf of defaultSilverETFs) {
+          const exists = (data.silver || []).some((s) => s.type === 'etf' && s.symbol === etf.symbol);
+          if (!exists) {
+            data.silver = data.silver || [];
+            data.silver.push({
+              id: generateId(),
+              name: etf.name,
+              symbol: etf.symbol,
+              type: 'etf',
+              category: 'silver',
+              transactions: [
+                {
+                  id: generateId(),
+                  type: 'buy',
+                  date: buyDate,
+                  quantity: etf.qty,
+                  price: etf.avgCost,
+                  amount: parseFloat((etf.qty * etf.avgCost).toFixed(2)),
+                  notes: 'Initial import',
+                },
+              ],
+            });
+          }
         }
 
         localStorage.setItem(PORTFOLIO_KEY, JSON.stringify(data));
