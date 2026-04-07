@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
+import { Menu, Moon, Sun, RefreshCw } from 'lucide-react';
 import { usePortfolio } from '../../context/PortfolioContext';
 import { useLivePrices } from '../../hooks/useLivePrices';
-import { formatCurrency } from '../../utils/formatters';
+import { formatCurrency, formatCurrencyCompact } from '../../utils/formatters';
 
 export default function Navbar({ onMenuClick, title, isDark, onToggleDark }) {
   const { getPortfolioStats, getDailyChange, lastUpdated } = usePortfolio();
@@ -38,11 +39,20 @@ export default function Navbar({ onMenuClick, title, isDark, onToggleDark }) {
         onClick={onMenuClick}
         className="lg:hidden text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
       >
-        ☰
+        <Menu className="w-5 h-5" />
       </button>
 
       <h1 className="text-gray-900 dark:text-gray-100 font-semibold text-base flex-1">{title}</h1>
 
+      {/* Mobile: show just total value */}
+      <div className="sm:hidden text-right">
+        <p className="text-gray-900 dark:text-gray-100 font-bold text-sm">{formatCurrencyCompact(stats.totalValue)}</p>
+        <p className={`text-xs ${todayPnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+          {todayPnl >= 0 ? '+' : ''}{formatCurrencyCompact(todayPnl)} today
+        </p>
+      </div>
+
+      {/* Desktop: show full stats */}
       <div className="hidden sm:flex items-center gap-4 text-sm">
         <div className="text-right">
           <p className="text-gray-500 dark:text-gray-400 text-[10px] uppercase tracking-wider">Portfolio Value</p>
@@ -67,17 +77,17 @@ export default function Navbar({ onMenuClick, title, isDark, onToggleDark }) {
       <button
         onClick={onToggleDark}
         title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-        className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-sm"
+        className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
       >
-        {isDark ? '☀️' : '🌙'}
+        {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
       </button>
 
       <button
         onClick={fetchPrices}
         title="Refresh prices"
-        className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-sm"
+        className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
       >
-        🔄
+        <RefreshCw className="w-4 h-4" />
       </button>
     </header>
   );

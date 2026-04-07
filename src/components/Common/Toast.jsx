@@ -1,4 +1,5 @@
 import React from 'react';
+import { XCircle, AlertTriangle, CheckCircle2, X } from 'lucide-react';
 import { usePortfolio } from '../../context/PortfolioContext';
 
 export default function Toast() {
@@ -22,15 +23,19 @@ export default function Toast() {
             }
           `}
         >
-          <span className="text-lg">
-            {toast.type === 'error' ? '❌' : toast.type === 'warning' ? '⚠️' : '✅'}
+          <span className="shrink-0">
+            {toast.type === 'error'
+              ? <XCircle className="w-5 h-5" />
+              : toast.type === 'warning'
+              ? <AlertTriangle className="w-5 h-5" />
+              : <CheckCircle2 className="w-5 h-5 text-green-600" />}
           </span>
           <span className="text-sm font-medium flex-1">{toast.message}</span>
           <button
             onClick={() => dispatch({ type: 'REMOVE_TOAST', payload: toast.id })}
             className="text-current opacity-50 hover:opacity-100 transition-opacity"
           >
-            ✕
+            <X className="w-4 h-4" />
           </button>
         </div>
       ))}

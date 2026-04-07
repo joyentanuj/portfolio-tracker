@@ -1,4 +1,5 @@
 import React, { useRef } from 'react';
+import { Download, Upload, Trash2 } from 'lucide-react';
 import Card from '../components/Common/Card';
 import Button from '../components/Common/Button';
 import { usePortfolio } from '../context/PortfolioContext';
@@ -57,7 +58,7 @@ export default function Settings() {
   return (
     <div className="space-y-6 max-w-2xl">
       {/* Auto-refresh Settings */}
-      <Card title="⚙️ Auto-Refresh Settings">
+      <Card title="Auto-Refresh Settings">
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
@@ -95,14 +96,14 @@ export default function Settings() {
       </Card>
 
       {/* Data Management */}
-      <Card title="💾 Data Management">
+      <Card title="Data Management">
         <div className="space-y-4">
           <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600">
             <div>
               <p className="text-gray-900 dark:text-gray-100 font-medium text-sm">Export Portfolio</p>
               <p className="text-gray-500 dark:text-gray-400 text-xs">Download your data as JSON for backup</p>
             </div>
-            <Button onClick={handleExport} size="sm" icon="⬇️">Export JSON</Button>
+            <Button onClick={handleExport} size="sm" icon={<Download className="w-3.5 h-3.5" />}>Export JSON</Button>
           </div>
 
           <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600">
@@ -112,7 +113,7 @@ export default function Settings() {
             </div>
             <div>
               <input ref={fileInputRef} type="file" accept=".json" onChange={handleImport} className="hidden" />
-              <Button onClick={() => fileInputRef.current?.click()} size="sm" variant="secondary" icon="⬆️">Import JSON</Button>
+              <Button onClick={() => fileInputRef.current?.click()} size="sm" variant="secondary" icon={<Upload className="w-3.5 h-3.5" />}>Import JSON</Button>
             </div>
           </div>
 
@@ -121,15 +122,15 @@ export default function Settings() {
               <p className="text-red-600 font-medium text-sm">Clear All Data</p>
               <p className="text-gray-500 dark:text-gray-400 text-xs">Permanently delete all portfolio data</p>
             </div>
-            <Button onClick={handleClear} size="sm" variant="danger" icon="🗑️">Clear Data</Button>
+            <Button onClick={handleClear} size="sm" variant="danger" icon={<Trash2 className="w-3.5 h-3.5" />}>Clear Data</Button>
           </div>
         </div>
       </Card>
 
       {/* About */}
-      <Card title="ℹ️ About">
+      <Card title="About">
         <div className="space-y-3 text-sm text-gray-600 dark:text-gray-400">
-          <p>📊 <strong className="text-gray-900 dark:text-gray-100">Live Portfolio Tracker</strong> v1.0</p>
+          <p><strong className="text-gray-900 dark:text-gray-100">Live Portfolio Tracker</strong> v1.0</p>
           <p>All data is stored locally in your browser's localStorage. No data is sent to any server.</p>
           <div className="space-y-1">
             <p className="text-gray-400 dark:text-gray-500 text-xs font-semibold uppercase tracking-wider">Data Sources</p>

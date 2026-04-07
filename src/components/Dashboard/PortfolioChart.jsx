@@ -1,5 +1,6 @@
 import React from 'react';
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
+import { PieChart as PieChartIcon } from 'lucide-react';
 import { usePortfolio } from '../../context/PortfolioContext';
 import { CATEGORY_COLORS, CATEGORY_LABELS } from '../../utils/constants';
 import { formatCurrency, formatCurrencyCompact } from '../../utils/formatters';
@@ -48,7 +49,7 @@ export default function PortfolioChart() {
   if (chartData.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-64 text-gray-400">
-        <div className="text-4xl mb-3">📊</div>
+        <PieChartIcon className="w-10 h-10 mb-3" />
         <p className="text-sm">No assets yet. Add your first asset to see the chart.</p>
       </div>
     );
