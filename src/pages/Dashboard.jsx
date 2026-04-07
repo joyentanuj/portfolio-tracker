@@ -2,6 +2,7 @@ import React from 'react';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import DashboardSummary from '../components/Dashboard/DashboardSummary';
 import PortfolioChart from '../components/Dashboard/PortfolioChart';
+import NetWorthChart from '../components/Dashboard/NetWorthChart';
 import TopPerformers from '../components/Dashboard/TopPerformers';
 import Card from '../components/Common/Card';
 import { SkeletonRow } from '../components/Common/Skeleton';
@@ -108,6 +109,11 @@ export default function Dashboard() {
       {/* Top Performers */}
       <Card title="Top Performers">
         <TopPerformers />
+      </Card>
+
+      {/* Investment Timeline */}
+      <Card title="Investment Timeline">
+        <NetWorthChart />
       </Card>
     </div>
   );

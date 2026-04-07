@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
+import { Pencil, Trash2 } from 'lucide-react';
 import { usePortfolio } from '../../context/PortfolioContext';
 import { formatCurrency, formatXIRR, formatDate } from '../../utils/formatters';
 import { COMPOUNDING_FREQUENCIES } from '../../utils/constants';
 import Button from '../Common/Button';
 import Modal from '../Common/Modal';
+import ConfirmDialog from '../Common/ConfirmDialog';
+import EmptyState from '../Common/EmptyState';
 
 function FDForm({ onSubmit, onCancel, initial = null }) {
   const [form, setForm] = useState({
@@ -81,6 +84,7 @@ export default function FDsList() {
   const { data, getAssetStats, addAsset, updateAsset, deleteAsset } = usePortfolio();
   const [addModal, setAddModal] = useState(false);
   const [editAsset, setEditAsset] = useState(null);
+  const [confirmDelete, setConfirmDelete] = useState(null);
 
   const fds = data.fixedDeposits || [];
 
@@ -94,8 +98,10 @@ export default function FDsList() {
     setEditAsset(null);
   };
 
-  const handleDelete = (id) => {
-    if (window.confirm('Delete this FD?')) deleteAsset('fixedDeposits', id);
+  const handleDelete = (id) => setConfirmDelete(id);
+  const handleConfirmDelete = () => {
+    deleteAsset('fixedDeposits', confirmDelete);
+    setConfirmDelete(null);
   };
 
   const now = new Date();
@@ -108,17 +114,29 @@ export default function FDsList() {
       </div>
 
       {fds.length === 0 ? (
-        <div className="text-center py-16 text-gray-400 dark:text-gray-500">
-          <div className="text-5xl mb-4">🏛️</div>
-          <p className="font-medium text-gray-500 dark:text-gray-400 mb-1">No fixed deposits added</p>
-          <p className="text-sm">Add your FDs to track their maturity and returns</p>
-        </div>
+        <EmptyState
+          icon="🏛️"
+          title="No fixed deposits added"
+          description="Add your FDs to track their maturity and returns"
+          actionLabel="Add FD"
+          onAction={() => setAddModal(true)}
+        />
       ) : (
         <div className="space-y-3">
           {fds.map(fd => {
             const stats = getAssetStats(fd, 'fixedDeposits');
             const isMatured = fd.maturityDate && new Date(fd.maturityDate) < now;
             const daysLeft = fd.maturityDate ? Math.ceil((new Date(fd.maturityDate) - now) / (1000 * 60 * 60 * 24)) : null;
+
+            const totalDays = fd.maturityDate
+              ? Math.max(1, (new Date(fd.maturityDate) - new Date(fd.startDate)) / (1000 * 60 * 60 * 24))
+              : null;
+            const elapsedDays = fd.maturityDate
+              ? (now - new Date(fd.startDate)) / (1000 * 60 * 60 * 24)
+              : null;
+            const progress = totalDays
+              ? Math.min(Math.max((elapsedDays / totalDays) * 100, 0), 100)
+              : null;
 
             return (
               <div key={fd.id} className="bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
@@ -129,7 +147,7 @@ export default function FDsList() {
                       {isMatured
                         ? <span className="text-xs px-2 py-0.5 bg-red-50 dark:bg-red-900/20 text-red-700 border border-red-200 dark:border-red-800 rounded-full">Matured</span>
                         : daysLeft !== null && daysLeft <= 30
-                        ? <span className="text-xs px-2 py-0.5 bg-yellow-50 text-yellow-700 border border-yellow-200 rounded-full">Matures in {daysLeft}d</span>
+                        ? <span className="text-xs px-2 py-0.5 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300 border border-yellow-200 dark:border-yellow-700 rounded-full">Matures in {daysLeft}d</span>
                         : <span className="text-xs px-2 py-0.5 bg-green-50 text-green-700 border border-green-200 rounded-full">Active</span>
                       }
                     </div>
@@ -138,8 +156,12 @@ export default function FDsList() {
                     </p>
                   </div>
                   <div className="flex items-center gap-1">
-                    <button onClick={() => setEditAsset(fd)} className="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg">✏️</button>
-                    <button onClick={() => handleDelete(fd.id)} className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg">🗑️</button>
+                    <button onClick={() => setEditAsset(fd)} className="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-colors">
+                      <Pencil className="w-3.5 h-3.5" />
+                    </button>
+                    <button onClick={() => handleDelete(fd.id)} className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
                   </div>
                 </div>
 
@@ -166,6 +188,21 @@ export default function FDsList() {
                   <span>Start: {formatDate(fd.startDate)}</span>
                   <span>Maturity: {fd.maturityDate ? formatDate(fd.maturityDate) : '—'}</span>
                 </div>
+
+                {progress !== null && (
+                  <div className="mt-3">
+                    <div className="flex justify-between text-[10px] text-gray-400 dark:text-gray-500 mb-1">
+                      <span>Term progress</span>
+                      <span>{progress.toFixed(0)}%</span>
+                    </div>
+                    <div className="w-full h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full rounded-full transition-all duration-700 ${isMatured ? 'bg-red-400' : daysLeft !== null && daysLeft <= 30 ? 'bg-yellow-400' : 'bg-cyan-400'}`}
+                        style={{ width: `${progress}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             );
           })}
@@ -178,6 +215,14 @@ export default function FDsList() {
       <Modal isOpen={!!editAsset} onClose={() => setEditAsset(null)} title="Edit Fixed Deposit">
         <FDForm onSubmit={handleEdit} onCancel={() => setEditAsset(null)} initial={editAsset} />
       </Modal>
+      <ConfirmDialog
+        isOpen={!!confirmDelete}
+        title="Delete Fixed Deposit?"
+        description="This will permanently delete this FD."
+        confirmLabel="Delete"
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setConfirmDelete(null)}
+      />
     </div>
   );
 }
