@@ -223,6 +223,22 @@ export function PortfolioProvider({ children }) {
       return { currentValue, investedValue, pnl, pnlPercent, xirr: xirrVal };
     }
 
+    if (category === 'ppf') {
+      const currentValue = asset.currentBalance || 0;
+      const investedValue = (asset.annualContributions || []).reduce((s, c) => s + Number(c.amount || 0), 0);
+      const pnl = currentValue - investedValue;
+      const pnlPercent = investedValue > 0 ? pnl / investedValue : 0;
+      return { currentValue, investedValue, pnl, pnlPercent, xirr: null };
+    }
+
+    if (category === 'epfo') {
+      const currentValue = asset.currentBalance || 0;
+      const investedValue = (Number(asset.employeeContribution) || 0) + (Number(asset.employerContribution) || 0);
+      const pnl = currentValue - investedValue;
+      const pnlPercent = investedValue > 0 ? pnl / investedValue : 0;
+      return { currentValue, investedValue, pnl, pnlPercent, xirr: null };
+    }
+
     if (category === 'cash') {
       return { currentValue: asset.amount || 0, investedValue: asset.amount || 0, pnl: 0, pnlPercent: 0, xirr: null };
     }
@@ -279,7 +295,7 @@ export function PortfolioProvider({ children }) {
   }, [state.data, getAssetStats]);
 
   const getPortfolioStats = useCallback(() => {
-    const categories = ['stocks', 'usStocks', 'mutualFunds', 'fixedDeposits', 'gold', 'silver', 'cash', 'realEstate', 'others'];
+    const categories = ['stocks', 'usStocks', 'mutualFunds', 'fixedDeposits', 'ppf', 'epfo', 'gold', 'silver', 'cash', 'realEstate', 'others'];
     const usdInrRate = state.prices['USDINR=X']?.price || FALLBACK_USD_INR_RATE;
     let totalValue = 0, totalInvested = 0;
     const allCashFlows = [];
