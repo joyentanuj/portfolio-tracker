@@ -1,9 +1,9 @@
-import { defaultStocks, defaultMutualFunds, defaultGold, defaultGoldETFs, defaultSilverETFs, defaultUSStocks } from '../data/defaultHoldings';
+import { defaultStocks, defaultMutualFunds, defaultGold, defaultGoldETFs, defaultSilverETFs, defaultUSStocks, defaultFDs } from '../data/defaultHoldings';
 
 const PORTFOLIO_KEY = 'portfolio_tracker_data';
 // Increment DATA_VERSION whenever defaultHoldings.js changes so that all users
 // automatically receive the corrected data on their next page load.
-const DATA_VERSION = 10;
+const DATA_VERSION = 11;
 const VERSION_KEY = 'portfolio_tracker_data_version';
 
 // Maps old (wrong) scheme codes → new (correct) scheme codes introduced in each version.
@@ -61,6 +61,19 @@ const MF_DATA_MIGRATIONS = {
 
 export const generateId = () =>
   `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+
+function mapFD(fd) {
+  return {
+    id: generateId(),
+    bankName: fd.bankName,
+    principal: fd.principal,
+    interestRate: fd.interestRate,
+    compoundingFrequency: fd.compoundingFrequency,
+    startDate: fd.startDate,
+    maturityDate: fd.maturityDate,
+    notes: fd.notes || '',
+  };
+}
 
 export const getInitialData = () => ({
   stocks: [],
@@ -155,6 +168,8 @@ function buildSeededData() {
       },
     ],
   }));
+
+  data.fixedDeposits = defaultFDs.map(mapFD);
 
   defaultGoldETFs.forEach((etf) => {
     data.gold.push({
@@ -414,6 +429,12 @@ export const getPortfolioData = () => {
               ],
             });
           }
+        }
+
+        // v11: Seed default FDs for existing users who have none yet.
+        data.fixedDeposits = data.fixedDeposits || [];
+        if (data.fixedDeposits.length === 0) {
+          data.fixedDeposits = defaultFDs.map(mapFD);
         }
 
         localStorage.setItem(PORTFOLIO_KEY, JSON.stringify(data));

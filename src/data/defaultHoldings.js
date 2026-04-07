@@ -78,6 +78,31 @@ export const defaultGold = [
   { name: 'SGB Tranche 8',   type: 'sgb',     grams: 10,     avgCost: 6210  },
 ];
 
+// 20 HDFC Bank Fixed Deposits imported from the user's Netaji Nagar branch statement.
+// Account number and branch are stored in the notes field (matches the UI form placeholder).
+export const defaultFDs = [
+  { bankName: 'HDFC Bank', principal: 100000, interestRate: 7.20, compoundingFrequency: 'quarterly', startDate: '2024-05-29', maturityDate: '2028-12-29', notes: 'A/C 50300978599749 · Netaji Nagar branch · Imported from HDFC Bank statement' },
+  { bankName: 'HDFC Bank', principal: 100000, interestRate: 7.20, compoundingFrequency: 'quarterly', startDate: '2024-06-01', maturityDate: '2029-01-01', notes: 'A/C 50300980908460 · Netaji Nagar branch · Imported from HDFC Bank statement' },
+  { bankName: 'HDFC Bank', principal: 100000, interestRate: 7.20, compoundingFrequency: 'quarterly', startDate: '2024-07-07', maturityDate: '2029-02-07', notes: 'A/C 50301000147912 · Netaji Nagar branch · Imported from HDFC Bank statement' },
+  { bankName: 'HDFC Bank', principal: 100000, interestRate: 7.40, compoundingFrequency: 'quarterly', startDate: '2025-01-16', maturityDate: '2029-08-16', notes: 'A/C 50301098986027 · Netaji Nagar branch · Imported from HDFC Bank statement' },
+  { bankName: 'HDFC Bank', principal: 100000, interestRate: 7.40, compoundingFrequency: 'quarterly', startDate: '2025-01-16', maturityDate: '2029-08-16', notes: 'A/C 50301098986793 · Netaji Nagar branch · Imported from HDFC Bank statement' },
+  { bankName: 'HDFC Bank', principal: 70000,  interestRate: 7.40, compoundingFrequency: 'quarterly', startDate: '2025-02-07', maturityDate: '2029-09-07', notes: 'A/C 50301110556282 · Netaji Nagar branch · Imported from HDFC Bank statement' },
+  { bankName: 'HDFC Bank', principal: 50000,  interestRate: 7.40, compoundingFrequency: 'quarterly', startDate: '2025-03-05', maturityDate: '2029-10-05', notes: 'A/C 50301123890261 · Netaji Nagar branch · Imported from HDFC Bank statement' },
+  { bankName: 'HDFC Bank', principal: 50000,  interestRate: 7.40, compoundingFrequency: 'quarterly', startDate: '2025-03-05', maturityDate: '2029-10-05', notes: 'A/C 50301123890541 · Netaji Nagar branch · Imported from HDFC Bank statement' },
+  { bankName: 'HDFC Bank', principal: 50000,  interestRate: 7.40, compoundingFrequency: 'quarterly', startDate: '2025-03-05', maturityDate: '2029-10-05', notes: 'A/C 50301123890761 · Netaji Nagar branch · Imported from HDFC Bank statement' },
+  { bankName: 'HDFC Bank', principal: 50000,  interestRate: 7.40, compoundingFrequency: 'quarterly', startDate: '2025-03-06', maturityDate: '2029-10-06', notes: 'A/C 50301124189994 · Netaji Nagar branch · Imported from HDFC Bank statement' },
+  { bankName: 'HDFC Bank', principal: 50000,  interestRate: 7.40, compoundingFrequency: 'quarterly', startDate: '2025-03-20', maturityDate: '2029-10-20', notes: 'A/C 50301130762512 · Netaji Nagar branch · Imported from HDFC Bank statement' },
+  { bankName: 'HDFC Bank', principal: 50000,  interestRate: 7.40, compoundingFrequency: 'quarterly', startDate: '2025-03-20', maturityDate: '2029-10-20', notes: 'A/C 50301130763054 · Netaji Nagar branch · Imported from HDFC Bank statement' },
+  { bankName: 'HDFC Bank', principal: 50000,  interestRate: 7.40, compoundingFrequency: 'quarterly', startDate: '2025-03-29', maturityDate: '2029-10-29', notes: 'A/C 50301135747721 · Netaji Nagar branch · Imported from HDFC Bank statement' },
+  { bankName: 'HDFC Bank', principal: 50000,  interestRate: 7.40, compoundingFrequency: 'quarterly', startDate: '2025-03-29', maturityDate: '2029-10-29', notes: 'A/C 50301135748496 · Netaji Nagar branch · Imported from HDFC Bank statement' },
+  { bankName: 'HDFC Bank', principal: 50000,  interestRate: 7.40, compoundingFrequency: 'quarterly', startDate: '2025-03-31', maturityDate: '2029-10-31', notes: 'A/C 50301136696918 · Netaji Nagar branch · Imported from HDFC Bank statement' },
+  { bankName: 'HDFC Bank', principal: 50000,  interestRate: 7.40, compoundingFrequency: 'quarterly', startDate: '2025-03-31', maturityDate: '2029-10-31', notes: 'A/C 50301136697309 · Netaji Nagar branch · Imported from HDFC Bank statement' },
+  { bankName: 'HDFC Bank', principal: 500000, interestRate: 6.85, compoundingFrequency: 'quarterly', startDate: '2025-05-28', maturityDate: '2027-02-26', notes: 'A/C 50301165499282 · Netaji Nagar branch · Imported from HDFC Bank statement' },
+  { bankName: 'HDFC Bank', principal: 50000,  interestRate: 6.85, compoundingFrequency: 'quarterly', startDate: '2025-05-28', maturityDate: '2027-02-26', notes: 'A/C 50301165499931 · Netaji Nagar branch · Imported from HDFC Bank statement' },
+  { bankName: 'HDFC Bank', principal: 50000,  interestRate: 6.85, compoundingFrequency: 'quarterly', startDate: '2025-05-28', maturityDate: '2027-02-26', notes: 'A/C 50301165500454 · Netaji Nagar branch · Imported from HDFC Bank statement' },
+  { bankName: 'HDFC Bank', principal: 30000,  interestRate: 6.45, compoundingFrequency: 'quarterly', startDate: '2026-03-04', maturityDate: '2029-02-15', notes: 'A/C 50301316227830 · Netaji Nagar branch · Imported from HDFC Bank statement' },
+];
+
 // Scheme codes from mfapi.in — edit any entry via the UI if a code is incorrect.
 // NOTE: Increment DATA_VERSION in src/utils/storage.js whenever this list changes
 // so that all users automatically get the updated data on their next page load.
