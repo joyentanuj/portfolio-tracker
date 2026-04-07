@@ -3,6 +3,16 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --scrollbar-thumb: #d1d5db;
+    --scrollbar-track: #f3f4f6;
+  }
+
+  .dark {
+    --scrollbar-thumb: #4b5563;
+    --scrollbar-track: #1f2937;
+  }
+
   body {
     @apply bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -12,28 +22,18 @@
 @layer utilities {
   .scrollbar-thin {
     scrollbar-width: thin;
-    scrollbar-color: #d1d5db #f3f4f6;
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
   }
   .scrollbar-thin::-webkit-scrollbar {
     width: 6px;
     height: 6px;
   }
   .scrollbar-thin::-webkit-scrollbar-track {
-    background: #f3f4f6;
+    background: var(--scrollbar-track);
   }
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    background-color: #d1d5db;
+    background-color: var(--scrollbar-thumb);
     border-radius: 3px;
-  }
-
-  .dark .scrollbar-thin {
-    scrollbar-color: #4b5563 #1f2937;
-  }
-  .dark .scrollbar-thin::-webkit-scrollbar-track {
-    background: #1f2937;
-  }
-  .dark .scrollbar-thin::-webkit-scrollbar-thumb {
-    background-color: #4b5563;
   }
 }
 

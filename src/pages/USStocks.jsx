@@ -1,5 +1,6 @@
 import React from 'react';
 import Card from '../components/Common/Card';
+import StatCard from '../components/Common/StatCard';
 import USStocksList from '../components/Assets/USStocksList';
 import { usePortfolio } from '../context/PortfolioContext';
 import { formatXIRR } from '../utils/formatters';
@@ -31,13 +32,13 @@ export default function USStocks() {
             label: 'Current Value',
             value: formatUSD(stats.totalValue),
             sub: `≈ ₹${Math.round(totalValueINR).toLocaleString('en-IN')}`,
-            color: 'text-gray-900',
+            color: 'text-gray-900 dark:text-gray-100',
           },
           {
             label: 'Invested',
             value: formatUSD(stats.totalInvested),
             sub: `≈ ₹${Math.round(totalInvestedINR).toLocaleString('en-IN')}`,
-            color: 'text-gray-900',
+            color: 'text-gray-900 dark:text-gray-100',
           },
           {
             label: 'P&L',
@@ -52,14 +53,10 @@ export default function USStocks() {
             color: stats.xirr !== null && stats.xirr >= 0 ? 'text-green-600' : 'text-red-600',
           },
         ].map(s => (
-          <div key={s.label} className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
-            <p className="text-gray-500 text-xs font-medium uppercase tracking-wider mb-1">{s.label}</p>
-            <p className={`font-bold text-xl ${s.color}`}>{s.value}</p>
-            {s.sub && <p className="text-gray-400 text-xs mt-0.5">{s.sub}</p>}
-          </div>
+          <StatCard key={s.label} label={s.label} value={s.value} color={s.color} sub={s.sub} />
         ))}
       </div>
-      <Card title="🇺🇸 US Stocks Portfolio">
+      <Card title="US Stocks Portfolio">
         <USStocksList />
       </Card>
     </div>

@@ -1,5 +1,6 @@
 import React from 'react';
 import Card from '../components/Common/Card';
+import StatCard from '../components/Common/StatCard';
 import GoldSilverComponent from '../components/Assets/GoldSilver';
 import { usePortfolio } from '../context/PortfolioContext';
 import { formatCurrency, formatNumber } from '../utils/formatters';
@@ -27,16 +28,13 @@ export default function GoldSilverPage() {
         {[
           { label: 'Total Gold (gm)', value: `${formatNumber(totalGoldGrams, 4)} gm`, color: 'text-amber-600' },
           { label: 'Combined Value', value: formatCurrency(combined.totalValue), color: 'text-amber-600' },
-          { label: 'Invested', value: formatCurrency(combined.totalInvested), color: 'text-gray-900' },
+          { label: 'Invested', value: formatCurrency(combined.totalInvested), color: 'text-gray-900 dark:text-gray-100' },
           { label: 'P&L', value: `${combined.pnl >= 0 ? '+' : ''}${formatCurrency(combined.pnl)}`, color: combined.pnl >= 0 ? 'text-green-600' : 'text-red-600' },
         ].map(s => (
-          <div key={s.label} className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
-            <p className="text-gray-500 text-xs font-medium uppercase tracking-wider mb-1">{s.label}</p>
-            <p className={`font-bold text-xl ${s.color}`}>{s.value}</p>
-          </div>
+          <StatCard key={s.label} label={s.label} value={s.value} color={s.color} />
         ))}
       </div>
-      <Card title="🥇 Gold & Silver Holdings">
+      <Card title="Gold & Silver Holdings">
         <GoldSilverComponent />
       </Card>
     </div>

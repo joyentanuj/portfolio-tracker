@@ -1,4 +1,5 @@
 import React from 'react';
+import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import DashboardSummary from '../components/Dashboard/DashboardSummary';
 import PortfolioChart from '../components/Dashboard/PortfolioChart';
 import TopPerformers from '../components/Dashboard/TopPerformers';
@@ -20,28 +21,6 @@ const CATEGORY_PATHS = {
   realEstate: '/real-estate',
   others: '/others',
 };
-
-function MiniTrend({ positive, neutral }) {
-  if (neutral) {
-    return (
-      <svg width="40" height="20" viewBox="0 0 40 20" className="shrink-0">
-        <polyline points="0,10 40,10" stroke="#9ca3af" strokeWidth="2" fill="none" strokeLinecap="round" />
-      </svg>
-    );
-  }
-  if (positive) {
-    return (
-      <svg width="40" height="20" viewBox="0 0 40 20" className="shrink-0">
-        <polyline points="0,18 10,14 20,10 30,6 40,2" stroke="#22c55e" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    );
-  }
-  return (
-    <svg width="40" height="20" viewBox="0 0 40 20" className="shrink-0">
-      <polyline points="0,2 10,6 20,10 30,14 40,18" stroke="#ef4444" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
 
 export default function Dashboard() {
   const { getPortfolioStats, prices } = usePortfolio();
@@ -96,7 +75,20 @@ export default function Dashboard() {
                         {stats.pnl >= 0 ? '+' : ''}{formatPercent(stats.pnlPercent)}
                       </p>
                     </div>
-                    <MiniTrend positive={isPositive} neutral={isNeutral} />
+                    <div className="flex flex-col items-end gap-1 shrink-0 w-16">
+                      <span className={`text-xs font-bold ${isPositive ? 'text-green-500' : isNeutral ? 'text-gray-400' : 'text-red-500'}`}>
+                        {isPositive ? <TrendingUp className="w-3.5 h-3.5" /> : isNeutral ? <Minus className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
+                      </span>
+                      <div className="w-full h-1 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                        <div
+                          className="h-full rounded-full bg-indigo-400 transition-all duration-700"
+                          style={{ width: `${portfolioStats.totalValue > 0 ? (stats.totalValue / portfolioStats.totalValue) * 100 : 0}%` }}
+                        />
+                      </div>
+                      <span className="text-[10px] text-gray-400 dark:text-gray-500">
+                        {portfolioStats.totalValue > 0 ? ((stats.totalValue / portfolioStats.totalValue) * 100).toFixed(1) : 0}%
+                      </span>
+                    </div>
                     {stats.xirr !== null && (
                       <div className="text-right ml-2 hidden sm:block">
                         <p className="text-gray-400 dark:text-gray-500 text-[10px]">XIRR</p>
