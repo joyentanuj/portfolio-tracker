@@ -67,6 +67,8 @@ export const getInitialData = () => ({
   usStocks: [],
   mutualFunds: [],
   fixedDeposits: [],
+  ppf: [],
+  epfo: [],
   gold: [],
   silver: [],
   cash: [],
