@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
+import { Pencil, Trash2 } from 'lucide-react';
 import { usePortfolio } from '../../context/PortfolioContext';
 import { formatCurrency, formatDate, formatPercent } from '../../utils/formatters';
 import Button from '../Common/Button';
 import Modal from '../Common/Modal';
+import ConfirmDialog from '../Common/ConfirmDialog';
+import EmptyState from '../Common/EmptyState';
 
 function OtherForm({ onSubmit, onCancel, initial = null }) {
   const [form, setForm] = useState({
@@ -75,6 +78,7 @@ export default function OtherAssets() {
   const { data, getAssetStats, addAsset, updateAsset, deleteAsset } = usePortfolio();
   const [addModal, setAddModal] = useState(false);
   const [editAsset, setEditAsset] = useState(null);
+  const [confirmDelete, setConfirmDelete] = useState(null);
 
   const others = data.others || [];
 
@@ -88,8 +92,10 @@ export default function OtherAssets() {
     setEditAsset(null);
   };
 
-  const handleDelete = (id) => {
-    if (window.confirm('Delete this asset?')) deleteAsset('others', id);
+  const handleDelete = (id) => setConfirmDelete(id);
+  const handleConfirmDelete = () => {
+    deleteAsset('others', confirmDelete);
+    setConfirmDelete(null);
   };
 
   return (
@@ -100,11 +106,13 @@ export default function OtherAssets() {
       </div>
 
       {others.length === 0 ? (
-        <div className="text-center py-16 text-gray-400 dark:text-gray-500">
-          <div className="text-5xl mb-4">📦</div>
-          <p className="font-medium text-gray-500 dark:text-gray-400 mb-1">No other assets</p>
-          <p className="text-sm">Track collectibles, vehicles, jewellery, and more</p>
-        </div>
+        <EmptyState
+          icon="📦"
+          title="No other assets"
+          description="Track collectibles, vehicles, jewellery, and more"
+          actionLabel="Add Asset"
+          onAction={() => setAddModal(true)}
+        />
       ) : (
         <div className="space-y-3">
           {others.map(asset => {
@@ -128,8 +136,12 @@ export default function OtherAssets() {
                   </p>
                 </div>
                 <div className="flex items-center gap-1">
-                  <button onClick={() => setEditAsset(asset)} className="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg">✏️</button>
-                  <button onClick={() => handleDelete(asset.id)} className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg">🗑️</button>
+                  <button onClick={() => setEditAsset(asset)} className="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-colors">
+                    <Pencil className="w-3.5 h-3.5" />
+                  </button>
+                  <button onClick={() => handleDelete(asset.id)} className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
                 </div>
               </div>
             );
@@ -143,6 +155,14 @@ export default function OtherAssets() {
       <Modal isOpen={!!editAsset} onClose={() => setEditAsset(null)} title="Edit Asset">
         <OtherForm onSubmit={handleEdit} onCancel={() => setEditAsset(null)} initial={editAsset} />
       </Modal>
+      <ConfirmDialog
+        isOpen={!!confirmDelete}
+        title="Delete Asset?"
+        description="This will permanently delete this asset."
+        confirmLabel="Delete"
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setConfirmDelete(null)}
+      />
     </div>
   );
 }

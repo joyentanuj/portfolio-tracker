@@ -1,13 +1,16 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { Download, Upload, Trash2 } from 'lucide-react';
 import Card from '../components/Common/Card';
 import Button from '../components/Common/Button';
+import ConfirmDialog from '../components/Common/ConfirmDialog';
 import { usePortfolio } from '../context/PortfolioContext';
 import { clearPortfolioData } from '../utils/storage';
 
 export default function Settings() {
   const { data, updateData, updateSettings, showToast } = usePortfolio();
   const fileInputRef = useRef(null);
+  const [importConfirm, setImportConfirm] = useState(null); // stores imported data pending confirmation
+  const [clearConfirm, setClearConfirm] = useState(false);
 
   const handleExport = () => {
     const json = JSON.stringify(data, null, 2);
@@ -28,14 +31,10 @@ export default function Settings() {
     reader.onload = (ev) => {
       try {
         const imported = JSON.parse(ev.target.result);
-        // Basic validation
         if (typeof imported !== 'object' || Array.isArray(imported)) {
           throw new Error('Invalid format');
         }
-        if (window.confirm('This will replace your current portfolio data. Are you sure?')) {
-          updateData(imported);
-          showToast('Portfolio imported successfully');
-        }
+        setImportConfirm(imported);
       } catch {
         showToast('Failed to import: invalid JSON file', 'error');
       }
@@ -44,13 +43,17 @@ export default function Settings() {
     e.target.value = '';
   };
 
-  const handleClear = () => {
-    if (window.confirm('Are you sure you want to clear ALL portfolio data? This cannot be undone.')) {
-      if (window.confirm('This will permanently delete all your data. Last chance!')) {
-        clearPortfolioData();
-        window.location.reload();
-      }
-    }
+  const handleConfirmImport = () => {
+    updateData(importConfirm);
+    showToast('Portfolio imported successfully');
+    setImportConfirm(null);
+  };
+
+  const handleClear = () => setClearConfirm(true);
+
+  const handleConfirmClear = () => {
+    clearPortfolioData();
+    window.location.reload();
   };
 
   const settings = data.settings || {};
@@ -146,6 +149,24 @@ export default function Settings() {
           </div>
         </div>
       </Card>
+
+      <ConfirmDialog
+        isOpen={!!importConfirm}
+        title="Replace Portfolio Data?"
+        description="This will replace your current portfolio data with the imported file. This cannot be undone."
+        confirmLabel="Import & Replace"
+        onConfirm={handleConfirmImport}
+        onCancel={() => setImportConfirm(null)}
+        danger={false}
+      />
+      <ConfirmDialog
+        isOpen={clearConfirm}
+        title="Clear All Data?"
+        description="This will permanently delete ALL your portfolio data including all assets and transactions. This cannot be undone."
+        confirmLabel="Clear All Data"
+        onConfirm={handleConfirmClear}
+        onCancel={() => setClearConfirm(false)}
+      />
     </div>
   );
 }

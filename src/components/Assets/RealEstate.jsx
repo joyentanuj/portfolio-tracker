@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
+import { Pencil, Trash2, MapPin } from 'lucide-react';
 import { usePortfolio } from '../../context/PortfolioContext';
 import { formatCurrency, formatXIRR, formatDate, formatPercent } from '../../utils/formatters';
 import Button from '../Common/Button';
 import Modal from '../Common/Modal';
+import ConfirmDialog from '../Common/ConfirmDialog';
+import EmptyState from '../Common/EmptyState';
 
 function REForm({ onSubmit, onCancel, initial = null }) {
   const [form, setForm] = useState({
@@ -73,6 +76,7 @@ export default function RealEstate() {
   const { data, getAssetStats, addAsset, updateAsset, deleteAsset } = usePortfolio();
   const [addModal, setAddModal] = useState(false);
   const [editAsset, setEditAsset] = useState(null);
+  const [confirmDelete, setConfirmDelete] = useState(null);
 
   const properties = data.realEstate || [];
 
@@ -86,8 +90,10 @@ export default function RealEstate() {
     setEditAsset(null);
   };
 
-  const handleDelete = (id) => {
-    if (window.confirm('Delete this property?')) deleteAsset('realEstate', id);
+  const handleDelete = (id) => setConfirmDelete(id);
+  const handleConfirmDelete = () => {
+    deleteAsset('realEstate', confirmDelete);
+    setConfirmDelete(null);
   };
 
   return (
@@ -98,11 +104,13 @@ export default function RealEstate() {
       </div>
 
       {properties.length === 0 ? (
-        <div className="text-center py-16 text-gray-400 dark:text-gray-500">
-          <div className="text-5xl mb-4">🏠</div>
-          <p className="font-medium text-gray-500 dark:text-gray-400 mb-1">No real estate added</p>
-          <p className="text-sm">Track your properties, plots, and real estate investments</p>
-        </div>
+        <EmptyState
+          icon="🏠"
+          title="No real estate added"
+          description="Track your properties, plots, and real estate investments"
+          actionLabel="Add Property"
+          onAction={() => setAddModal(true)}
+        />
       ) : (
         <div className="space-y-3">
           {properties.map(prop => {
@@ -112,12 +120,21 @@ export default function RealEstate() {
                 <div className="flex items-start justify-between mb-4">
                   <div>
                     <p className="text-gray-900 dark:text-gray-100 font-bold text-base">{prop.name}</p>
-                    {prop.location && <p className="text-gray-500 dark:text-gray-400 text-sm">📍 {prop.location}</p>}
+                    {prop.location && (
+                      <p className="text-gray-500 dark:text-gray-400 text-sm flex items-center gap-1">
+                        <MapPin className="w-3.5 h-3.5 shrink-0" />
+                        {prop.location}
+                      </p>
+                    )}
                     <p className="text-gray-400 dark:text-gray-500 text-xs mt-0.5">Purchased: {formatDate(prop.purchaseDate)}</p>
                   </div>
                   <div className="flex items-center gap-1">
-                    <button onClick={() => setEditAsset(prop)} className="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg">✏️</button>
-                    <button onClick={() => handleDelete(prop.id)} className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg">🗑️</button>
+                    <button onClick={() => setEditAsset(prop)} className="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-colors">
+                      <Pencil className="w-3.5 h-3.5" />
+                    </button>
+                    <button onClick={() => handleDelete(prop.id)} className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -155,6 +172,14 @@ export default function RealEstate() {
       <Modal isOpen={!!editAsset} onClose={() => setEditAsset(null)} title="Edit Property">
         <REForm onSubmit={handleEdit} onCancel={() => setEditAsset(null)} initial={editAsset} />
       </Modal>
+      <ConfirmDialog
+        isOpen={!!confirmDelete}
+        title="Delete Property?"
+        description="This will permanently delete this property."
+        confirmLabel="Delete"
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setConfirmDelete(null)}
+      />
     </div>
   );
 }

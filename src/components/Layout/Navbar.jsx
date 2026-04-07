@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Menu, Moon, Sun, RefreshCw } from 'lucide-react';
+import { Menu, Moon, Sun, RefreshCw, Search } from 'lucide-react';
 import { usePortfolio } from '../../context/PortfolioContext';
 import { useLivePrices } from '../../hooks/useLivePrices';
 import { formatCurrency, formatCurrencyCompact } from '../../utils/formatters';
+import GlobalSearch from '../Common/GlobalSearch';
 
 export default function Navbar({ onMenuClick, title, isDark, onToggleDark }) {
   const { getPortfolioStats, getDailyChange, lastUpdated } = usePortfolio();
@@ -10,12 +11,24 @@ export default function Navbar({ onMenuClick, title, isDark, onToggleDark }) {
   const stats = getPortfolioStats();
   const todayPnl = getDailyChange();
   const todayPnlPercent = stats.totalValue > 0 ? (todayPnl / (stats.totalValue - todayPnl)) * 100 : 0;
+  const [searchOpen, setSearchOpen] = useState(false);
 
   // Freshness indicator
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     const t = setInterval(() => setNow(Date.now()), 10000);
     return () => clearInterval(t);
+  }, []);
+
+  useEffect(() => {
+    const handler = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setSearchOpen(prev => !prev);
+      }
+    };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
   }, []);
 
   const secondsAgo = lastUpdated ? Math.floor((now - lastUpdated.getTime()) / 1000) : null;
@@ -43,6 +56,16 @@ export default function Navbar({ onMenuClick, title, isDark, onToggleDark }) {
       </button>
 
       <h1 className="text-gray-900 dark:text-gray-100 font-semibold text-base flex-1">{title}</h1>
+
+      {/* Search trigger */}
+      <button
+        onClick={() => setSearchOpen(true)}
+        className="flex items-center gap-2 px-3 py-1.5 text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
+      >
+        <Search className="w-3.5 h-3.5" />
+        <span className="hidden sm:inline">Search</span>
+        <kbd className="hidden sm:inline font-mono text-[9px] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 px-1 py-0.5 rounded">⌘K</kbd>
+      </button>
 
       {/* Mobile: show just total value */}
       <div className="sm:hidden text-right">
@@ -89,6 +112,8 @@ export default function Navbar({ onMenuClick, title, isDark, onToggleDark }) {
       >
         <RefreshCw className="w-4 h-4" />
       </button>
+
+      <GlobalSearch isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
     </header>
   );
 }

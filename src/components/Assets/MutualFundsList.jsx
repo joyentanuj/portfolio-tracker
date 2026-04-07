@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
+import { Pencil, Trash2, Info, AlignJustify, List, Plus } from 'lucide-react';
 import { usePortfolio } from '../../context/PortfolioContext';
 import { formatCurrency, formatNumber, formatXIRR, formatPercent } from '../../utils/formatters';
 import Button from '../Common/Button';
 import Modal from '../Common/Modal';
+import ConfirmDialog from '../Common/ConfirmDialog';
 import TransactionModal from '../Transactions/TransactionModal';
 import SortableHeader from '../Common/SortableHeader';
 import useSortState from '../../hooks/useSortState';
+import useTableDensity from '../../hooks/useTableDensity';
 import { usePriceFlash } from '../../hooks/usePriceFlash';
 import { SkeletonTable } from '../Common/Skeleton';
 import EmptyState from '../Common/EmptyState';
@@ -37,7 +40,8 @@ function MFForm({ onSubmit, onCancel, initial = null }) {
       </div>
       {err && <p className="text-red-600 text-xs">{err}</p>}
       <div className="text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700 rounded-lg p-3 border border-gray-200 dark:border-gray-600">
-        💡 Find scheme codes at <span className="text-indigo-600">mfapi.in</span>. Example: 120503 = Mirae Asset Large Cap
+        <Info className="w-3.5 h-3.5 inline-block mr-1 shrink-0" />
+        Find scheme codes at <span className="text-indigo-600">mfapi.in</span>. Example: 120503 = Mirae Asset Large Cap
       </div>
       <div className="flex gap-3">
         <Button type="button" variant="secondary" onClick={onCancel} className="flex-1">Cancel</Button>
@@ -47,8 +51,9 @@ function MFForm({ onSubmit, onCancel, initial = null }) {
   );
 }
 
-function MFRow({ mf, stats, weight, priceInfo, totalPortfolioValue, onTxn, onEdit, onDelete }) {
+function MFRow({ mf, stats, weight, priceInfo, totalPortfolioValue, onTxn, onEdit, onDelete, dense }) {
   const flash = usePriceFlash(stats.currentPrice);
+  const py = dense ? 'py-1.5' : 'py-3';
   return (
     <tr
       className={`border-b transition-colors
@@ -60,14 +65,14 @@ function MFRow({ mf, stats, weight, priceInfo, totalPortfolioValue, onTxn, onEdi
         }
       `}
     >
-      <td className="py-3 pr-4 max-w-[200px]">
+      <td className={`${py} pr-4 max-w-[200px]`}>
         <p className="text-gray-900 dark:text-gray-100 font-medium text-xs leading-snug truncate">{mf.schemeName}</p>
         <p className="text-gray-400 dark:text-gray-500 text-xs mt-0.5">Code: {mf.schemeCode}</p>
         {priceInfo?.date && <p className="text-gray-400 dark:text-gray-500 text-[10px]">NAV: {priceInfo.date}</p>}
       </td>
-      <td className="py-3 pr-4 text-gray-700 dark:text-gray-300">{formatNumber(stats.totalUnits, 3)}</td>
-      <td className="py-3 pr-4 text-gray-700 dark:text-gray-300">{formatCurrency(stats.avgBuyPrice)}</td>
-      <td className={`py-3 pr-4 rounded transition-colors ${flash === 'up' ? 'price-flash-up' : flash === 'down' ? 'price-flash-down' : ''}`}>
+      <td className={`${py} pr-4 text-gray-700 dark:text-gray-300`}>{formatNumber(stats.totalUnits, 3)}</td>
+      <td className={`${py} pr-4 text-gray-700 dark:text-gray-300`}>{formatCurrency(stats.avgBuyPrice)}</td>
+      <td className={`${py} pr-4 rounded transition-colors ${flash === 'up' ? 'price-flash-up' : flash === 'down' ? 'price-flash-down' : ''}`}>
         <p className="text-gray-900 dark:text-gray-100">{stats.currentPrice ? formatCurrency(stats.currentPrice) : '—'}</p>
         {priceInfo?.changePercent != null && (
           <p className={`text-xs ${priceInfo.changePercent >= 0 ? 'text-green-600' : 'text-red-600'}`}>
@@ -75,27 +80,31 @@ function MFRow({ mf, stats, weight, priceInfo, totalPortfolioValue, onTxn, onEdi
           </p>
         )}
       </td>
-      <td className="py-3 pr-4 text-gray-700 dark:text-gray-300">{formatCurrency(stats.investedValue)}</td>
-      <td className="py-3 pr-4 text-gray-900 dark:text-gray-100 font-medium">{formatCurrency(stats.currentValue)}</td>
-      <td className="py-3 pr-4 text-gray-600 dark:text-gray-400">
+      <td className={`${py} pr-4 text-gray-700 dark:text-gray-300`}>{formatCurrency(stats.investedValue)}</td>
+      <td className={`${py} pr-4 text-gray-900 dark:text-gray-100 font-medium`}>{formatCurrency(stats.currentValue)}</td>
+      <td className={`${py} pr-4 text-gray-600 dark:text-gray-400`}>
         {totalPortfolioValue > 0 ? `${weight.toFixed(2)}%` : '—'}
       </td>
-      <td className="py-3 pr-4">
+      <td className={`${py} pr-4`}>
         <p className={stats.pnl >= 0 ? 'text-green-600' : 'text-red-600'}>
           {stats.pnl >= 0 ? '+' : ''}{formatCurrency(stats.pnl)}
         </p>
         <p className={`text-xs ${stats.pnl >= 0 ? 'text-green-500' : 'text-red-500'}`}>{formatPercent(stats.pnlPercent)}</p>
       </td>
-      <td className="py-3 pr-4">
+      <td className={`${py} pr-4`}>
         <span className={`text-sm font-medium ${stats.xirr === null ? 'text-gray-400 dark:text-gray-500' : stats.xirr >= 0 ? 'text-green-600' : 'text-red-600'}`}>
           {formatXIRR(stats.xirr)}
         </span>
       </td>
-      <td className="py-3">
+      <td className={py}>
         <div className="flex items-center gap-1">
           <button onClick={onTxn} className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300 rounded-md">Txns</button>
-          <button onClick={onEdit} className="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg">✏️</button>
-          <button onClick={onDelete} className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg">🗑️</button>
+          <button onClick={onEdit} className="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-colors">
+            <Pencil className="w-3.5 h-3.5" />
+          </button>
+          <button onClick={onDelete} className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">
+            <Trash2 className="w-3.5 h-3.5" />
+          </button>
         </div>
       </td>
     </tr>
@@ -107,7 +116,9 @@ export default function MutualFundsList() {
   const [addModal, setAddModal] = useState(false);
   const [editAsset, setEditAsset] = useState(null);
   const [txAsset, setTxAsset] = useState(null);
+  const [confirmDelete, setConfirmDelete] = useState(null);
   const { sortCol, sortDir, handleSort } = useSortState();
+  const { dense, toggle: toggleDensity } = useTableDensity();
 
   const mfs = data.mutualFunds || [];
   const totalPortfolioValue = getPortfolioStats().totalValue || 0;
@@ -125,10 +136,10 @@ export default function MutualFundsList() {
     setEditAsset(null);
   };
 
-  const handleDelete = (id) => {
-    if (window.confirm('Delete this fund and all its transactions?')) {
-      deleteAsset('mutualFunds', id);
-    }
+  const handleDelete = (id) => setConfirmDelete(id);
+  const handleConfirmDelete = () => {
+    deleteAsset('mutualFunds', confirmDelete);
+    setConfirmDelete(null);
   };
 
   // Pre-compute stats + weight for each fund so we can sort
@@ -169,7 +180,16 @@ export default function MutualFundsList() {
     <div>
       <div className="flex justify-between items-center mb-4">
         <p className="text-gray-500 dark:text-gray-400 text-sm">{mfs.length} funds</p>
-        <Button onClick={() => setAddModal(true)} icon="+" size="sm">Add Fund</Button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={toggleDensity}
+            className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+            title={dense ? 'Comfortable view' : 'Compact view'}
+          >
+            {dense ? <AlignJustify className="w-4 h-4" /> : <List className="w-4 h-4" />}
+          </button>
+          <Button onClick={() => setAddModal(true)} icon={<Plus className="w-3.5 h-3.5" />} size="sm">Add Fund</Button>
+        </div>
       </div>
 
       {mfs.length === 0 ? (
@@ -224,6 +244,7 @@ export default function MutualFundsList() {
                     onTxn={() => setTxAsset(mf)}
                     onEdit={() => setEditAsset(mf)}
                     onDelete={() => handleDelete(mf.id)}
+                    dense={dense}
                   />
                 );
               })}
@@ -259,6 +280,14 @@ export default function MutualFundsList() {
         <MFForm onSubmit={handleEdit} onCancel={() => setEditAsset(null)} initial={editAsset} />
       </Modal>
       <TransactionModal isOpen={!!txAsset} onClose={() => setTxAsset(null)} asset={txAsset} category="mutualFunds" />
+      <ConfirmDialog
+        isOpen={!!confirmDelete}
+        title="Delete Fund?"
+        description="This will permanently delete this fund and all its transactions."
+        confirmLabel="Delete"
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setConfirmDelete(null)}
+      />
     </div>
   );
 }
