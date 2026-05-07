@@ -3,10 +3,15 @@ import { ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, Respons
 import { usePortfolio } from '../../context/PortfolioContext';
 import { formatCurrencyCompact } from '../../utils/formatters';
 
-function buildMonthlyInvestedData(data) {
-  const categories = ['stocks', 'usStocks', 'mutualFunds', 'gold', 'silver'];
+const FALLBACK_USD_INR = 85.0;
+
+function buildMonthlyInvestedData(data, prices) {
+  const txCategories = ['stocks', 'usStocks', 'mutualFunds', 'gold', 'silver'];
+  const usdInrRate = prices['USDINR=X']?.price || FALLBACK_USD_INR;
+
+  // Build investment events for cumulative invested tracking
   const events = [];
-  for (const cat of categories) {
+  for (const cat of txCategories) {
     for (const asset of (data[cat] || [])) {
       for (const tx of (asset.transactions || [])) {
         const amount = tx.type === 'buy' ? Number(tx.amount) : -Number(tx.amount);
@@ -14,14 +19,38 @@ function buildMonthlyInvestedData(data) {
       }
     }
   }
-
   events.sort((a, b) => a.date - b.date);
+
+  // Build per-asset holding data for portfolio value calculation
+  const assetHoldings = [];
+  for (const cat of txCategories) {
+    for (const asset of (data[cat] || [])) {
+      const priceKey = (cat === 'stocks' || cat === 'usStocks') ? asset.symbol
+        : cat === 'mutualFunds' ? asset.schemeCode
+        : (asset.type === 'etf' && asset.symbol) ? asset.symbol
+        : cat;
+      const livePrice = (cat === 'gold' || cat === 'silver') && asset.type !== 'etf'
+        ? prices[cat]?.price
+        : prices[priceKey]?.price ?? prices[priceKey]?.nav;
+      const fxRate = cat === 'usStocks' ? usdInrRate : 1;
+
+      if (!livePrice) continue;
+
+      const txs = (asset.transactions || [])
+        .map(tx => ({ date: new Date(tx.date), type: tx.type, quantity: Number(tx.quantity) }))
+        .sort((a, b) => a.date - b.date);
+
+      if (txs.length > 0) {
+        assetHoldings.push({ txs, livePrice, fxRate });
+      }
+    }
+  }
 
   const start = new Date('2026-04-01');
   const now = new Date();
   now.setDate(1);
 
-  // Pre-calculate cumulative for all events before April 2026
+  // Pre-calculate cumulative invested for events before April 2026
   let cumulative = 0;
   let eventIdx = 0;
   while (eventIdx < events.length && events[eventIdx].date < start) {
@@ -34,34 +63,55 @@ function buildMonthlyInvestedData(data) {
 
   while (cursor <= now) {
     const monthEnd = new Date(cursor.getFullYear(), cursor.getMonth() + 1, 0, 23, 59, 59);
+
+    // Update cumulative invested
     while (eventIdx < events.length && events[eventIdx].date <= monthEnd) {
       cumulative += events[eventIdx].amount;
       eventIdx++;
     }
+
+    // Calculate portfolio value at this month-end using current prices
+    let portfolioValue = 0;
+    for (const holding of assetHoldings) {
+      let units = 0;
+      for (const tx of holding.txs) {
+        if (tx.date <= monthEnd) {
+          units += tx.type === 'buy' ? tx.quantity : -tx.quantity;
+        }
+      }
+      portfolioValue += Math.max(0, units) * holding.livePrice * holding.fxRate;
+    }
+
     months.push({
       month: cursor.toLocaleDateString('en-IN', { month: 'short', year: '2-digit' }),
       invested: Math.max(0, Math.round(cumulative)),
+      value: Math.round(portfolioValue),
     });
     cursor.setMonth(cursor.getMonth() + 1);
   }
   return months;
 }
 
-const INVESTED_COLOR = '#6366f1';
+const VALUE_COLOR = '#10b981';
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
+  const portfolioValue = payload[0]?.value;
+  const investedValue = payload[0]?.payload?.invested;
   return (
     <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 shadow-xl text-sm">
       <p className="text-gray-500 dark:text-gray-400 text-xs mb-1">{label}</p>
-      <p className="text-indigo-600 font-semibold">{formatCurrencyCompact(payload[0].value)}</p>
+      <p className="text-emerald-500 font-semibold">Value: {formatCurrencyCompact(portfolioValue)}</p>
+      {investedValue !== undefined && (
+        <p className="text-indigo-500 font-medium text-xs mt-0.5">Invested: {formatCurrencyCompact(investedValue)}</p>
+      )}
     </div>
   );
 };
 
 export default function NetWorthChart() {
-  const { data } = usePortfolio();
-  const chartData = useMemo(() => buildMonthlyInvestedData(data), [data]);
+  const { data, prices } = usePortfolio();
+  const chartData = useMemo(() => buildMonthlyInvestedData(data, prices), [data, prices]);
 
   if (chartData.length < 2) {
     return (
@@ -79,8 +129,8 @@ export default function NetWorthChart() {
           <XAxis dataKey="month" tick={{ fontSize: 10, fill: 'currentColor' }} className="text-gray-400 dark:text-gray-500" tickLine={false} axisLine={false} interval="preserveStartEnd" />
           <YAxis tickFormatter={v => formatCurrencyCompact(v)} tick={{ fontSize: 10, fill: 'currentColor' }} className="text-gray-400 dark:text-gray-500" tickLine={false} axisLine={false} width={52} />
           <Tooltip content={<CustomTooltip />} />
-          <Bar dataKey="invested" fill={INVESTED_COLOR} radius={[4, 4, 0, 0]} />
-          <Line type="monotone" dataKey="invested" stroke={INVESTED_COLOR} strokeWidth={2} dot={false} activeDot={{ r: 4, fill: INVESTED_COLOR }} />
+          <Bar dataKey="value" fill={VALUE_COLOR} radius={[4, 4, 0, 0]} />
+          <Line type="monotone" dataKey="value" stroke={VALUE_COLOR} strokeWidth={2} dot={false} activeDot={{ r: 4, fill: VALUE_COLOR }} />
         </ComposedChart>
       </ResponsiveContainer>
     </div>
