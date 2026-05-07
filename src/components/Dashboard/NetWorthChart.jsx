@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { usePortfolio } from '../../context/PortfolioContext';
 import { formatCurrencyCompact } from '../../utils/formatters';
 
@@ -14,19 +14,23 @@ function buildMonthlyInvestedData(data) {
       }
     }
   }
-  if (events.length === 0) return [];
 
   events.sort((a, b) => a.date - b.date);
 
-  const start = new Date(events[0].date);
-  start.setDate(1);
+  const start = new Date('2026-04-01');
   const now = new Date();
   now.setDate(1);
 
-  const months = [];
-  const cursor = new Date(start);
+  // Pre-calculate cumulative for all events before April 2026
   let cumulative = 0;
   let eventIdx = 0;
+  while (eventIdx < events.length && events[eventIdx].date < start) {
+    cumulative += events[eventIdx].amount;
+    eventIdx++;
+  }
+
+  const months = [];
+  const cursor = new Date(start);
 
   while (cursor <= now) {
     const monthEnd = new Date(cursor.getFullYear(), cursor.getMonth() + 1, 0, 23, 59, 59);
@@ -42,6 +46,8 @@ function buildMonthlyInvestedData(data) {
   }
   return months;
 }
+
+const INVESTED_COLOR = '#6366f1';
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
@@ -68,19 +74,14 @@ export default function NetWorthChart() {
   return (
     <div className="h-44">
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={chartData} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
-          <defs>
-            <linearGradient id="investedGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#6366f1" stopOpacity={0.2} />
-              <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
-            </linearGradient>
-          </defs>
+        <ComposedChart data={chartData} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="currentColor" className="text-gray-100 dark:text-gray-700" vertical={false} />
           <XAxis dataKey="month" tick={{ fontSize: 10, fill: 'currentColor' }} className="text-gray-400 dark:text-gray-500" tickLine={false} axisLine={false} interval="preserveStartEnd" />
           <YAxis tickFormatter={v => formatCurrencyCompact(v)} tick={{ fontSize: 10, fill: 'currentColor' }} className="text-gray-400 dark:text-gray-500" tickLine={false} axisLine={false} width={52} />
           <Tooltip content={<CustomTooltip />} />
-          <Area type="monotone" dataKey="invested" stroke="#6366f1" strokeWidth={2} fill="url(#investedGradient)" dot={false} activeDot={{ r: 4, fill: '#6366f1' }} />
-        </AreaChart>
+          <Bar dataKey="invested" fill={INVESTED_COLOR} radius={[4, 4, 0, 0]} />
+          <Line type="monotone" dataKey="invested" stroke={INVESTED_COLOR} strokeWidth={2} dot={false} activeDot={{ r: 4, fill: INVESTED_COLOR }} />
+        </ComposedChart>
       </ResponsiveContainer>
     </div>
   );
