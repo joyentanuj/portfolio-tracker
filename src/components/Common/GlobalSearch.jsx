@@ -64,8 +64,8 @@ export default function GlobalSearch({ isOpen, onClose }) {
     const out = {};
     Object.keys(CATEGORY_ROUTES).forEach(cat => {
       (data[cat] || []).forEach(asset => {
-        const label = asset.name || asset.symbol || asset.schemeName || asset.bankName || 'Unknown';
-        const symbol = asset.symbol || '';
+        const label = asset.name || asset.symbol || asset.schemeName || asset.bankName || asset.description || 'Unknown';
+        const symbol = asset.symbol || asset.isin || asset.accountNumber || '';
         if (fuzzyMatch(label, debounced) || fuzzyMatch(symbol, debounced)) {
           out[cat] = out[cat] || [];
           out[cat].push({ id: asset.id, label, symbol, route: CATEGORY_ROUTES[cat], category: cat });
@@ -123,7 +123,7 @@ export default function GlobalSearch({ isOpen, onClose }) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-start justify-center pt-20 px-4">
+    <div className="fixed inset-0 z-[9999] flex items-start justify-center pt-20 px-4">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={handleClose} />
       <div className="relative bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-2xl w-full max-w-2xl overflow-hidden">
         <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-100 dark:border-gray-700">
