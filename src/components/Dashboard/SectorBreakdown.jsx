@@ -5,6 +5,7 @@ import { usePortfolio } from '../../context/PortfolioContext';
 import { formatCurrency, formatXIRR } from '../../utils/formatters';
 
 const SECTOR_COLORS = ['#6366f1', '#22c55e', '#f59e0b', '#ec4899', '#06b6d4', '#8b5cf6'];
+const CONCENTRATION_THRESHOLD = 35;
 const SYMBOL_SECTOR = {
   BANK: 'Finance', HDFC: 'Finance', ICICI: 'Finance', SBIN: 'Finance',
   INFY: 'IT', TCS: 'IT', TECH: 'IT', WIPRO: 'IT',
@@ -65,7 +66,7 @@ export default function SectorBreakdown() {
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: SECTOR_COLORS[i % SECTOR_COLORS.length] }} />
                 <span className="font-medium text-gray-900 dark:text-gray-100">{s.name}</span>
-                {s.allocation > 35 && <AlertTriangle className="w-3.5 h-3.5 text-amber-500" title="Over-concentrated sector" />}
+                {s.allocation > CONCENTRATION_THRESHOLD && <AlertTriangle className="w-3.5 h-3.5 text-amber-500" title="Over-concentrated sector" />}
               </div>
               <span className="text-gray-500 dark:text-gray-400">{s.allocation.toFixed(1)}%</span>
             </div>

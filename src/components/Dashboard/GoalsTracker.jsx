@@ -24,8 +24,6 @@ export default function GoalsTracker() {
   });
   const [form, setForm] = useState(null);
 
-
-
   useEffect(() => {
     localStorage.setItem(KEY, JSON.stringify(goals));
   }, [goals]);
@@ -82,7 +80,7 @@ export default function GoalsTracker() {
         <div className="p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
           <input placeholder="Goal name" value={form.name} onChange={e => setForm(prev => ({ ...prev, name: e.target.value }))} className="px-2 py-1.5 rounded border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700" />
           <input type="number" placeholder="Target amount" value={form.targetAmount} onChange={e => setForm(prev => ({ ...prev, targetAmount: e.target.value }))} className="px-2 py-1.5 rounded border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700" />
-          <input type="date" value={form.targetDate} onChange={e => setForm(prev => ({ ...prev, targetDate: e.target.value }))} className="px-2 py-1.5 rounded border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700" />
+          <input type="date" min={new Date().toISOString().split('T')[0]} value={form.targetDate} onChange={e => setForm(prev => ({ ...prev, targetDate: e.target.value }))} className="px-2 py-1.5 rounded border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700" />
           <input type="number" placeholder="Current allocation (optional)" value={form.currentAllocation} onChange={e => setForm(prev => ({ ...prev, currentAllocation: e.target.value }))} className="px-2 py-1.5 rounded border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700" />
           <div className="sm:col-span-2 flex gap-2 justify-end">
             <button onClick={() => setForm(null)} className="px-2.5 py-1.5 rounded border border-gray-200 dark:border-gray-600">Cancel</button>

@@ -40,7 +40,7 @@ export default function HelpModal({ isOpen, onClose }) {
             <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-2">Key metrics</h3>
             <ul className="space-y-1 text-gray-600 dark:text-gray-300 text-xs">
               <li><strong>XIRR:</strong> Annualized return accounting for irregular cash flows.</li>
-              <li><strong>P&amp;L%:</strong> Profit/Loss as percentage of invested amount.</li>
+              <li><strong>P&L%:</strong> Profit/Loss as percentage of invested amount.</li>
               <li><strong>Volatility:</strong> Standard deviation of returns; higher means more variation.</li>
               <li><strong>Sharpe Ratio:</strong> Risk-adjusted return; higher is generally better.</li>
             </ul>
