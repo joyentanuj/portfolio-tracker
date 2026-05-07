@@ -43,7 +43,7 @@ const SYMBOL_SECTOR = {
   ...Object.fromEntries([
     'HUL', 'HINDUSTAN UNILEVER', 'ITC', 'NESTLE', 'NESTLEIND', 'BRITANNIA', 'DABUR', 'GODREJ CONSUMER',
     'GODREJCP', 'MARICO', 'EMAMI', 'COLPAL', 'COLGATE', 'TATA CONSUMER', 'TATACONSUM', 'KO', 'COCA COLA',
-    'PEP', 'PEPSICO', 'PG', 'PROCTER AND GAMBLE', 'MANORAMA',
+    'PEP', 'PEPSICO', 'PG', 'PROCTER AND GAMBLE',
   ].map(key => [key, 'FMCG'])),
   ...Object.fromEntries([
     'TATA STEEL', 'TATASTEEL', 'JSW STEEL', 'JSWSTEEL', 'HINDALCO', 'COAL INDIA', 'COALINDIA', 'VEDANTA',
@@ -51,7 +51,7 @@ const SYMBOL_SECTOR = {
     'WELCORP',
   ].map(key => [key, 'Metals'])),
   ...Object.fromEntries([
-    'LARSEN AND TOUBRO', 'LARSEN TOUBRO', 'L AND T', 'LT', 'ULTRATECH', 'ULTRACEMCO', 'ADANI PORTS',
+    'LARSEN AND TOUBRO', 'LARSEN TOUBRO', 'L AND T', 'ULTRATECH', 'ULTRACEMCO', 'ADANI PORTS',
     'ADANIPORTS', 'ACC', 'AMBUJA', 'NBCC', 'IRB', 'IRCON', 'RVNL',
   ].map(key => [key, 'Infrastructure'])),
   ...Object.fromEntries([
