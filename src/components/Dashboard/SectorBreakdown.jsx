@@ -92,13 +92,13 @@ const SYMBOL_SECTOR = {
   ...Object.fromEntries([
     'NIFTY 50', 'NEXT 50', 'MIDCAP 150', 'SMALLCAP 250', 'NASDAQ 100', 'MON100', 'NIFTYBEES',
     'MID150BEES', 'SMALLCAP', 'HDFCNEXT50', 'INDEX FUND',
-  ].map(key => [key, 'Index Funds'])),
+  ].map(key => [key, 'Index/ETF'])),
 };
 
 function normalizeLookupValue(value = '') {
   return String(value)
     .toUpperCase()
-    .replace(/\.[A-Z]{1,5}\b/g, ' ')
+    .replace(/\.[A-Z]{1,5}(?=\s|$)/g, ' ')
     .replace(/&/g, ' AND ')
     .replace(/[^A-Z0-9]+/g, ' ')
     .replace(/\b(LTD|LIMITED|INDUSTRIES|INDUSTRY|CORPORATION|CORP|INC|INCORPORATED|COMPANY|CO|PLC|TRUST|HOLDINGS|HOLDING|SEZ|ETF|BEES|SERIES|CLASS)\b/g, ' ')
@@ -117,9 +117,9 @@ const SECTOR_MATCHES = Object.entries(SYMBOL_SECTOR)
 function mapSector(name = '', symbol = '') {
   const normalizedName = normalizeLookupValue(name);
   const normalizedSymbol = normalizeLookupValue(symbol).replace(/\s+/g, '');
-  const paddedKey = ` ${[normalizedName, normalizedSymbol].filter(Boolean).join(' ')} `;
+  const paddedSearchString = ` ${[normalizedName, normalizedSymbol].filter(Boolean).join(' ')} `;
   const match = SECTOR_MATCHES.find(({ normalizedPattern, compactPattern }) => {
-    return normalizedSymbol === compactPattern || paddedKey.includes(` ${normalizedPattern} `);
+    return normalizedSymbol === compactPattern || paddedSearchString.includes(` ${normalizedPattern} `);
   });
   return match ? match.sector : 'Others';
 }
