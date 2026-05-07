@@ -92,10 +92,10 @@ function calcFDValue(fd) {
 export function PortfolioProvider({ children }) {
   const [state, dispatch] = useReducer(reducer, initialState);
 
-  const showToast = useCallback((message, type = 'success') => {
+  const showToast = useCallback((message, type = 'success', duration = 3500) => {
     const id = generateId();
-    dispatch({ type: 'ADD_TOAST', payload: { id, message, type } });
-    setTimeout(() => dispatch({ type: 'REMOVE_TOAST', payload: id }), 3500);
+    dispatch({ type: 'ADD_TOAST', payload: { id, message, type, duration } });
+    setTimeout(() => dispatch({ type: 'REMOVE_TOAST', payload: id }), duration);
   }, []);
 
   const updateData = useCallback((newData) => {

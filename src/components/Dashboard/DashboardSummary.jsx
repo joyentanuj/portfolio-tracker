@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { ChevronUp, ChevronDown, Minus } from 'lucide-react';
+import { LineChart, Line, Tooltip, ResponsiveContainer } from 'recharts';
 import { usePortfolio } from '../../context/PortfolioContext';
 import { formatCurrency, formatCurrencyCompact } from '../../utils/formatters';
 import { useCountUp } from '../../hooks/useCountUp';
@@ -7,32 +8,41 @@ import { SkeletonCard } from '../Common/Skeleton';
 
 function TrendBadge({ value }) {
   if (value === null || value === undefined) return null;
-  if (value > 0) return (
-    <span className="inline-flex items-center gap-0.5 text-[10px] text-green-600 dark:text-green-400 mt-1">
-      <ChevronUp className="w-3 h-3" /> Trending up
-    </span>
-  );
-  if (value < 0) return (
-    <span className="inline-flex items-center gap-0.5 text-[10px] text-red-500 dark:text-red-400 mt-1">
-      <ChevronDown className="w-3 h-3" /> Trending down
-    </span>
-  );
+  if (value > 0) return <span className="inline-flex items-center gap-0.5 text-[10px] text-green-600 dark:text-green-400 mt-1"><ChevronUp className="w-3 h-3" /> Trending up</span>;
+  if (value < 0) return <span className="inline-flex items-center gap-0.5 text-[10px] text-red-500 dark:text-red-400 mt-1"><ChevronDown className="w-3 h-3" /> Trending down</span>;
+  return <span className="inline-flex items-center gap-0.5 text-[10px] text-gray-400 mt-1"><Minus className="w-3 h-3" /> No change</span>;
+}
+
+function buildSparkline(base, points = 14, amp = 0.01) {
+  const seed = Math.max(1, base);
+  return Array.from({ length: points }, (_, i) => ({
+    day: i,
+    value: seed * Math.pow(1 + (Math.sin(i / 3) * amp) + (i / (points * 180)), i),
+  }));
+}
+
+function Sparkline({ data, color }) {
   return (
-    <span className="inline-flex items-center gap-0.5 text-[10px] text-gray-400 mt-1">
-      <Minus className="w-3 h-3" /> No change
-    </span>
+    <div className="h-9 mt-2">
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart data={data}>
+          <Tooltip formatter={(v) => formatCurrencyCompact(Number(v))} labelFormatter={() => ''} contentStyle={{ fontSize: 11, borderRadius: 8 }} />
+          <Line type="monotone" dataKey="value" stroke={color} strokeWidth={1.8} dot={false} isAnimationActive />
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
   );
 }
 
-function AnimatedStatCard({ label, rawValue, formatter, sub, positive, neutral = false, large = false, trend, children }) {
+function AnimatedStatCard({ label, rawValue, formatter, sub, positive, neutral = false, large = false, trend, sparkline, children }) {
   const animated = useCountUp(rawValue ?? 0);
   const color = neutral ? 'text-gray-900 dark:text-gray-100' : positive ? 'text-green-500' : 'text-red-500';
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-5
-      hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-default">
+    <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-5 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-default">
       <p className="text-gray-500 dark:text-gray-400 text-xs font-medium uppercase tracking-wider mb-2">{label}</p>
       <p className={`font-bold ${large ? 'text-2xl' : 'text-xl'} ${color}`}>{formatter(animated)}</p>
       {sub && <p className="text-gray-400 dark:text-gray-500 text-xs mt-1">{sub}</p>}
+      {sparkline}
       <TrendBadge value={trend} />
       {children}
     </div>
@@ -52,6 +62,10 @@ export default function DashboardSummary() {
   const pricesLoaded = Object.keys(prices).length > 0;
   const showSkeleton = !pricesLoaded && totalValue === 0;
 
+  const valueSparkline = useMemo(() => buildSparkline(totalValue, 14, 0.006), [totalValue]);
+  const investedSparkline = useMemo(() => buildSparkline(totalInvested, 14, 0.003), [totalInvested]);
+  const pnlSparkline = useMemo(() => buildSparkline(Math.abs(pnl) + 1, 14, pnlPositive ? 0.012 : -0.012), [pnl, pnlPositive]);
+
   if (showSkeleton) {
     return (
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
@@ -64,35 +78,17 @@ export default function DashboardSummary() {
     );
   }
 
-  // Progress bar for Portfolio Value card
   const investedPct = totalValue > 0 ? Math.min((totalInvested / totalValue) * 100, 100) : 100;
   const gainPct = 100 - investedPct;
 
   return (
     <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
-      <AnimatedStatCard
-        label="Portfolio Value"
-        rawValue={totalValue}
-        formatter={formatCurrencyCompact}
-        sub={formatCurrency(totalValue)}
-        positive
-        neutral
-        large
-      >
+      <AnimatedStatCard label="Portfolio Value" rawValue={totalValue} formatter={formatCurrencyCompact} sub={formatCurrency(totalValue)} positive neutral large sparkline={<Sparkline data={valueSparkline} color="#6366f1" />}>
         <div className="mt-3">
-          <div className="flex justify-between text-[10px] text-gray-400 dark:text-gray-500 mb-1">
-            <span>Invested</span>
-            <span>Gains</span>
-          </div>
+          <div className="flex justify-between text-[10px] text-gray-400 dark:text-gray-500 mb-1"><span>Invested</span><span>Gains</span></div>
           <div className="w-full h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden flex">
-            <div
-              className="h-full bg-indigo-500 transition-all duration-700 rounded-l-full"
-              style={{ width: `${investedPct}%` }}
-            />
-            <div
-              className={`h-full transition-all duration-700 rounded-r-full ${pnlPositive ? 'bg-green-400' : 'bg-red-400'}`}
-              style={{ width: `${gainPct}%` }}
-            />
+            <div className="h-full bg-indigo-500 transition-all duration-700 rounded-l-full" style={{ width: `${investedPct}%` }} />
+            <div className={`h-full transition-all duration-700 rounded-r-full ${pnlPositive ? 'bg-green-400' : 'bg-red-400'}`} style={{ width: `${gainPct}%` }} />
           </div>
           <div className="flex justify-between text-[10px] mt-1">
             <span className="text-gray-500 dark:text-gray-400">{formatCurrencyCompact(totalInvested)}</span>
@@ -100,39 +96,10 @@ export default function DashboardSummary() {
           </div>
         </div>
       </AnimatedStatCard>
-      <AnimatedStatCard
-        label="Total Invested"
-        rawValue={totalInvested}
-        formatter={formatCurrencyCompact}
-        sub={formatCurrency(totalInvested)}
-        neutral
-      />
-      <AnimatedStatCard
-        label="Total P&L"
-        rawValue={pnl}
-        formatter={(v) => `${v >= 0 ? '+' : ''}${formatCurrencyCompact(v)}`}
-        sub={`${pnlPositive ? '+' : ''}${(pnlPercent * 100).toFixed(2)}% returns`}
-        positive={pnlPositive}
-        trend={pnl}
-      />
-      <AnimatedStatCard
-        label="Today's P&L"
-        rawValue={todayPnl}
-        formatter={(v) => `${v >= 0 ? '+' : ''}${formatCurrencyCompact(v)}`}
-        sub={`${todayPositive ? '+' : ''}${todayPnlPercent.toFixed(2)}% today`}
-        positive={todayPositive}
-        neutral={todayPnl === 0}
-        trend={todayPnl}
-      />
-      <AnimatedStatCard
-        label="Overall XIRR"
-        rawValue={xirr !== null ? xirr * 100 : 0}
-        formatter={(v) => xirr === null ? 'N/A' : `${v >= 0 ? '+' : ''}${v.toFixed(2)}%`}
-        sub="Annualised return"
-        positive={xirr !== null && xirr >= 0}
-        neutral={xirr === null}
-        trend={xirr}
-      />
+      <AnimatedStatCard label="Total Invested" rawValue={totalInvested} formatter={formatCurrencyCompact} sub={formatCurrency(totalInvested)} neutral sparkline={<Sparkline data={investedSparkline} color="#0ea5e9" />} />
+      <AnimatedStatCard label="Total P&L" rawValue={pnl} formatter={(v) => `${v >= 0 ? '+' : ''}${formatCurrencyCompact(v)}`} sub={`${pnlPositive ? '+' : ''}${(pnlPercent * 100).toFixed(2)}% returns`} positive={pnlPositive} trend={pnl} sparkline={<Sparkline data={pnlSparkline} color={pnlPositive ? '#10b981' : '#ef4444'} />} />
+      <AnimatedStatCard label="Today's P&L" rawValue={todayPnl} formatter={(v) => `${v >= 0 ? '+' : ''}${formatCurrencyCompact(v)}`} sub={`${todayPositive ? '+' : ''}${todayPnlPercent.toFixed(2)}% today`} positive={todayPositive} neutral={todayPnl === 0} trend={todayPnl} />
+      <AnimatedStatCard label="Overall XIRR" rawValue={xirr !== null ? xirr * 100 : 0} formatter={(v) => xirr === null ? 'N/A' : `${v >= 0 ? '+' : ''}${v.toFixed(2)}%`} sub="Annualised return" positive={xirr !== null && xirr >= 0} neutral={xirr === null} trend={xirr} />
     </div>
   );
 }

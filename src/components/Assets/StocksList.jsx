@@ -12,6 +12,8 @@ import useTableDensity from '../../hooks/useTableDensity';
 import { usePriceFlash } from '../../hooks/usePriceFlash';
 import { SkeletonTable } from '../Common/Skeleton';
 import EmptyState from '../Common/EmptyState';
+import RiskBadge from './RiskBadge';
+import { calculateAssetRisk } from '../../utils/riskCalculations';
 
 function StockForm({ onSubmit, onCancel, initial = null }) {
   const [form, setForm] = useState({
@@ -71,7 +73,7 @@ function StockForm({ onSubmit, onCancel, initial = null }) {
   );
 }
 
-function StockRow({ stock, stats, weight, priceInfo, totalPortfolioValue, onTxn, onEdit, onDelete, dense }) {
+function StockRow({ stock, stats, weight, risk, priceInfo, totalPortfolioValue, onTxn, onEdit, onDelete, dense }) {
   const flash = usePriceFlash(stats.currentPrice);
   const py = dense ? 'py-1.5' : 'py-3';
   return (
@@ -87,6 +89,7 @@ function StockRow({ stock, stats, weight, priceInfo, totalPortfolioValue, onTxn,
     >
       <td className={`${py} pr-4`}>
         <p className="text-gray-900 dark:text-gray-100 font-medium text-xs leading-snug">{stock.name}</p>
+        <div className="mt-1"><RiskBadge risk={risk} /></div>
       </td>
       <td className={`${py} pr-4`}>
         <p className="text-gray-900 dark:text-gray-100 font-semibold">{stock.symbol}</p>
@@ -173,7 +176,8 @@ export default function StocksList() {
   const stockRows = stocks.map(stock => {
     const stats = getAssetStats(stock, 'stocks');
     const weight = totalPortfolioValue > 0 ? (stats.currentValue / totalPortfolioValue) * 100 : 0;
-    return { stock, stats, weight };
+    const risk = calculateAssetRisk({ category: 'stocks', weight, pnlPercent: stats.pnlPercent, volatility: prices[stock.symbol]?.changePercent || 0 });
+    return { stock, stats, weight, risk };
   });
 
   // Totals for footer
@@ -262,7 +266,7 @@ export default function StocksList() {
               </tr>
             </thead>
             <tbody>
-              {sortedRows.map(({ stock, stats, weight }) => {
+              {sortedRows.map(({ stock, stats, weight, risk }) => {
                 const priceInfo = prices[stock.symbol];
                 return (
                   <StockRow
@@ -270,6 +274,7 @@ export default function StocksList() {
                     stock={stock}
                     stats={stats}
                     weight={weight}
+                    risk={risk}
                     priceInfo={priceInfo}
                     totalPortfolioValue={totalPortfolioValue}
                     onTxn={() => setTxAsset(stock)}

@@ -12,6 +12,8 @@ import useTableDensity from '../../hooks/useTableDensity';
 import { usePriceFlash } from '../../hooks/usePriceFlash';
 import { SkeletonTable } from '../Common/Skeleton';
 import EmptyState from '../Common/EmptyState';
+import RiskBadge from './RiskBadge';
+import { calculateAssetRisk } from '../../utils/riskCalculations';
 
 function MFForm({ onSubmit, onCancel, initial = null }) {
   const [form, setForm] = useState({ schemeCode: '', schemeName: '', ...initial });
@@ -51,7 +53,7 @@ function MFForm({ onSubmit, onCancel, initial = null }) {
   );
 }
 
-function MFRow({ mf, stats, weight, priceInfo, totalPortfolioValue, onTxn, onEdit, onDelete, dense }) {
+function MFRow({ mf, stats, weight, risk, priceInfo, totalPortfolioValue, onTxn, onEdit, onDelete, dense }) {
   const flash = usePriceFlash(stats.currentPrice);
   const py = dense ? 'py-1.5' : 'py-3';
   return (
@@ -68,6 +70,7 @@ function MFRow({ mf, stats, weight, priceInfo, totalPortfolioValue, onTxn, onEdi
       <td className={`${py} pr-4 max-w-[200px]`}>
         <p className="text-gray-900 dark:text-gray-100 font-medium text-xs leading-snug truncate">{mf.schemeName}</p>
         <p className="text-gray-400 dark:text-gray-500 text-xs mt-0.5">Code: {mf.schemeCode}</p>
+        <div className="mt-1"><RiskBadge risk={risk} /></div>
         {priceInfo?.date && <p className="text-gray-400 dark:text-gray-500 text-[10px]">NAV: {priceInfo.date}</p>}
       </td>
       <td className={`${py} pr-4 text-gray-700 dark:text-gray-300`}>{formatNumber(stats.totalUnits, 3)}</td>
@@ -146,7 +149,8 @@ export default function MutualFundsList() {
   const mfRows = mfs.map(mf => {
     const stats = getAssetStats(mf, 'mutualFunds');
     const weight = totalPortfolioValue > 0 ? (stats.currentValue / totalPortfolioValue) * 100 : 0;
-    return { mf, stats, weight };
+    const risk = calculateAssetRisk({ category: 'mutualFunds', weight, pnlPercent: stats.pnlPercent, volatility: prices[mf.schemeCode]?.changePercent || 0 });
+    return { mf, stats, weight, risk };
   });
 
   // Totals for footer
@@ -231,7 +235,7 @@ export default function MutualFundsList() {
               </tr>
             </thead>
             <tbody>
-              {sortedRows.map(({ mf, stats, weight }) => {
+              {sortedRows.map(({ mf, stats, weight, risk }) => {
                 const priceInfo = prices[mf.schemeCode];
                 return (
                   <MFRow
@@ -239,6 +243,7 @@ export default function MutualFundsList() {
                     mf={mf}
                     stats={stats}
                     weight={weight}
+                    risk={risk}
                     priceInfo={priceInfo}
                     totalPortfolioValue={totalPortfolioValue}
                     onTxn={() => setTxAsset(mf)}
