@@ -4,18 +4,119 @@ import { AlertTriangle } from 'lucide-react';
 import { usePortfolio } from '../../context/PortfolioContext';
 import { formatCurrency, formatXIRR } from '../../utils/formatters';
 
-const SECTOR_COLORS = ['#6366f1', '#22c55e', '#f59e0b', '#ec4899', '#06b6d4', '#8b5cf6'];
+const SECTOR_COLORS = ['#6366f1', '#22c55e', '#f59e0b', '#ec4899', '#06b6d4', '#8b5cf6', '#ef4444', '#14b8a6', '#f97316', '#84cc16', '#0ea5e9', '#a855f7'];
 const CONCENTRATION_THRESHOLD = 35;
 const SYMBOL_SECTOR = {
-  BANK: 'Finance', HDFC: 'Finance', ICICI: 'Finance', SBIN: 'Finance',
-  INFY: 'IT', TCS: 'IT', TECH: 'IT', WIPRO: 'IT',
-  SUN: 'Healthcare', CIPLA: 'Healthcare', DRREDDY: 'Healthcare',
-  RELIANCE: 'Energy', ONGC: 'Energy',
+  ...Object.fromEntries([
+    'BANK', 'HDFC', 'HDFCBANK', 'HDFC BANK', 'ICICI', 'ICICIBANK', 'ICICI BANK', 'SBIN', 'STATE BANK OF INDIA',
+    'AXIS', 'AXISBANK', 'AXIS BANK', 'KOTAK', 'KOTAKBANK', 'KOTAK MAHINDRA', 'INDUSIND', 'INDUSINDBK',
+    'ADITYA BIRLA CAPITAL', 'ABCAPITAL', 'BANK OF INDIA', 'BANKINDIA', 'CANARA BANK', 'CANBK', 'INDIAN BANK',
+    'INDIANB', 'KARUR VYSYA', 'KARURVYSYA', 'UNION BANK', 'UNIONBANK', 'SOUTH INDIAN BANK', 'SOUTHBANK',
+    'FEDERAL BANK', 'FEDBANK', 'PNB', 'PUNJAB NATIONAL BANK', 'BANK OF BARODA', 'YES BANK', 'IDFCFIRSTB',
+    'BAJAJ FINANCE', 'BAJFINANCE', 'BAJAJ FINSERV', 'BAJAJFINSV', 'JIO FINANCIAL', 'JPM', 'JPMORGAN',
+    'BAC', 'BANK OF AMERICA', 'GS', 'GOLDMAN SACHS', 'V', 'VISA', 'MA', 'MASTERCARD',
+  ].map(key => [key, 'Finance'])),
+  ...Object.fromEntries([
+    'INFY', 'INFOSYS', 'TCS', 'TATA CONSULTANCY', 'WIPRO', 'HCLTECH', 'HCL', 'HCL TECHNOLOGIES',
+    'TECHM', 'TECH MAHINDRA', 'LTIM', 'LTIMINDTREE', 'LTI', 'MINDTREE', 'PERSISTENT', 'MPHASIS', 'COFORGE',
+    'OFSS', 'ORACLE FINANCIAL', 'AAPL', 'APPLE', 'MSFT', 'MICROSOFT', 'GOOGL', 'GOOG', 'GOOGLE', 'ALPHABET',
+    'META', 'META PLATFORMS', 'AMZN', 'AMAZON', 'NVDA', 'NVIDIA', 'NFLX', 'NETFLIX', 'TSLA', 'TESLA',
+    'ADBE', 'ADOBE', 'CRM', 'SALESFORCE', 'AMD', 'ORCL', 'QQQ',
+  ].map(key => [key, 'IT'])),
+  ...Object.fromEntries([
+    'SUN PHARMA', 'SUNPHARMA', 'SUN', 'CIPLA', 'DR REDDY', 'DRREDDY', 'DIVIS', 'DIVISLAB', 'BIOCON', 'LUPIN',
+    'AUROBINDO', 'AUROPHARMA', 'TORRENT PHARMA', 'TORNTPHARM', 'MANKIND', 'ABBOTT', 'APOLLO HOSPITALS',
+    'APOLLOHOSP', 'NARAYANA HRUDAYALAYA', 'NH', 'MAX HEALTHCARE', 'MAXHEALTH', 'JNJ',
+    'JOHNSON AND JOHNSON', 'PFE', 'PFIZER', 'UNH', 'UNITEDHEALTH',
+  ].map(key => [key, 'Healthcare'])),
+  ...Object.fromEntries([
+    'RELIANCE', 'ONGC', 'BPCL', 'IOC', 'INDIAN OIL', 'HPCL', 'HINDUSTAN PETROLEUM', 'GAIL', 'OIL INDIA',
+    'PETRONET', 'ADANI TOTAL GAS', 'ADANITOTALGAS',
+  ].map(key => [key, 'Energy'])),
+  ...Object.fromEntries([
+    'TATA MOTORS', 'TATAMOTORS', 'TMCV', 'MARUTI', 'MARUTI SUZUKI', 'BAJAJ AUTO', 'BAJAJAUTO',
+    'HERO MOTOCORP', 'HEROMOTOCO', 'M AND M', 'M&M', 'MAHINDRA AND MAHINDRA', 'EICHER', 'EICHERMOT',
+    'ASHOK LEYLAND', 'ASHOKLEY', 'TVS MOTOR', 'TVSMOTOR', 'ENDURANCE', 'ENDURANCE TECHNOLOGIES',
+    'LUMAX AUTOTECHNOLOGIES', 'LUMAXTECH', 'PRICOL', 'SHRIRAM PISTONS', 'SHRIPISTON', 'HAPPY FORGINGS',
+    'HAPPYFORGE',
+  ].map(key => [key, 'Automobile'])),
+  ...Object.fromEntries([
+    'HUL', 'HINDUSTAN UNILEVER', 'ITC', 'NESTLE', 'NESTLEIND', 'BRITANNIA', 'DABUR', 'GODREJ CONSUMER',
+    'GODREJCP', 'MARICO', 'EMAMI', 'COLPAL', 'COLGATE', 'TATA CONSUMER', 'TATACONSUM', 'KO', 'COCA COLA',
+    'PEP', 'PEPSICO', 'PG', 'PROCTER AND GAMBLE', 'MANORAMA',
+  ].map(key => [key, 'FMCG'])),
+  ...Object.fromEntries([
+    'TATA STEEL', 'TATASTEEL', 'JSW STEEL', 'JSWSTEEL', 'HINDALCO', 'COAL INDIA', 'COALINDIA', 'VEDANTA',
+    'VEDL', 'NMDC', 'SAIL', 'NALCO', 'NATIONAL ALUMINIUM', 'NATIONALUM', 'JINDAL STEEL', 'JINDALSTEL',
+    'WELCORP',
+  ].map(key => [key, 'Metals'])),
+  ...Object.fromEntries([
+    'LARSEN AND TOUBRO', 'LARSEN TOUBRO', 'L AND T', 'LT', 'ULTRATECH', 'ULTRACEMCO', 'ADANI PORTS',
+    'ADANIPORTS', 'ACC', 'AMBUJA', 'NBCC', 'IRB', 'IRCON', 'RVNL',
+  ].map(key => [key, 'Infrastructure'])),
+  ...Object.fromEntries([
+    'BHARTI AIRTEL', 'BHARTIARTL', 'AIRTEL', 'BHARTI HEXACOM', 'BHARTIHEXA', 'INDUS TOWERS', 'INDUSTOWER',
+    'VODAFONE IDEA', 'IDEA', 'SUNIL BHARTI', 'RELIANCE JIO',
+  ].map(key => [key, 'Telecom'])),
+  ...Object.fromEntries([
+    'TITAN', 'HAVELLS', 'VOLTAS', 'BLUE STAR', 'BLUESTARCO', 'DIXON', 'CROMPTON', 'WHIRLPOOL', 'RR KABEL',
+    'RRKABEL',
+  ].map(key => [key, 'Consumer Durables'])),
+  ...Object.fromEntries([
+    'DMART', 'AVENUE SUPERMARTS', 'AVENUESUPER', 'TRENT', 'WMT', 'WALMART', 'TGT', 'TARGET', 'COST',
+    'COSTCO', 'NKE', 'NIKE', 'ETERNAL', 'ZOMATO', 'PVR RETAIL',
+  ].map(key => [key, 'Retail'])),
+  ...Object.fromEntries([
+    'UPL', 'PI INDUSTRIES', 'PIIND', 'DEEPAK NITRITE', 'DEEPAKNTR', 'AARTI', 'AARTIIND',
+    'COROMANDEL', 'PRIVI SPECIALITY', 'PRIVISCL', 'SRF', 'TATA CHEMICALS', 'TATACHEM',
+  ].map(key => [key, 'Chemicals'])),
+  ...Object.fromEntries([
+    'NTPC', 'POWER GRID', 'POWERGRID', 'ADANI POWER', 'ADANIPOWER', 'TATA POWER', 'TATAPOWER',
+    'JSW ENERGY', 'JSWENERGY', 'TORRENT POWER', 'TORNTPOWER', 'NHPC', 'SJVN', 'TD POWER', 'TDPOWERSYS',
+  ].map(key => [key, 'Power'])),
+  ...Object.fromEntries([
+    'DLF', 'GODREJ PROPERTIES', 'GODREJPROP', 'OBEROI REALTY', 'OBEROIRLTY', 'BRIGADE', 'PRESTIGE',
+    'PHOENIX', 'MACROTECH', 'LODHA', 'SOBHA',
+  ].map(key => [key, 'Real Estate'])),
+  ...Object.fromEntries([
+    'HAL', 'HINDUSTAN AERONAUTICS', 'BEL', 'BHARAT ELECTRONICS', 'BDL', 'BHARAT DYNAMICS',
+    'COCHIN SHIPYARD', 'COCHINSHIP', 'PARAS DEFENCE',
+  ].map(key => [key, 'Aerospace'])),
+  ...Object.fromEntries([
+    'SUN TV', 'SUNTV', 'ZEE', 'ZEEL', 'PVR INOX', 'PVRINOX', 'PVR', 'INOX', 'NETWORK18', 'TV18',
+  ].map(key => [key, 'Media'])),
+  ...Object.fromEntries([
+    'AIA ENGINEERING', 'AIAENG', 'SIEMENS', 'ABB', 'CUMMINS', 'KIRLOSKAR OIL', 'KIRLOSENG', 'CG POWER',
+    'CGPOWER',
+  ].map(key => [key, 'Industrial'])),
+  ...Object.fromEntries([
+    'NIFTY 50', 'NEXT 50', 'MIDCAP 150', 'SMALLCAP 250', 'NASDAQ 100', 'MON100', 'NIFTYBEES',
+    'MID150BEES', 'SMALLCAP', 'HDFCNEXT50', 'INDEX FUND',
+  ].map(key => [key, 'Index Funds'])),
 };
 
+const SECTOR_MATCHES = Object.entries(SYMBOL_SECTOR).sort(([a], [b]) => b.length - a.length);
+
+function normalizeLookupValue(value = '') {
+  return String(value)
+    .toUpperCase()
+    .replace(/\.[A-Z]{1,5}\b/g, ' ')
+    .replace(/&/g, ' AND ')
+    .replace(/[^A-Z0-9]+/g, ' ')
+    .replace(/\b(LTD|LIMITED|INDUSTRIES|INDUSTRY|CORPORATION|CORP|INC|INCORPORATED|COMPANY|CO|PLC|TRUST|HOLDINGS|HOLDING|SEZ|ETF|BEES|SERIES|CLASS)\b/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 function mapSector(name = '', symbol = '') {
-  const key = `${name} ${symbol}`.toUpperCase();
-  const match = Object.entries(SYMBOL_SECTOR).find(([k]) => key.includes(k));
+  const normalizedName = normalizeLookupValue(name);
+  const normalizedSymbol = normalizeLookupValue(symbol).replace(/\s+/g, '');
+  const key = ` ${[normalizedName, normalizedSymbol].filter(Boolean).join(' ')} `;
+  const match = SECTOR_MATCHES.find(([pattern]) => {
+    const normalizedPattern = normalizeLookupValue(pattern);
+    const compactPattern = normalizedPattern.replace(/\s+/g, '');
+    return normalizedSymbol === compactPattern || key.includes(` ${normalizedPattern} `);
+  });
   return match ? match[1] : 'Others';
 }
 
