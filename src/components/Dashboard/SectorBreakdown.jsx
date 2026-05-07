@@ -95,8 +95,6 @@ const SYMBOL_SECTOR = {
   ].map(key => [key, 'Index Funds'])),
 };
 
-const SECTOR_MATCHES = Object.entries(SYMBOL_SECTOR).sort(([a], [b]) => b.length - a.length);
-
 function normalizeLookupValue(value = '') {
   return String(value)
     .toUpperCase()
@@ -108,16 +106,22 @@ function normalizeLookupValue(value = '') {
     .trim();
 }
 
+const SECTOR_MATCHES = Object.entries(SYMBOL_SECTOR)
+  .sort(([a], [b]) => b.length - a.length)
+  .map(([pattern, sector]) => ({
+    sector,
+    normalizedPattern: normalizeLookupValue(pattern),
+    compactPattern: normalizeLookupValue(pattern).replace(/\s+/g, ''),
+  }));
+
 function mapSector(name = '', symbol = '') {
   const normalizedName = normalizeLookupValue(name);
   const normalizedSymbol = normalizeLookupValue(symbol).replace(/\s+/g, '');
-  const key = ` ${[normalizedName, normalizedSymbol].filter(Boolean).join(' ')} `;
-  const match = SECTOR_MATCHES.find(([pattern]) => {
-    const normalizedPattern = normalizeLookupValue(pattern);
-    const compactPattern = normalizedPattern.replace(/\s+/g, '');
-    return normalizedSymbol === compactPattern || key.includes(` ${normalizedPattern} `);
+  const paddedKey = ` ${[normalizedName, normalizedSymbol].filter(Boolean).join(' ')} `;
+  const match = SECTOR_MATCHES.find(({ normalizedPattern, compactPattern }) => {
+    return normalizedSymbol === compactPattern || paddedKey.includes(` ${normalizedPattern} `);
   });
-  return match ? match[1] : 'Others';
+  return match ? match.sector : 'Others';
 }
 
 export default function SectorBreakdown() {
