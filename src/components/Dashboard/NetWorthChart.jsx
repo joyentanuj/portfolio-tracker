@@ -1,7 +1,15 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { usePortfolio } from '../../context/PortfolioContext';
 import { formatCurrencyCompact } from '../../utils/formatters';
+
+const DATE_RANGES = [
+  { label: '1M', months: 1 },
+  { label: '3M', months: 3 },
+  { label: '6M', months: 6 },
+  { label: '1Y', months: 12 },
+  { label: 'All', months: null },
+];
 
 const FALLBACK_USD_INR = 85.0;
 
@@ -86,6 +94,7 @@ function buildMonthlyInvestedData(data, prices) {
       month: cursor.toLocaleDateString('en-IN', { month: 'short', year: '2-digit' }),
       invested: Math.max(0, Math.round(cumulative)),
       value: Math.round(portfolioValue),
+      date: new Date(cursor),
     });
     cursor.setMonth(cursor.getMonth() + 1);
   }
@@ -93,27 +102,36 @@ function buildMonthlyInvestedData(data, prices) {
 }
 
 const VALUE_COLOR = '#10b981';
+const INVESTED_COLOR = '#6366f1';
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
-  const portfolioValue = payload[0]?.value;
-  const investedValue = payload[0]?.payload?.invested;
   return (
     <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 shadow-xl text-sm">
       <p className="text-gray-500 dark:text-gray-400 text-xs mb-1">{label}</p>
-      <p className="text-emerald-500 font-semibold">Value: {formatCurrencyCompact(portfolioValue)}</p>
-      {investedValue !== undefined && (
-        <p className="text-indigo-500 font-medium text-xs mt-0.5">Invested: {formatCurrencyCompact(investedValue)}</p>
-      )}
+      {payload.map((p) => (
+        <p key={p.dataKey} style={{ color: p.color }} className="font-semibold text-xs">
+          {p.name}: {formatCurrencyCompact(p.value)}
+        </p>
+      ))}
     </div>
   );
 };
 
 export default function NetWorthChart() {
   const { data, prices } = usePortfolio();
-  const chartData = useMemo(() => buildMonthlyInvestedData(data, prices), [data, prices]);
+  const allData = useMemo(() => buildMonthlyInvestedData(data, prices), [data, prices]);
+  const [rangeMonths, setRangeMonths] = useState(null);
+  const [showInvested, setShowInvested] = useState(false);
 
-  if (chartData.length < 2) {
+  const chartData = useMemo(() => {
+    if (!rangeMonths) return allData;
+    const cutoff = new Date();
+    cutoff.setMonth(cutoff.getMonth() - rangeMonths);
+    return allData.filter(d => d.date >= cutoff);
+  }, [allData, rangeMonths]);
+
+  if (allData.length < 2) {
     return (
       <div className="flex items-center justify-center h-32 text-gray-400 dark:text-gray-500 text-sm">
         Add transactions to see your investment timeline.
@@ -122,17 +140,55 @@ export default function NetWorthChart() {
   }
 
   return (
-    <div className="h-44">
-      <ResponsiveContainer width="100%" height="100%">
-        <ComposedChart data={chartData} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="currentColor" className="text-gray-100 dark:text-gray-700" vertical={false} />
-          <XAxis dataKey="month" tick={{ fontSize: 10, fill: 'currentColor' }} className="text-gray-400 dark:text-gray-500" tickLine={false} axisLine={false} interval="preserveStartEnd" />
-          <YAxis tickFormatter={v => formatCurrencyCompact(v)} tick={{ fontSize: 10, fill: 'currentColor' }} className="text-gray-400 dark:text-gray-500" tickLine={false} axisLine={false} width={52} />
-          <Tooltip content={<CustomTooltip />} />
-          <Bar dataKey="value" fill={VALUE_COLOR} radius={[4, 4, 0, 0]} />
-          <Line type="monotone" dataKey="value" stroke={VALUE_COLOR} strokeWidth={2} dot={false} activeDot={{ r: 4, fill: VALUE_COLOR }} />
-        </ComposedChart>
-      </ResponsiveContainer>
+    <div>
+      {/* Controls */}
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+        <div className="flex items-center gap-0.5 bg-gray-100 dark:bg-gray-700/50 rounded-lg p-0.5">
+          {DATE_RANGES.map(({ label, months }) => (
+            <button
+              key={label}
+              onClick={() => setRangeMonths(months)}
+              aria-pressed={rangeMonths === months}
+              className={`px-2 py-1 rounded-md text-[10px] font-semibold transition-all ${
+                rangeMonths === months
+                  ? 'bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
+        <button
+          onClick={() => setShowInvested(prev => !prev)}
+          aria-pressed={showInvested}
+          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-semibold transition-all border ${
+            showInvested
+              ? 'bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-700'
+              : 'bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:border-indigo-300'
+          }`}
+        >
+          <span className="w-2 h-2 rounded-full inline-block" style={{ background: INVESTED_COLOR }} />
+          {showInvested ? 'Hide Invested' : 'Show Invested'}
+        </button>
+      </div>
+
+      <div className="h-44">
+        <ResponsiveContainer width="100%" height="100%">
+          <ComposedChart data={chartData} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="currentColor" className="text-gray-100 dark:text-gray-700" vertical={false} />
+            <XAxis dataKey="month" tick={{ fontSize: 10, fill: 'currentColor' }} className="text-gray-400 dark:text-gray-500" tickLine={false} axisLine={false} interval="preserveStartEnd" />
+            <YAxis tickFormatter={v => formatCurrencyCompact(v)} tick={{ fontSize: 10, fill: 'currentColor' }} className="text-gray-400 dark:text-gray-500" tickLine={false} axisLine={false} width={52} />
+            <Tooltip content={<CustomTooltip />} />
+            <Bar dataKey="value" name="Portfolio Value" fill={VALUE_COLOR} radius={[4, 4, 0, 0]} />
+            <Line type="monotone" dataKey="value" name="Portfolio Value" stroke={VALUE_COLOR} strokeWidth={2} dot={false} activeDot={{ r: 4, fill: VALUE_COLOR }} />
+            {showInvested && (
+              <Line type="monotone" dataKey="invested" name="Invested" stroke={INVESTED_COLOR} strokeWidth={2} strokeDasharray="4 2" dot={false} activeDot={{ r: 4, fill: INVESTED_COLOR }} />
+            )}
+          </ComposedChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   );
 }

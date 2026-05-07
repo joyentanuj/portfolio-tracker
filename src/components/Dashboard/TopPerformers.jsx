@@ -1,17 +1,30 @@
 import React, { useState } from 'react';
-import { TrendingUp, TrendingDown } from 'lucide-react';
+import { TrendingUp, TrendingDown, Trophy, ArrowDownCircle } from 'lucide-react';
 import { usePortfolio } from '../../context/PortfolioContext';
 import { CATEGORY_LABELS } from '../../utils/constants';
 import { formatCurrency, formatPercent } from '../../utils/formatters';
 
-function AssetRow({ asset, isGainer, maxPct }) {
+function AssetRow({ asset, isGainer, maxPct, rank }) {
   const barWidth = maxPct > 0 ? Math.min((Math.abs(asset.pnlPercent) / maxPct) * 100, 100) : 0;
+  const isTopRank = rank === 0;
   return (
-    <div className="py-2.5 border-b border-gray-100 dark:border-gray-700 last:border-0">
+    <div className="py-2.5 border-b border-gray-100 dark:border-gray-700 last:border-0 group">
       <div className="flex items-center justify-between mb-1">
-        <div className="min-w-0 flex-1">
-          <p className="text-gray-900 dark:text-gray-100 text-sm font-medium truncate">{asset.name}</p>
-          <p className="text-gray-400 dark:text-gray-500 text-xs">{asset.category}</p>
+        <div className="min-w-0 flex-1 flex items-center gap-2">
+          {isTopRank && (
+            <span
+              title={isGainer ? 'Top Gainer' : 'Top Loser'}
+              className={`shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full text-white text-[9px] font-bold ${
+                isGainer ? 'bg-green-500' : 'bg-red-500'
+              }`}
+            >
+              {isGainer ? <Trophy className="w-2.5 h-2.5" /> : <ArrowDownCircle className="w-2.5 h-2.5" />}
+            </span>
+          )}
+          <div className="min-w-0">
+            <p className="text-gray-900 dark:text-gray-100 text-sm font-medium truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{asset.name}</p>
+            <p className="text-gray-400 dark:text-gray-500 text-xs">{asset.category}</p>
+          </div>
         </div>
         <div className="text-right ml-3 shrink-0">
           <p className={`text-sm font-semibold ${isGainer ? 'text-green-600' : 'text-red-600'}`}>
@@ -38,9 +51,12 @@ function GainersList({ gainers, maxGainerPct }) {
     <div>
       <h4 className="text-green-600 font-semibold text-sm mb-3 flex items-center gap-2">
         <TrendingUp className="w-4 h-4" /> Top Gainers
+        {gainers.length > 0 && (
+          <span className="ml-auto text-xs text-green-500 font-normal">{gainers.length} assets</span>
+        )}
       </h4>
       {gainers.length > 0
-        ? gainers.map((a, i) => <AssetRow key={i} asset={a} isGainer maxPct={maxGainerPct} />)
+        ? gainers.map((a, i) => <AssetRow key={i} asset={a} isGainer maxPct={maxGainerPct} rank={i} />)
         : <p className="text-gray-400 dark:text-gray-500 text-sm">No gainers yet</p>}
     </div>
   );
@@ -51,9 +67,12 @@ function LosersList({ losers, maxLoserPct }) {
     <div>
       <h4 className="text-red-600 font-semibold text-sm mb-3 flex items-center gap-2">
         <TrendingDown className="w-4 h-4" /> Top Losers
+        {losers.length > 0 && (
+          <span className="ml-auto text-xs text-red-500 font-normal">{losers.length} assets</span>
+        )}
       </h4>
       {losers.length > 0
-        ? losers.map((a, i) => <AssetRow key={i} asset={a} isGainer={false} maxPct={maxLoserPct} />)
+        ? losers.map((a, i) => <AssetRow key={i} asset={a} isGainer={false} maxPct={maxLoserPct} rank={i} />)
         : <p className="text-gray-400 dark:text-gray-500 text-sm">No losers</p>}
     </div>
   );
