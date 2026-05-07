@@ -47,6 +47,7 @@ export default function Navbar({ onMenuClick, title, isDark, onToggleDark }) {
     : `Updated ${Math.floor(secondsAgo / 60)}m ago`;
 
   return (
+    <>
     <header className="h-14 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center px-4 gap-4 sticky top-0 z-10">
       <button
         onClick={onMenuClick}
@@ -113,7 +114,8 @@ export default function Navbar({ onMenuClick, title, isDark, onToggleDark }) {
         <RefreshCw className="w-4 h-4" />
       </button>
 
-      <GlobalSearch isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
     </header>
+    <GlobalSearch isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
+  </>
   );
 }
