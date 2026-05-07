@@ -4,7 +4,7 @@ import { usePortfolio } from '../../context/PortfolioContext';
 import { CATEGORY_LABELS, CATEGORY_COLORS, CATEGORY_ICONS } from '../../utils/constants';
 import { formatCurrencyCompact } from '../../utils/formatters';
 
-// Ideal allocation targets (can be extended with user preferences)
+// Sample target allocation model (balanced portfolio). These can be made configurable in settings.
 const IDEAL_ALLOCATION = {
   stocks: 35,
   mutualFunds: 25,

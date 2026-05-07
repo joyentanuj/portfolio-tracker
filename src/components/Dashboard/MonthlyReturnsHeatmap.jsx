@@ -109,6 +109,8 @@ export default function MonthlyReturnsHeatmap() {
               return (
                 <div
                   key={mi}
+                  role="cell"
+                  aria-label={pct !== null ? `${MONTH_LABELS[mi]} ${year}: ${pct >= 0 ? '+' : ''}${pct.toFixed(2)}% returns, portfolio value ${formatCurrencyCompact(cell.value)}` : `${MONTH_LABELS[mi]} ${year}: No data`}
                   title={pct !== null ? `${MONTH_LABELS[mi]} ${year}: ${pct >= 0 ? '+' : ''}${pct.toFixed(2)}% (${formatCurrencyCompact(cell.value)})` : 'No data'}
                   className={`h-6 rounded text-[8px] font-semibold flex items-center justify-center transition-all cursor-default hover:opacity-80 ${bg} ${text}`}
                 >

@@ -32,7 +32,7 @@ function GaugeArc({ score }) {
   const scoreColor = score >= 70 ? '#10b981' : score >= 40 ? '#f59e0b' : '#ef4444';
 
   return (
-    <svg viewBox="0 0 140 80" className="w-36 h-20 overflow-visible" aria-label={`Portfolio health score: ${score} out of 100`}>
+    <svg viewBox="0 0 140 80" role="img" className="w-36 h-20 overflow-visible" aria-label={`Portfolio health score: ${score} out of 100`}>
       <path d={bgPath} fill="none" stroke="currentColor" strokeWidth="10" strokeLinecap="round"
         className="text-gray-100 dark:text-gray-700" />
       {fillPath && (

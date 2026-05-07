@@ -58,18 +58,16 @@ export default function Dashboard() {
     });
   }, [portfolioStats, sortBy]);
 
-  // Identify best and worst performers
-  const activeWithStats = sortedCategories.map(cat => ({
-    cat,
-    stats: portfolioStats.categoryBreakdown[cat],
-  })).filter(({ stats }) => stats && stats.totalValue > 0);
+  // Identify best and worst performers from active categories with positive value
+  const activeWithStats = sortedCategories
+    .map(cat => ({ cat, stats: portfolioStats.categoryBreakdown[cat] }))
+    .filter(({ stats }) => stats && stats.totalValue > 0);
 
-  const bestCat = activeWithStats.length > 0
-    ? activeWithStats.reduce((best, cur) => cur.stats.pnlPercent > best.stats.pnlPercent ? cur : best, activeWithStats[0])?.cat
-    : null;
-  const worstCat = activeWithStats.length > 0
-    ? activeWithStats.reduce((worst, cur) => cur.stats.pnlPercent < worst.stats.pnlPercent ? cur : worst, activeWithStats[0])?.cat
-    : null;
+  const findExtreme = (arr, compareFn) =>
+    arr.length > 0 ? arr.reduce((acc, cur) => compareFn(cur.stats, acc.stats) ? cur : acc, arr[0]).cat : null;
+
+  const bestCat = findExtreme(activeWithStats, (a, b) => a.pnlPercent > b.pnlPercent);
+  const worstCat = findExtreme(activeWithStats, (a, b) => a.pnlPercent < b.pnlPercent);
 
   return (
     <div className="space-y-8">
