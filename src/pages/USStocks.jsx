@@ -3,6 +3,9 @@ import Card from '../components/Common/Card';
 import StatCard from '../components/Common/StatCard';
 import USStocksList from '../components/Assets/USStocksList';
 import { usePortfolio } from '../context/PortfolioContext';
+import AdvancedFilters from '../components/Common/AdvancedFilters';
+import { useFilters } from '../hooks/useFilters';
+import { CATEGORY_LABELS } from '../utils/constants';
 import { formatXIRR } from '../utils/formatters';
 
 function formatUSD(amount) {
@@ -17,6 +20,8 @@ function formatUSD(amount) {
 
 export default function USStocks() {
   const { getCategoryStats, prices } = usePortfolio();
+  const { filters, setFilters, clearFilters } = useFilters();
+
   const stats = getCategoryStats('usStocks');
   const usdInrRate = prices['USDINR=X']?.price || 85.0;
 
@@ -26,6 +31,12 @@ export default function USStocks() {
 
   return (
     <div className="space-y-6">
+      <AdvancedFilters
+        categories={[{ value: 'all', label: CATEGORY_LABELS.usStocks }]}
+        filters={filters}
+        onChange={setFilters}
+        onClear={clearFilters}
+      />
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
           {

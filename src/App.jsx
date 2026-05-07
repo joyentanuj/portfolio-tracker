@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { HashRouter, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { PortfolioProvider } from './context/PortfolioContext';
+import { ToastProvider } from './contexts/ToastContext';
 import Sidebar from './components/Layout/Sidebar';
 import Navbar from './components/Layout/Navbar';
-import Toast from './components/Common/Toast';
+import ToastContainer from './components/Common/ToastContainer';
 import Breadcrumbs from './components/Common/Breadcrumbs';
+import HelpModal from './components/Common/HelpModal';
 import { useDarkMode } from './hooks/useDarkMode';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 
@@ -36,6 +38,7 @@ const NAV_ROUTES = ['/', '/stocks', '/us-stocks', '/mutual-funds', '/fixed-depos
 
 function AppLayout({ isDark, toggleDark }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const title = PAGE_TITLES[location.pathname] || 'Portfolio Tracker';
@@ -43,38 +46,28 @@ function AppLayout({ isDark, toggleDark }) {
   const currentRouteIdx = NAV_ROUTES.indexOf(location.pathname);
 
   useKeyboardShortcuts([
-    {
-      key: 'j',
-      handler: () => {
-        const next = currentRouteIdx < NAV_ROUTES.length - 1 ? NAV_ROUTES[currentRouteIdx + 1] : NAV_ROUTES[0];
-        navigate(next);
-      },
-      description: 'Navigate to next page',
-    },
-    {
-      key: 'k',
-      handler: () => {
-        const prev = currentRouteIdx > 0 ? NAV_ROUTES[currentRouteIdx - 1] : NAV_ROUTES[NAV_ROUTES.length - 1];
-        navigate(prev);
-      },
-      description: 'Navigate to previous page',
-    },
-    {
-      key: 'g',
-      handler: () => navigate('/'),
-      description: 'Go to dashboard',
-    },
+    { key: 'j', handler: () => navigate(currentRouteIdx < NAV_ROUTES.length - 1 ? NAV_ROUTES[currentRouteIdx + 1] : NAV_ROUTES[0]), description: 'Navigate to next page' },
+    { key: 'k', handler: () => navigate(currentRouteIdx > 0 ? NAV_ROUTES[currentRouteIdx - 1] : NAV_ROUTES[NAV_ROUTES.length - 1]), description: 'Navigate to previous page' },
+    { key: 'g', handler: () => navigate('/'), description: 'Go to dashboard' },
   ]);
+
+  useEffect(() => {
+    const onKey = (e) => {
+      const target = e.target;
+      const isTyping = target?.tagName === 'INPUT' || target?.tagName === 'TEXTAREA' || target?.isContentEditable;
+      if (e.key === '?' && !isTyping) {
+        e.preventDefault();
+        setHelpOpen(true);
+      }
+      if (e.key === 'Escape') setHelpOpen(false);
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, []);
 
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900 overflow-hidden">
-      {/* Skip to content for accessibility */}
-      <a
-        href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[200] focus:px-4 focus:py-2 focus:bg-indigo-600 focus:text-white focus:rounded-lg focus:text-sm focus:font-semibold"
-      >
-        Skip to content
-      </a>
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[200] focus:px-4 focus:py-2 focus:bg-indigo-600 focus:text-white focus:rounded-lg focus:text-sm focus:font-semibold">Skip to content</a>
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} isDark={isDark} onToggleDark={toggleDark} />
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <Navbar onMenuClick={() => setSidebarOpen(true)} title={title} isDark={isDark} onToggleDark={toggleDark} />
@@ -94,7 +87,8 @@ function AppLayout({ isDark, toggleDark }) {
           </Routes>
         </main>
       </div>
-      <Toast />
+      <ToastContainer position="bottom-right" />
+      <HelpModal isOpen={helpOpen} onClose={() => setHelpOpen(false)} />
     </div>
   );
 }
@@ -105,7 +99,9 @@ export default function App() {
   return (
     <HashRouter>
       <PortfolioProvider>
-        <AppLayout isDark={isDark} toggleDark={toggle} />
+        <ToastProvider>
+          <AppLayout isDark={isDark} toggleDark={toggle} />
+        </ToastProvider>
       </PortfolioProvider>
     </HashRouter>
   );

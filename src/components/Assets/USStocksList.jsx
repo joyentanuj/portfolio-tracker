@@ -12,6 +12,8 @@ import useTableDensity from '../../hooks/useTableDensity';
 import { usePriceFlash } from '../../hooks/usePriceFlash';
 import { SkeletonTable } from '../Common/Skeleton';
 import EmptyState from '../Common/EmptyState';
+import RiskBadge from './RiskBadge';
+import { calculateAssetRisk } from '../../utils/riskCalculations';
 
 function formatUSD(amount) {
   if (amount === null || amount === undefined || isNaN(amount)) return '$0.00';
@@ -81,7 +83,7 @@ function USStockForm({ onSubmit, onCancel, initial = null }) {
   );
 }
 
-function USStockRow({ stock, stats, weight, priceInfo, usdInrRate, totalPortfolioValue, onTxn, onEdit, onDelete, dense }) {
+function USStockRow({ stock, stats, weight, risk, priceInfo, usdInrRate, totalPortfolioValue, onTxn, onEdit, onDelete, dense }) {
   const flash = usePriceFlash(stats.currentPrice);
   const py = dense ? 'py-1.5' : 'py-3';
   return (
@@ -97,6 +99,7 @@ function USStockRow({ stock, stats, weight, priceInfo, usdInrRate, totalPortfoli
     >
       <td className={`${py} pr-4`}>
         <p className="text-gray-900 dark:text-gray-100 font-medium text-xs leading-snug">{stock.name}</p>
+        <div className="mt-1"><RiskBadge risk={risk} /></div>
       </td>
       <td className={`${py} pr-4`}>
         <p className="text-gray-900 dark:text-gray-100 font-semibold">{stock.symbol}</p>
@@ -187,7 +190,8 @@ export default function USStocksList() {
     const stats = getAssetStats(stock, 'usStocks');
     const currentValueINR = stats.currentValue * usdInrRate;
     const weight = totalPortfolioValue > 0 ? (currentValueINR / totalPortfolioValue) * 100 : 0;
-    return { stock, stats, weight };
+    const risk = calculateAssetRisk({ category: 'usStocks', weight, pnlPercent: stats.pnlPercent, volatility: prices[stock.symbol]?.changePercent || 0 });
+    return { stock, stats, weight, risk };
   });
 
   // Totals for footer (in USD)
@@ -275,7 +279,7 @@ export default function USStocksList() {
               </tr>
             </thead>
             <tbody>
-              {sortedRows.map(({ stock, stats, weight }) => {
+              {sortedRows.map(({ stock, stats, weight, risk }) => {
                 const priceInfo = prices[stock.symbol];
                 return (
                   <USStockRow
@@ -283,6 +287,7 @@ export default function USStocksList() {
                     stock={stock}
                     stats={stats}
                     weight={weight}
+                    risk={risk}
                     priceInfo={priceInfo}
                     usdInrRate={usdInrRate}
                     totalPortfolioValue={totalPortfolioValue}

@@ -5,11 +5,15 @@ import FDsList from '../components/Assets/FDsList';
 import PPFList from '../components/Assets/PPFList';
 import EPFOList from '../components/Assets/EPFOList';
 import { usePortfolio } from '../context/PortfolioContext';
+import AdvancedFilters from '../components/Common/AdvancedFilters';
+import { useFilters } from '../hooks/useFilters';
+import { CATEGORY_LABELS } from '../utils/constants';
 import { formatCurrency, formatXIRR } from '../utils/formatters';
 
 export default function FixedDeposits() {
   const { getCategoryStats } = usePortfolio();
   const [activeTab, setActiveTab] = useState('fd');
+  const { filters, setFilters, clearFilters } = useFilters();
 
   const fdStats = getCategoryStats('fixedDeposits');
   const ppfStats = getCategoryStats('ppf');
@@ -29,6 +33,12 @@ export default function FixedDeposits() {
 
   return (
     <div className="space-y-6">
+      <AdvancedFilters
+        categories={[{ value: 'all', label: CATEGORY_LABELS.fixedDeposits }]}
+        filters={filters}
+        onChange={setFilters}
+        onClear={clearFilters}
+      />
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <StatCard label="Total Value" value={formatCurrency(combined.totalValue)} color="text-gray-900 dark:text-gray-100" />
         <StatCard label="Total Invested" value={formatCurrency(combined.totalInvested)} color="text-gray-900 dark:text-gray-100" />
