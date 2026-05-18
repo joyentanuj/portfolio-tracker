@@ -247,10 +247,16 @@ export function PortfolioProvider({ children }) {
             const legacyEmployer = Number(a.employerContribution) || 0;
             const legacyTotal = legacyEmployee + legacyEmployer;
             const legacyInterest = Math.max(0, (Number(a.currentBalance) || 0) - legacyTotal);
+            const migrationDate = a.dateOfJoining
+              || (() => {
+                const txTime = new Date(newTx.date).getTime();
+                if (Number.isNaN(txTime)) return new Date().toISOString().split('T')[0];
+                return new Date(txTime - (24 * 60 * 60 * 1000)).toISOString().split('T')[0];
+              })();
             const migrationTx = legacyTotal > 0 || legacyInterest > 0
               ? {
                 id: generateId(),
-                date: a.dateOfJoining || newTx.date,
+                date: migrationDate,
                 type: 'contribution',
                 employeeAmount: legacyEmployee,
                 employerAmount: legacyEmployer,

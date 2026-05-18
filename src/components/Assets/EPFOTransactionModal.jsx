@@ -25,14 +25,15 @@ function EPFOTransactionForm({ onSubmit, onCancel, accountName, initialTx = null
   const [err, setErr] = useState('');
 
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
+  const isInvalidAmount = (value) => value === '' || Number.isNaN(Number(value)) || Number(value) < 0;
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
     if (!form.date) return setErr('Transaction date is required');
-    if (!form.employeeAmount || isNaN(form.employeeAmount) || Number(form.employeeAmount) < 0)
+    if (isInvalidAmount(form.employeeAmount))
       return setErr('Enter valid employee contribution');
-    if (!form.employerAmount || isNaN(form.employerAmount) || Number(form.employerAmount) < 0)
+    if (isInvalidAmount(form.employerAmount))
       return setErr('Enter valid employer contribution');
 
     setErr('');
