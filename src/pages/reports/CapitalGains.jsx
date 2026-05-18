@@ -4,8 +4,8 @@ import Button from '../../components/Common/Button';
 import { usePortfolio } from '../../context/PortfolioContext';
 import { formatCurrency, formatDate } from '../../utils/formatters';
 
-// Equity LTCG exemption limit under current Indian tax rules (update if laws change).
-const LTCG_EXEMPTION_LIMIT = 100000;
+// Equity LTCG exemption limit under current Indian tax rules (FY 2024-25 onward).
+const LTCG_EXEMPTION_LIMIT = 125000;
 
 function getFinancialYear(dateStr) {
   const date = new Date(dateStr);
@@ -30,7 +30,7 @@ export default function CapitalGains() {
         const holdingDays = Math.max(0, (sellDate - firstBuy) / (1000 * 60 * 60 * 24));
         const type = holdingDays < 365 ? 'stcg' : 'ltcg';
         const debtLike = ['fixedDeposits', 'debt', 'cash'].includes(category);
-        const taxRate = type === 'stcg' ? (debtLike ? 0.3 : 0.15) : (debtLike ? 0.2 : 0.1);
+        const taxRate = type === 'stcg' ? (debtLike ? 0.3 : 0.2) : 0.125;
         const sellAmount = Number(sellTx.amount || 0);
         const cost = Number(sellTx.quantity || 0) * avgBuyPrice;
         const gain = sellAmount - cost;

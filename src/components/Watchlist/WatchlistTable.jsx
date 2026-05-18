@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { Bell } from 'lucide-react';
 import { usePortfolio } from '../../context/PortfolioContext';
 import { formatCurrency, formatPercent } from '../../utils/formatters';
 import Button from '../Common/Button';
@@ -119,7 +120,7 @@ export default function WatchlistTable() {
                   <p className="text-gray-900 dark:text-gray-100 font-medium">{item.name}</p>
                   <p className="text-xs text-gray-500">
                     {item.symbol}
-                    {item.targetHit && <span className="ml-1" aria-label="Target hit" title="Target hit">🔔</span>}
+                    {item.targetHit && <Bell className="inline-block ml-1 w-3 h-3 text-amber-500" aria-label="Target hit" title="Target hit" />}
                   </p>
                 </td>
                 <td className="py-2 pr-3 text-right">{formatCurrency(item.currentPrice)}</td>

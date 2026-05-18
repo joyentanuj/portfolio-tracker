@@ -4,8 +4,8 @@ import Card from '../../components/Common/Card';
 import { usePortfolio } from '../../context/PortfolioContext';
 import { formatCurrency } from '../../utils/formatters';
 
-// Indicative rates for tax planning in current regime (update if laws change).
-const TAX_RATES = { STCG: 0.3, LTCG: 0.2 };
+// Indicative equity tax rates for FY 2024-25 onward (update if laws change).
+const TAX_RATES = { STCG: 0.2, LTCG: 0.125 };
 
 export default function TaxLossHarvesting() {
   const { data, getAssetStats } = usePortfolio();

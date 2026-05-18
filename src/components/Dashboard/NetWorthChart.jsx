@@ -193,15 +193,19 @@ export default function NetWorthChart() {
              <Legend wrapperStyle={{ fontSize: 11 }} />
              <Bar dataKey="invested" name="Invested" fill={INVESTED_COLOR} radius={[4, 4, 0, 0]} />
              <Area dataKey="gain" name="Gain / Loss" fill={valueColor} fillOpacity={0.18} stroke={false} />
-             <Line
-               type="monotone"
-               dataKey="value"
-               name="Current Value"
-               stroke={valueColor}
-               strokeWidth={2}
-               dot={({ payload, ...props }) => (payload.txCount > 0 ? <circle {...props} r={3} fill={valueColor} /> : null)}
-               activeDot={{ r: 4, fill: valueColor }}
-             />
+              <Line
+                type="monotone"
+                dataKey="value"
+                name="Current Value"
+                stroke={valueColor}
+                strokeWidth={2}
+                dot={({ payload, ...props }) => (
+                  payload.txCount > 0
+                    ? <circle {...props} r={3} fill={valueColor}><title>Month with transactions</title></circle>
+                    : null
+                )}
+                activeDot={{ r: 4, fill: valueColor }}
+              />
              {showInvested && (
                <Line type="monotone" dataKey="invested" name="Invested Trend" stroke={INVESTED_COLOR} strokeWidth={2} strokeDasharray="4 2" dot={false} activeDot={{ r: 4, fill: INVESTED_COLOR }} />
              )}
