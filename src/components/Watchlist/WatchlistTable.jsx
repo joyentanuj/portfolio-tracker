@@ -4,6 +4,42 @@ import { formatCurrency, formatPercent } from '../../utils/formatters';
 import Button from '../Common/Button';
 import Modal from '../Common/Modal';
 
+function createAssetFromWatchlistItem(item) {
+  const category = item.type === 'mutualFund' ? 'mutualFunds' : 'stocks';
+  const unitPrice = item.currentPrice || item.targetPrice || 0;
+  const transaction = {
+    type: 'buy',
+    date: new Date().toISOString().split('T')[0],
+    quantity: 1,
+    price: unitPrice,
+    amount: unitPrice,
+    notes: 'From watchlist',
+  };
+
+  if (item.type === 'mutualFund') {
+    return {
+      category,
+      asset: {
+        schemeCode: item.symbol,
+        schemeName: item.name,
+        category,
+        transactions: [transaction],
+      },
+    };
+  }
+
+  return {
+    category,
+    asset: {
+      symbol: item.symbol,
+      name: item.name,
+      exchange: 'NSE',
+      category,
+      transactions: [transaction],
+    },
+  };
+}
+
 function WatchlistForm({ onSubmit, onCancel }) {
   const [form, setForm] = useState({ type: 'stock', symbol: '', name: '', targetPrice: '', notes: '' });
   const inputClass = 'w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-gray-100';
@@ -104,10 +140,7 @@ export default function WatchlistTable() {
                   <div className="inline-flex gap-1">
                     <button
                       onClick={() => {
-                        const category = item.type === 'mutualFund' ? 'mutualFunds' : 'stocks';
-                        const asset = item.type === 'mutualFund'
-                          ? { schemeCode: item.symbol, schemeName: item.name, category, transactions: [{ type: 'buy', date: new Date().toISOString().split('T')[0], quantity: 1, price: item.currentPrice || item.targetPrice || 0, amount: item.currentPrice || item.targetPrice || 0, notes: 'From watchlist' }] }
-                          : { symbol: item.symbol, name: item.name, exchange: 'NSE', category, transactions: [{ type: 'buy', date: new Date().toISOString().split('T')[0], quantity: 1, price: item.currentPrice || item.targetPrice || 0, amount: item.currentPrice || item.targetPrice || 0, notes: 'From watchlist' }] };
+                        const { category, asset } = createAssetFromWatchlistItem(item);
                         addAsset(category, asset);
                       }}
                       className="px-2 py-1 text-xs rounded bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300"

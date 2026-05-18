@@ -332,8 +332,8 @@ export function PortfolioProvider({ children }) {
 
       let shouldTrigger = false;
       if (alert.type === 'above') shouldTrigger = currentPrice >= Number(alert.targetPrice);
-      if (alert.type === 'below') shouldTrigger = currentPrice <= Number(alert.targetPrice);
-      if (alert.type === 'pctChange') shouldTrigger = Math.abs(Number(priceInfo.changePercent || 0)) >= Number(alert.targetPercent || 0);
+      else if (alert.type === 'below') shouldTrigger = currentPrice <= Number(alert.targetPrice);
+      else if (alert.type === 'pctChange') shouldTrigger = Math.abs(Number(priceInfo.changePercent || 0)) >= Number(alert.targetPercent || 0);
 
       if (!shouldTrigger) return alert;
       changed = true;

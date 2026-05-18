@@ -22,7 +22,9 @@ function buildMonthlyInvestedData(data, prices) {
   for (const cat of txCategories) {
     for (const asset of (data[cat] || [])) {
       for (const tx of (asset.transactions || [])) {
-        const amount = tx.type === 'buy' ? Number(tx.amount) : tx.type === 'sell' ? -Number(tx.amount) : 0;
+        let amount = 0;
+        if (tx.type === 'buy') amount = Number(tx.amount);
+        else if (tx.type === 'sell') amount = -Number(tx.amount);
         events.push({ date: new Date(tx.date), amount });
       }
     }

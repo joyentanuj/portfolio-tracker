@@ -6,7 +6,7 @@ import { formatCurrency } from '../utils/formatters';
 
 export default function Alerts() {
   const { data, addAlert, deleteAlert, updateData } = usePortfolio();
-  const [form, setForm] = useState({ assetName: '', symbol: '', type: 'above', targetPrice: '' });
+  const [form, setForm] = useState({ assetName: '', symbol: '', type: 'above', targetPrice: '', targetPercent: '' });
 
   const alerts = data.alerts || [];
   const triggeredCount = alerts.filter((a) => a.triggered && !a.notified).length;
@@ -21,9 +21,9 @@ export default function Alerts() {
             addAlert({
               ...form,
               targetPrice: Number(form.targetPrice || 0),
-              targetPercent: Number(form.targetPrice || 0),
+              targetPercent: Number(form.targetPercent || 0),
             });
-            setForm({ assetName: '', symbol: '', type: 'above', targetPrice: '' });
+            setForm({ assetName: '', symbol: '', type: 'above', targetPrice: '', targetPercent: '' });
           }}
         >
           <input value={form.assetName} onChange={(e) => setForm((f) => ({ ...f, assetName: e.target.value }))} placeholder="Asset name" className="px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800" />
@@ -33,7 +33,11 @@ export default function Alerts() {
             <option value="below">Below X</option>
             <option value="pctChange">% Change</option>
           </select>
-          <input value={form.targetPrice} type="number" onChange={(e) => setForm((f) => ({ ...f, targetPrice: e.target.value }))} placeholder={form.type === 'pctChange' ? 'Percent' : 'Target price'} className="px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800" />
+          {form.type === 'pctChange' ? (
+            <input value={form.targetPercent} type="number" onChange={(e) => setForm((f) => ({ ...f, targetPercent: e.target.value }))} placeholder="Percent" className="px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800" />
+          ) : (
+            <input value={form.targetPrice} type="number" onChange={(e) => setForm((f) => ({ ...f, targetPrice: e.target.value }))} placeholder="Target price" className="px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800" />
+          )}
           <Button type="submit" size="sm">Set Alert</Button>
         </form>
 

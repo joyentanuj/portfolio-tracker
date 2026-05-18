@@ -4,6 +4,8 @@ import Button from '../../components/Common/Button';
 import { usePortfolio } from '../../context/PortfolioContext';
 import { formatCurrency, formatDate } from '../../utils/formatters';
 
+const LTCG_EXEMPTION_LIMIT = 100000;
+
 function getFinancialYear(dateStr) {
   const date = new Date(dateStr);
   const year = date.getFullYear();
@@ -55,7 +57,7 @@ export default function CapitalGains() {
     const totalSTCG = rows.filter((r) => r.type === 'stcg').reduce((sum, r) => sum + r.gain, 0);
     const totalLTCG = rows.filter((r) => r.type === 'ltcg').reduce((sum, r) => sum + r.gain, 0);
     const stcgTax = rows.filter((r) => r.type === 'stcg').reduce((sum, r) => sum + r.taxAmount, 0);
-    const ltcgGainTaxable = Math.max(0, totalLTCG - 100000);
+    const ltcgGainTaxable = Math.max(0, totalLTCG - LTCG_EXEMPTION_LIMIT);
     const ltcgTax = rows.filter((r) => r.type === 'ltcg').reduce((sum, r) => sum + r.taxAmount, 0) * (ltcgGainTaxable > 0 ? (ltcgGainTaxable / Math.max(totalLTCG, 1)) : 0);
     return {
       totalSTCG,
