@@ -144,12 +144,23 @@ export default function FDsList() {
                   <div>
                     <div className="flex items-center gap-2">
                       <p className="text-gray-900 dark:text-gray-100 font-semibold">{fd.bankName}</p>
-                      {isMatured
-                        ? <span className="text-xs px-2 py-0.5 bg-red-50 dark:bg-red-900/20 text-red-700 border border-red-200 dark:border-red-800 rounded-full">Matured</span>
-                        : daysLeft !== null && daysLeft <= 30
-                        ? <span className="text-xs px-2 py-0.5 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300 border border-yellow-200 dark:border-yellow-700 rounded-full">Matures in {daysLeft}d</span>
-                        : <span className="text-xs px-2 py-0.5 bg-green-50 text-green-700 border border-green-200 rounded-full">Active</span>
-                      }
+                      {isMatured ? (
+                        <span className="text-xs px-2 py-0.5 bg-red-50 dark:bg-red-900/20 text-red-700 border border-red-200 dark:border-red-800 rounded-full inline-flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-red-500" /> Matured
+                        </span>
+                      ) : daysLeft !== null && daysLeft <= 30 ? (
+                        <span className="text-xs px-2 py-0.5 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-700 rounded-full inline-flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-red-500" /> {daysLeft}d left
+                        </span>
+                      ) : daysLeft !== null && daysLeft <= 90 ? (
+                        <span className="text-xs px-2 py-0.5 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300 border border-yellow-200 dark:border-yellow-700 rounded-full inline-flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-yellow-500" /> {daysLeft}d left
+                        </span>
+                      ) : (
+                        <span className="text-xs px-2 py-0.5 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-700 rounded-full inline-flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-green-500" /> Active
+                        </span>
+                      )}
                     </div>
                     <p className="text-gray-500 dark:text-gray-400 text-xs mt-0.5">
                       {fd.interestRate}% p.a. · {COMPOUNDING_FREQUENCIES.find(f => f.value === fd.compoundingFrequency)?.label || fd.compoundingFrequency}

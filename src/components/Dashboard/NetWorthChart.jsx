@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { ComposedChart, Bar, Line, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { usePortfolio } from '../../context/PortfolioContext';
 import { formatCurrencyCompact } from '../../utils/formatters';
 
@@ -22,7 +22,9 @@ function buildMonthlyInvestedData(data, prices) {
   for (const cat of txCategories) {
     for (const asset of (data[cat] || [])) {
       for (const tx of (asset.transactions || [])) {
-        const amount = tx.type === 'buy' ? Number(tx.amount) : -Number(tx.amount);
+        let amount = 0;
+        if (tx.type === 'buy') amount = Number(tx.amount);
+        else if (tx.type === 'sell') amount = -Number(tx.amount);
         events.push({ date: new Date(tx.date), amount });
       }
     }
@@ -90,10 +92,14 @@ function buildMonthlyInvestedData(data, prices) {
       portfolioValue += Math.max(0, units) * holding.livePrice * holding.fxRate;
     }
 
+    const txCount = events.filter((event) => event.date >= cursor && event.date <= monthEnd && event.amount !== 0).length;
+    const gain = Math.round(portfolioValue - Math.max(0, cumulative));
     months.push({
       month: cursor.toLocaleDateString('en-IN', { month: 'short', year: '2-digit' }),
       invested: Math.max(0, Math.round(cumulative)),
       value: Math.round(portfolioValue),
+      gain,
+      txCount,
       date: new Date(cursor),
     });
     cursor.setMonth(cursor.getMonth() + 1);
@@ -101,7 +107,8 @@ function buildMonthlyInvestedData(data, prices) {
   return months;
 }
 
-const VALUE_COLOR = '#10b981';
+const POSITIVE_VALUE_COLOR = '#10b981';
+const NEGATIVE_VALUE_COLOR = '#ef4444';
 const INVESTED_COLOR = '#6366f1';
 
 const CustomTooltip = ({ active, payload, label }) => {
@@ -130,6 +137,8 @@ export default function NetWorthChart() {
     cutoff.setMonth(cutoff.getMonth() - rangeMonths);
     return allData.filter(d => d.date >= cutoff);
   }, [allData, rangeMonths]);
+  const latestGain = chartData[chartData.length - 1]?.gain || 0;
+  const valueColor = latestGain >= 0 ? POSITIVE_VALUE_COLOR : NEGATIVE_VALUE_COLOR;
 
   if (allData.length < 2) {
     return (
@@ -180,13 +189,27 @@ export default function NetWorthChart() {
             <CartesianGrid strokeDasharray="3 3" stroke="currentColor" className="text-gray-100 dark:text-gray-700" vertical={false} />
             <XAxis dataKey="month" tick={{ fontSize: 10, fill: 'currentColor' }} className="text-gray-400 dark:text-gray-500" tickLine={false} axisLine={false} interval="preserveStartEnd" />
             <YAxis tickFormatter={v => formatCurrencyCompact(v)} tick={{ fontSize: 10, fill: 'currentColor' }} className="text-gray-400 dark:text-gray-500" tickLine={false} axisLine={false} width={52} />
-            <Tooltip content={<CustomTooltip />} />
-            <Bar dataKey="value" name="Portfolio Value" fill={VALUE_COLOR} radius={[4, 4, 0, 0]} />
-            <Line type="monotone" dataKey="value" name="Portfolio Value" stroke={VALUE_COLOR} strokeWidth={2} dot={false} activeDot={{ r: 4, fill: VALUE_COLOR }} />
-            {showInvested && (
-              <Line type="monotone" dataKey="invested" name="Invested" stroke={INVESTED_COLOR} strokeWidth={2} strokeDasharray="4 2" dot={false} activeDot={{ r: 4, fill: INVESTED_COLOR }} />
-            )}
-          </ComposedChart>
+             <Tooltip content={<CustomTooltip />} />
+             <Legend wrapperStyle={{ fontSize: 11 }} />
+             <Bar dataKey="invested" name="Invested" fill={INVESTED_COLOR} radius={[4, 4, 0, 0]} />
+             <Area dataKey="gain" name="Gain / Loss" fill={valueColor} fillOpacity={0.18} stroke={false} />
+              <Line
+                type="monotone"
+                dataKey="value"
+                name="Current Value"
+                stroke={valueColor}
+                strokeWidth={2}
+                dot={({ payload, ...props }) => (
+                  payload.txCount > 0
+                    ? <circle {...props} r={3} fill={valueColor} aria-label="Month with transactions"><title>Month with transactions</title></circle>
+                    : null
+                )}
+                activeDot={{ r: 4, fill: valueColor }}
+              />
+             {showInvested && (
+               <Line type="monotone" dataKey="invested" name="Invested Trend" stroke={INVESTED_COLOR} strokeWidth={2} strokeDasharray="4 2" dot={false} activeDot={{ r: 4, fill: INVESTED_COLOR }} />
+             )}
+           </ComposedChart>
         </ResponsiveContainer>
       </div>
     </div>

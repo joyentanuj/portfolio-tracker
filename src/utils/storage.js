@@ -1,6 +1,8 @@
 import { defaultStocks, defaultMutualFunds, defaultGold, defaultGoldETFs, defaultSilverETFs, defaultUSStocks, defaultFDs } from '../data/defaultHoldings';
 
 const PORTFOLIO_KEY = 'portfolio_tracker_data';
+const PORTFOLIOS_LIST_KEY = 'portfolios_list';
+const ACTIVE_PORTFOLIO_ID_KEY = 'active_portfolio_id';
 // Increment DATA_VERSION whenever defaultHoldings.js changes so that all users
 // automatically receive the corrected data on their next page load.
 const DATA_VERSION = 11;
@@ -87,6 +89,8 @@ export const getInitialData = () => ({
   cash: [],
   realEstate: [],
   others: [],
+  watchlist: [],
+  alerts: [],
   settings: { autoRefresh: true, refreshInterval: 60 },
 });
 
@@ -216,7 +220,7 @@ function buildSeededData() {
   return data;
 }
 
-export const getPortfolioData = () => {
+function getLegacyPortfolioData() {
   try {
     const raw = localStorage.getItem(PORTFOLIO_KEY);
 
@@ -453,17 +457,91 @@ export const getPortfolioData = () => {
   } catch {
     return getInitialData();
   }
+}
+
+function buildPortfolioRecord(name, data, id = 'default') {
+  const now = Date.now();
+  return {
+    id,
+    name,
+    data: { ...getInitialData(), ...(data || {}), settings: { ...getInitialData().settings, ...(data?.settings || {}) } },
+    createdAt: now,
+    lastModified: now,
+  };
+}
+
+export const getPortfoliosState = () => {
+  try {
+    const raw = localStorage.getItem(PORTFOLIOS_LIST_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        const portfolios = parsed.map((p, index) => ({
+          id: p.id || `portfolio-${index + 1}`,
+          name: p.name || `Portfolio ${index + 1}`,
+          data: { ...getInitialData(), ...(p.data || {}), settings: { ...getInitialData().settings, ...(p.data?.settings || {}) } },
+          createdAt: p.createdAt || Date.now(),
+          lastModified: p.lastModified || p.createdAt || Date.now(),
+        }));
+        const savedActive = localStorage.getItem(ACTIVE_PORTFOLIO_ID_KEY);
+        const hasSavedActive = portfolios.some((p) => p.id === savedActive);
+        const activePortfolioId = hasSavedActive ? savedActive : portfolios[0].id;
+        if (!hasSavedActive) localStorage.setItem(ACTIVE_PORTFOLIO_ID_KEY, activePortfolioId);
+        return { portfolios, activePortfolioId };
+      }
+    }
+  } catch (e) {
+    console.error('Failed to parse portfolios list', e);
+  }
+
+  const legacyData = getLegacyPortfolioData();
+  const defaultPortfolio = buildPortfolioRecord('My Portfolio', legacyData, 'default');
+  const portfolios = [defaultPortfolio];
+
+  try {
+    localStorage.setItem(PORTFOLIOS_LIST_KEY, JSON.stringify(portfolios));
+    localStorage.setItem(ACTIVE_PORTFOLIO_ID_KEY, 'default');
+  } catch (e) {
+    console.error('Failed to initialize portfolios list', e);
+  }
+
+  return { portfolios, activePortfolioId: 'default' };
+};
+
+export const savePortfoliosState = (portfolios, activePortfolioId) => {
+  try {
+    localStorage.setItem(PORTFOLIOS_LIST_KEY, JSON.stringify(portfolios));
+    localStorage.setItem(ACTIVE_PORTFOLIO_ID_KEY, activePortfolioId);
+    const active = portfolios.find((p) => p.id === activePortfolioId);
+    if (active) localStorage.setItem(PORTFOLIO_KEY, JSON.stringify(active.data));
+  } catch (e) {
+    console.error('Failed to save portfolios state', e);
+  }
+};
+
+export const getPortfolioData = () => {
+  const { portfolios, activePortfolioId } = getPortfoliosState();
+  return portfolios.find((p) => p.id === activePortfolioId)?.data || getInitialData();
 };
 
 export const savePortfolioData = (data) => {
-  try {
-    localStorage.setItem(PORTFOLIO_KEY, JSON.stringify(data));
-  } catch (e) {
-    console.error('Failed to save portfolio data', e);
-  }
+  const { portfolios, activePortfolioId } = getPortfoliosState();
+  const now = Date.now();
+  const updated = portfolios.map((portfolio) =>
+    portfolio.id === activePortfolioId
+      ? {
+          ...portfolio,
+          data,
+          lastModified: now,
+        }
+      : portfolio
+  );
+  savePortfoliosState(updated, activePortfolioId);
 };
 
 export const clearPortfolioData = () => {
   localStorage.removeItem(PORTFOLIO_KEY);
   localStorage.removeItem(VERSION_KEY);
+  localStorage.removeItem(PORTFOLIOS_LIST_KEY);
+  localStorage.removeItem(ACTIVE_PORTFOLIO_ID_KEY);
 };

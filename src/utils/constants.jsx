@@ -13,6 +13,11 @@ import {
   Settings2,
   Shield,
   HardHat,
+  Eye,
+  Bell,
+  FileBarChart2,
+  ReceiptText,
+  WalletCards,
 } from 'lucide-react';
 
 export const ASSET_CATEGORIES = {
@@ -32,6 +37,7 @@ export const ASSET_CATEGORIES = {
 export const TRANSACTION_TYPES = {
   BUY: 'buy',
   SELL: 'sell',
+  DIVIDEND: 'dividend',
 };
 
 export const CATEGORY_COLORS = {
@@ -86,6 +92,11 @@ export const NAV_LINKS = [
   { path: '/cash', label: 'Cash', icon: <Banknote className="w-4 h-4" /> },
   { path: '/real-estate', label: 'Real Estate', icon: <Home className="w-4 h-4" /> },
   { path: '/others', label: 'Others', icon: <Package className="w-4 h-4" /> },
+  { path: '/watchlist', label: 'Watchlist', icon: <Eye className="w-4 h-4" /> },
+  { path: '/alerts', label: 'Alerts', icon: <Bell className="w-4 h-4" /> },
+  { path: '/reports/tax-loss-harvesting', label: 'Tax Loss Report', icon: <FileBarChart2 className="w-4 h-4" /> },
+  { path: '/reports/capital-gains', label: 'Capital Gains', icon: <ReceiptText className="w-4 h-4" /> },
+  { path: '/reports/dividends', label: 'Dividends', icon: <WalletCards className="w-4 h-4" /> },
   { path: '/settings', label: 'Settings', icon: <Settings2 className="w-4 h-4" /> },
 ];
 

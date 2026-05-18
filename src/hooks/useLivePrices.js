@@ -14,7 +14,8 @@ export function useLivePrices() {
       const priceMap = {};
 
       // Indian Stocks
-      const stockSymbols = (data.stocks || []).map(s => s.symbol).filter(Boolean);
+      const watchlistStockSymbols = (data.watchlist || []).filter((w) => w.type === 'stock').map((w) => w.symbol).filter(Boolean);
+      const stockSymbols = [...new Set([...(data.stocks || []).map(s => s.symbol).filter(Boolean), ...watchlistStockSymbols])];
       if (stockSymbols.length > 0) {
         const stockPrices = await fetchMultipleStocks(stockSymbols);
         for (const [sym, info] of Object.entries(stockPrices)) {
@@ -38,7 +39,8 @@ export function useLivePrices() {
       }
 
       // Mutual Funds
-      const mfCodes = (data.mutualFunds || []).map(mf => mf.schemeCode).filter(Boolean);
+      const watchlistMfCodes = (data.watchlist || []).filter((w) => w.type === 'mutualFund').map((w) => w.symbol).filter(Boolean);
+      const mfCodes = [...new Set([...(data.mutualFunds || []).map(mf => mf.schemeCode).filter(Boolean), ...watchlistMfCodes])];
       if (mfCodes.length > 0) {
         const mfPrices = await fetchMultipleMFs(mfCodes);
         for (const [code, info] of Object.entries(mfPrices)) {
@@ -77,7 +79,7 @@ export function useLivePrices() {
     } finally {
       fetchingRef.current = false;
     }
-  }, [data.stocks, data.usStocks, data.mutualFunds, data.gold, data.silver, updatePrices]);
+  }, [data.stocks, data.usStocks, data.mutualFunds, data.gold, data.silver, data.watchlist, updatePrices]);
 
   // Fetch on mount and whenever assets change
   useEffect(() => {

@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { TrendingUp, TrendingDown, Minus, ArrowUpDown } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, ArrowUpDown, Settings2 } from 'lucide-react';
 import DashboardSummary from '../components/Dashboard/DashboardSummary';
 import PortfolioChart from '../components/Dashboard/PortfolioChart';
 import NetWorthChart from '../components/Dashboard/NetWorthChart';
@@ -8,6 +8,8 @@ import QuickActions from '../components/Dashboard/QuickActions';
 import RecentTransactions from '../components/Dashboard/RecentTransactions';
 import PortfolioHealthScore from '../components/Dashboard/PortfolioHealthScore';
 import RebalancingSuggestions from '../components/Dashboard/RebalancingSuggestions';
+import UpcomingMaturities from '../components/Dashboard/UpcomingMaturities';
+import DashboardCustomizer from '../components/Dashboard/DashboardCustomizer';
 import MonthlyReturnsHeatmap from '../components/Dashboard/MonthlyReturnsHeatmap';
 import PerformanceComparison from '../components/Dashboard/PerformanceComparison';
 import SectorBreakdown from '../components/Dashboard/SectorBreakdown';
@@ -45,11 +47,24 @@ const SORT_OPTIONS = [
 const ALL_CATEGORIES = ['stocks', 'usStocks', 'mutualFunds', 'fixedDeposits', 'gold', 'silver', 'cash', 'realEstate', 'others'];
 
 export default function Dashboard() {
-  const { getPortfolioStats, prices } = usePortfolio();
+  const { getPortfolioStats, prices, data, getDashboardWidgets, saveDashboardWidgets } = usePortfolio();
   const portfolioStats = getPortfolioStats();
   const [sortBy, setSortBy] = useState('value');
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [widgets, setWidgets] = useState(() => getDashboardWidgets());
+  const [customizerOpen, setCustomizerOpen] = useState(false);
   const { filters, setFilters, clearFilters } = useFilters();
+  const totalDividends = useMemo(() => {
+    const txCategories = ['stocks', 'usStocks', 'mutualFunds', 'gold', 'silver'];
+    return txCategories.reduce((sum, category) => {
+      return sum + (data[category] || []).reduce((assetTotal, asset) => {
+        const txTotal = (asset.transactions || [])
+          .filter((tx) => tx.type === 'dividend')
+          .reduce((txSum, tx) => txSum + Number(tx.amount || tx.price || 0), 0);
+        return assetTotal + txTotal;
+      }, 0);
+    }, 0);
+  }, [data]);
 
   const pricesLoaded = Object.keys(prices).length > 0;
 
@@ -102,7 +117,15 @@ export default function Dashboard() {
           <h2 className="text-gray-900 dark:text-gray-100 font-semibold text-base">Overview</h2>
           <p className="text-gray-400 dark:text-gray-500 text-xs mt-0.5">Your portfolio at a glance</p>
         </div>
-        <QuickActions />
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setCustomizerOpen(true)}
+            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs rounded-lg border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+          >
+            <Settings2 className="w-3.5 h-3.5" /> Customize Dashboard
+          </button>
+          <QuickActions />
+        </div>
       </div>
 
       <AdvancedFilters
@@ -122,11 +145,11 @@ export default function Dashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card title="Portfolio Allocation" subtitle="Click a slice to filter category breakdown">
+        {widgets.allocation && <Card title="Portfolio Allocation" subtitle="Click a slice to filter category breakdown">
           <PortfolioChart selectedCategory={selectedCategory} onSelectCategory={setSelectedCategory} allowedCategories={filters.categories} />
-        </Card>
+        </Card>}
 
-        <Card
+        {widgets.categoryBreakdown && <Card
           title="Category Breakdown"
           action={
             <div className="flex items-center gap-1.5">
@@ -174,24 +197,39 @@ export default function Dashboard() {
               })}
             </div>
           )}
-        </Card>
+        </Card>}
       </div>
 
-      <Card title="Top Performers"><TopPerformers /></Card>
-      <Card title="Investment Timeline"><NetWorthChart /></Card>
-      <Card title="Performance Comparison (Portfolio vs Nifty 50)"><PerformanceComparison /></Card>
-      <Card title="Sector Breakdown"><SectorBreakdown /></Card>
-      <Card title="Volatility Indicators"><VolatilityIndicator /></Card>
-      <Card title="Asset Correlation Matrix"><CorrelationMatrix /></Card>
-      <Card title="Monthly Returns Heatmap"><MonthlyReturnsHeatmap /></Card>
+      {widgets.topPerformers && <Card title="Top Performers"><TopPerformers /></Card>}
+      {widgets.investmentTimeline && <Card title="Investment Timeline"><NetWorthChart /></Card>}
+      {widgets.performanceComparison && <Card title="Performance Comparison (Portfolio vs Nifty 50)"><PerformanceComparison /></Card>}
+      {widgets.sectorBreakdown && <Card title="Sector Breakdown"><SectorBreakdown /></Card>}
+      {widgets.volatility && <Card title="Volatility Indicators"><VolatilityIndicator /></Card>}
+      {widgets.correlation && <Card title="Asset Correlation Matrix"><CorrelationMatrix /></Card>}
+      {widgets.heatmap && <Card title="Monthly Returns Heatmap"><MonthlyReturnsHeatmap /></Card>}
+      {widgets.upcomingMaturities && <Card title="Upcoming FD Maturities"><UpcomingMaturities /></Card>}
+      {widgets.dividendSummary && (
+        <Card title="Dividend Income">
+          <p className="text-sm text-gray-600 dark:text-gray-300">Total dividend income tracked: <span className="font-semibold text-green-600">{formatCurrency(totalDividends)}</span></p>
+        </Card>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card title="Recent Transactions"><RecentTransactions /></Card>
-        <Card title="Portfolio Health"><PortfolioHealthScore /></Card>
+        {widgets.recentTx && <Card title="Recent Transactions"><RecentTransactions /></Card>}
+        {widgets.health && <Card title="Portfolio Health"><PortfolioHealthScore /></Card>}
       </div>
 
-      <Card title="Goals Tracker"><GoalsTracker /></Card>
-      <Card title="Rebalancing Suggestions"><RebalancingSuggestions /></Card>
+      {widgets.goals && <Card title="Goals Tracker"><GoalsTracker /></Card>}
+      {widgets.rebalancing && <Card title="Rebalancing Suggestions"><RebalancingSuggestions /></Card>}
+      <DashboardCustomizer
+        isOpen={customizerOpen}
+        onClose={() => setCustomizerOpen(false)}
+        widgets={widgets}
+        onChange={(nextWidgets) => {
+          setWidgets(nextWidgets);
+          saveDashboardWidgets(nextWidgets);
+        }}
+      />
     </div>
   );
 }

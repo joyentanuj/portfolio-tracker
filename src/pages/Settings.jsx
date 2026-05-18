@@ -7,7 +7,19 @@ import { usePortfolio } from '../context/PortfolioContext';
 import { clearPortfolioData } from '../utils/storage';
 
 export default function Settings() {
-  const { data, updateData, updateSettings, showToast } = usePortfolio();
+  const {
+    data,
+    updateData,
+    updateSettings,
+    showToast,
+    portfolios,
+    activePortfolioId,
+    createPortfolio,
+    renamePortfolio,
+    deletePortfolio,
+    duplicatePortfolio,
+    switchPortfolio,
+  } = usePortfolio();
   const fileInputRef = useRef(null);
   const [importConfirm, setImportConfirm] = useState(null); // stores imported data pending confirmation
   const [clearConfirm, setClearConfirm] = useState(false);
@@ -127,6 +139,58 @@ export default function Settings() {
             </div>
             <Button onClick={handleClear} size="sm" variant="danger" icon={<Trash2 className="w-3.5 h-3.5" />}>Clear Data</Button>
           </div>
+        </div>
+      </Card>
+
+      <Card title="Manage Portfolios">
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              onClick={() => {
+                const name = window.prompt('Portfolio name', `Portfolio ${portfolios.length + 1}`);
+                if (name) createPortfolio(name);
+              }}
+            >
+              Create Portfolio
+            </Button>
+          </div>
+          {(portfolios || []).map((portfolio) => (
+            <div key={portfolio.id} className={`p-3 rounded-lg border ${portfolio.id === activePortfolioId ? 'border-indigo-300 dark:border-indigo-700 bg-indigo-50/40 dark:bg-indigo-900/20' : 'border-gray-200 dark:border-gray-700'}`}>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{portfolio.name}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{portfolio.id === activePortfolioId ? 'Active portfolio' : 'Inactive'}</p>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {portfolio.id !== activePortfolioId && <Button size="sm" variant="secondary" onClick={() => switchPortfolio(portfolio.id)}>Switch</Button>}
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => {
+                      const nextName = window.prompt('Rename portfolio', portfolio.name);
+                      if (nextName) renamePortfolio(portfolio.id, nextName);
+                    }}
+                  >
+                    Rename
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => {
+                      const nextName = window.prompt('Duplicate portfolio as', `${portfolio.name} Copy`);
+                      if (nextName) duplicatePortfolio(portfolio.id, nextName);
+                    }}
+                  >
+                    Duplicate
+                  </Button>
+                  {portfolios.length > 1 && (
+                    <Button size="sm" variant="danger" onClick={() => deletePortfolio(portfolio.id)}>Delete</Button>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </Card>
 

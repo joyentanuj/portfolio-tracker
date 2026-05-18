@@ -1,17 +1,29 @@
 import React, { useEffect, useState } from 'react';
-import { Menu, Moon, Sun, RefreshCw, Search } from 'lucide-react';
+import { Menu, Moon, Sun, RefreshCw, Search, Bell } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { usePortfolio } from '../../context/PortfolioContext';
 import { useLivePrices } from '../../hooks/useLivePrices';
 import { formatCurrency, formatCurrencyCompact } from '../../utils/formatters';
 import GlobalSearch from '../Common/GlobalSearch';
 
 export default function Navbar({ onMenuClick, title, isDark, onToggleDark }) {
-  const { getPortfolioStats, getDailyChange, lastUpdated } = usePortfolio();
+  const {
+    getPortfolioStats,
+    getDailyChange,
+    lastUpdated,
+    portfolios,
+    activePortfolioId,
+    switchPortfolio,
+    createPortfolio,
+    activePortfolioName,
+    data,
+  } = usePortfolio();
   const { fetchPrices } = useLivePrices();
   const stats = getPortfolioStats();
   const todayPnl = getDailyChange();
   const todayPnlPercent = stats.totalValue > 0 ? (todayPnl / (stats.totalValue - todayPnl)) * 100 : 0;
   const [searchOpen, setSearchOpen] = useState(false);
+  const triggeredAlerts = (data.alerts || []).filter((a) => a.triggered && !a.notified).length;
 
   // Freshness indicator
   const [now, setNow] = useState(() => Date.now());
@@ -56,7 +68,27 @@ export default function Navbar({ onMenuClick, title, isDark, onToggleDark }) {
         <Menu className="w-5 h-5" />
       </button>
 
-      <h1 className="text-gray-900 dark:text-gray-100 font-semibold text-base flex-1">{title}</h1>
+      <div className="flex items-center gap-2 flex-1 min-w-0">
+        <h1 className="text-gray-900 dark:text-gray-100 font-semibold text-base truncate">{title}</h1>
+        <select
+          value={activePortfolioId}
+          onChange={(e) => {
+            if (e.target.value === '__new__') {
+              const nextName = window.prompt('Portfolio name', `Portfolio ${portfolios.length + 1}`);
+              if (nextName) createPortfolio(nextName);
+              return;
+            }
+            switchPortfolio(e.target.value);
+          }}
+          className="hidden sm:block max-w-48 bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200 rounded-lg px-2 py-1 text-xs"
+          title={`Active portfolio: ${activePortfolioName}`}
+        >
+          {portfolios.map((portfolio) => (
+            <option key={portfolio.id} value={portfolio.id}>{portfolio.name}</option>
+          ))}
+          <option value="__new__">+ New Portfolio</option>
+        </select>
+      </div>
 
       {/* Search trigger */}
       <button
@@ -67,6 +99,18 @@ export default function Navbar({ onMenuClick, title, isDark, onToggleDark }) {
         <span className="hidden sm:inline">Search</span>
         <kbd className="hidden sm:inline font-mono text-[9px] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 px-1 py-0.5 rounded">⌘K</kbd>
       </button>
+      <Link
+        to="/alerts"
+        className="relative p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+        title="Price alerts"
+      >
+        <Bell className="w-4 h-4" />
+        {triggeredAlerts > 0 && (
+          <span className="absolute -top-0.5 -right-0.5 min-w-4 h-4 px-1 rounded-full bg-red-500 text-white text-[9px] font-semibold flex items-center justify-center">
+            {triggeredAlerts}
+          </span>
+        )}
+      </Link>
 
       {/* Mobile: show just total value */}
       <div className="sm:hidden text-right">
