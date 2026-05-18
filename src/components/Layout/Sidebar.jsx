@@ -2,9 +2,16 @@ import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { BarChart2, X, Moon, Sun, ChevronLeft, ChevronRight } from 'lucide-react';
 import { NAV_LINKS } from '../../utils/constants';
+import { usePortfolio } from '../../context/PortfolioContext';
 
 export default function Sidebar({ isOpen, onClose, isDark, onToggleDark }) {
   const [collapsed, setCollapsed] = useState(false);
+  const { data } = usePortfolio();
+  const upcomingMaturities = (data.fixedDeposits || []).filter((fd) => {
+    if (!fd.maturityDate) return false;
+    const days = (new Date(fd.maturityDate) - new Date()) / (1000 * 60 * 60 * 24);
+    return days > 0 && days < 90;
+  }).length;
 
   return (
     <>
@@ -66,8 +73,17 @@ export default function Sidebar({ isOpen, onClose, isDark, onToggleDark }) {
                 `}
               >
                 <span className="shrink-0 flex items-center justify-center w-4 h-4">{link.icon}</span>
-                {!collapsed && link.label}
-              </NavLink>
+                 {!collapsed && (
+                  <span className="flex items-center gap-2">
+                    {link.label}
+                    {link.path === '/fixed-deposits' && upcomingMaturities > 0 && (
+                      <span className="px-1.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 text-[10px] font-semibold">
+                        {upcomingMaturities}
+                      </span>
+                    )}
+                  </span>
+                 )}
+               </NavLink>
             ))}
           </div>
         </nav>

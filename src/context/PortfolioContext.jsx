@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useReducer, useCallback } from 'react';
-import { getPortfolioData, savePortfolioData, generateId } from '../utils/storage';
+import { getPortfolioData, savePortfolioData, generateId, getInitialData, getPortfoliosState, savePortfoliosState } from '../utils/storage';
 import { xirr, buildCashFlows } from '../utils/xirr';
 
 const PortfolioContext = createContext(null);
@@ -7,6 +7,23 @@ const PortfolioContext = createContext(null);
 const PRICES_CACHE_KEY = 'portfolio_tracker_prices';
 // Fallback USD/INR rate when live forex fetch hasn't completed yet (update periodically)
 const FALLBACK_USD_INR_RATE = 85.0;
+const DEFAULT_DASHBOARD_WIDGETS = {
+  allocation: true,
+  categoryBreakdown: true,
+  sectorBreakdown: true,
+  topPerformers: true,
+  investmentTimeline: true,
+  performanceComparison: true,
+  volatility: true,
+  correlation: true,
+  heatmap: true,
+  recentTx: true,
+  health: true,
+  goals: true,
+  rebalancing: true,
+  upcomingMaturities: true,
+  dividendSummary: true,
+};
 
 function getCachedPrices() {
   try {
@@ -17,8 +34,12 @@ function getCachedPrices() {
   }
 }
 
+const { portfolios: initialPortfolios, activePortfolioId: initialActivePortfolioId } = getPortfoliosState();
+
 const initialState = {
-  data: getPortfolioData(),
+  portfolios: initialPortfolios,
+  activePortfolioId: initialActivePortfolioId,
+  data: initialPortfolios.find((p) => p.id === initialActivePortfolioId)?.data || getPortfolioData(),
   prices: getCachedPrices(),
   lastUpdated: null,
   loading: false,
@@ -29,6 +50,12 @@ function reducer(state, action) {
   switch (action.type) {
     case 'SET_DATA':
       return { ...state, data: action.payload };
+    case 'SET_PORTFOLIOS':
+      return { ...state, portfolios: action.payload };
+    case 'SET_ACTIVE_PORTFOLIO': {
+      const active = action.data || state.portfolios.find((p) => p.id === action.payload)?.data;
+      return { ...state, activePortfolioId: action.payload, data: active || getInitialData() };
+    }
     case 'SET_PRICES': {
       const newPrices = { ...state.prices, ...action.payload };
       try {
@@ -92,6 +119,13 @@ function calcFDValue(fd) {
 export function PortfolioProvider({ children }) {
   const [state, dispatch] = useReducer(reducer, initialState);
 
+  const persistPortfolios = useCallback((portfolios, activePortfolioId) => {
+    dispatch({ type: 'SET_PORTFOLIOS', payload: portfolios });
+    const activeData = portfolios.find((p) => p.id === activePortfolioId)?.data || getInitialData();
+    dispatch({ type: 'SET_ACTIVE_PORTFOLIO', payload: activePortfolioId, data: activeData });
+    savePortfoliosState(portfolios, activePortfolioId);
+  }, []);
+
   const showToast = useCallback((message, type = 'success', duration = 3500) => {
     const id = generateId();
     dispatch({ type: 'ADD_TOAST', payload: { id, message, type, duration } });
@@ -99,9 +133,68 @@ export function PortfolioProvider({ children }) {
   }, []);
 
   const updateData = useCallback((newData) => {
-    dispatch({ type: 'SET_DATA', payload: newData });
+    const now = Date.now();
+    const updatedPortfolios = state.portfolios.map((portfolio) =>
+      portfolio.id === state.activePortfolioId
+        ? { ...portfolio, data: newData, lastModified: now }
+        : portfolio
+    );
+    persistPortfolios(updatedPortfolios, state.activePortfolioId);
     savePortfolioData(newData);
-  }, []);
+  }, [state.portfolios, state.activePortfolioId, persistPortfolios]);
+
+  const createPortfolio = useCallback((name) => {
+    const trimmed = (name || '').trim() || `Portfolio ${state.portfolios.length + 1}`;
+    const id = generateId();
+    const now = Date.now();
+    const portfolio = { id, name: trimmed, data: getInitialData(), createdAt: now, lastModified: now };
+    persistPortfolios([...state.portfolios, portfolio], id);
+    showToast('Portfolio created');
+    return portfolio;
+  }, [state.portfolios, persistPortfolios, showToast]);
+
+  const renamePortfolio = useCallback((id, newName) => {
+    const trimmed = (newName || '').trim();
+    if (!trimmed) return;
+    const updated = state.portfolios.map((portfolio) =>
+      portfolio.id === id ? { ...portfolio, name: trimmed, lastModified: Date.now() } : portfolio
+    );
+    persistPortfolios(updated, state.activePortfolioId);
+    showToast('Portfolio renamed');
+  }, [state.portfolios, state.activePortfolioId, persistPortfolios, showToast]);
+
+  const deletePortfolio = useCallback((id) => {
+    if (state.portfolios.length <= 1) {
+      showToast('At least one portfolio is required', 'error');
+      return;
+    }
+    const remaining = state.portfolios.filter((portfolio) => portfolio.id !== id);
+    const nextActiveId = state.activePortfolioId === id ? remaining[0].id : state.activePortfolioId;
+    persistPortfolios(remaining, nextActiveId);
+    showToast('Portfolio deleted');
+  }, [state.portfolios, state.activePortfolioId, persistPortfolios, showToast]);
+
+  const switchPortfolio = useCallback((id) => {
+    const selected = state.portfolios.find((portfolio) => portfolio.id === id);
+    if (!selected) return;
+    persistPortfolios(state.portfolios, id);
+  }, [state.portfolios, persistPortfolios]);
+
+  const duplicatePortfolio = useCallback((id, newName) => {
+    const source = state.portfolios.find((portfolio) => portfolio.id === id);
+    if (!source) return null;
+    const now = Date.now();
+    const copy = {
+      id: generateId(),
+      name: (newName || '').trim() || `${source.name} Copy`,
+      data: JSON.parse(JSON.stringify(source.data || getInitialData())),
+      createdAt: now,
+      lastModified: now,
+    };
+    persistPortfolios([...state.portfolios, copy], copy.id);
+    showToast('Portfolio duplicated');
+    return copy;
+  }, [state.portfolios, persistPortfolios, showToast]);
 
   // ─── Asset CRUD ───────────────────────────────────────────────────────────
 
@@ -173,16 +266,110 @@ export function PortfolioProvider({ children }) {
     showToast('Transaction deleted');
   }, [state.data, updateData, showToast]);
 
+  const addWatchlistItem = useCallback((item) => {
+    const watchlistItem = {
+      id: generateId(),
+      addedAt: new Date().toISOString(),
+      targetPrice: item.targetPrice ?? null,
+      notes: item.notes || '',
+      ...item,
+    };
+    updateData({ ...state.data, watchlist: [...(state.data.watchlist || []), watchlistItem] });
+    showToast('Added to watchlist');
+    return watchlistItem;
+  }, [state.data, updateData, showToast]);
+
+  const updateWatchlistItem = useCallback((id, updates) => {
+    const watchlist = (state.data.watchlist || []).map((item) => (item.id === id ? { ...item, ...updates } : item));
+    updateData({ ...state.data, watchlist });
+  }, [state.data, updateData]);
+
+  const deleteWatchlistItem = useCallback((id) => {
+    const watchlist = (state.data.watchlist || []).filter((item) => item.id !== id);
+    updateData({ ...state.data, watchlist });
+    showToast('Removed from watchlist');
+  }, [state.data, updateData, showToast]);
+
+  const addAlert = useCallback((alert) => {
+    const record = {
+      id: generateId(),
+      createdAt: new Date().toISOString(),
+      triggered: false,
+      notified: false,
+      ...alert,
+    };
+    updateData({ ...state.data, alerts: [...(state.data.alerts || []), record] });
+    showToast('Alert created');
+    return record;
+  }, [state.data, updateData, showToast]);
+
+  const updateAlert = useCallback((id, updates) => {
+    const alerts = (state.data.alerts || []).map((alert) => (alert.id === id ? { ...alert, ...updates } : alert));
+    updateData({ ...state.data, alerts });
+  }, [state.data, updateData]);
+
+  const deleteAlert = useCallback((id) => {
+    const alerts = (state.data.alerts || []).filter((alert) => alert.id !== id);
+    updateData({ ...state.data, alerts });
+    showToast('Alert deleted');
+  }, [state.data, updateData, showToast]);
+
   // ─── Price update ─────────────────────────────────────────────────────────
 
   const updatePrices = useCallback((priceMap) => {
     dispatch({ type: 'SET_PRICES', payload: priceMap });
-  }, []);
+    const mergedPrices = { ...state.prices, ...priceMap };
+    const alerts = state.data.alerts || [];
+    let changed = false;
+
+    const nextAlerts = alerts.map((alert) => {
+      if (alert.triggered) return alert;
+      const symbol = alert.symbol || alert.assetSymbol;
+      const priceInfo = symbol ? mergedPrices[symbol] : null;
+      if (!priceInfo) return alert;
+      const currentPrice = Number(priceInfo.price ?? priceInfo.nav);
+      if (!Number.isFinite(currentPrice)) return alert;
+
+      let shouldTrigger = false;
+      if (alert.type === 'above') shouldTrigger = currentPrice >= Number(alert.targetPrice);
+      if (alert.type === 'below') shouldTrigger = currentPrice <= Number(alert.targetPrice);
+      if (alert.type === 'pctChange') shouldTrigger = Math.abs(Number(priceInfo.changePercent || 0)) >= Number(alert.targetPercent || 0);
+
+      if (!shouldTrigger) return alert;
+      changed = true;
+      showToast(`🔔 ${alert.assetName || symbol} alert triggered`, 'info');
+      return {
+        ...alert,
+        currentPrice,
+        triggered: true,
+        notified: false,
+        triggeredAt: new Date().toISOString(),
+      };
+    });
+
+    if (changed) {
+      updateData({ ...state.data, alerts: nextAlerts });
+    }
+  }, [state.prices, state.data, updateData, showToast]);
 
   const updateSettings = useCallback((settings) => {
     const newData = { ...state.data, settings: { ...state.data.settings, ...settings } };
     updateData(newData);
   }, [state.data, updateData]);
+
+  const getDashboardWidgets = useCallback(() => {
+    try {
+      const raw = localStorage.getItem('dashboard_widgets');
+      if (!raw) return DEFAULT_DASHBOARD_WIDGETS;
+      return { ...DEFAULT_DASHBOARD_WIDGETS, ...JSON.parse(raw) };
+    } catch {
+      return DEFAULT_DASHBOARD_WIDGETS;
+    }
+  }, []);
+
+  const saveDashboardWidgets = useCallback((widgets) => {
+    localStorage.setItem('dashboard_widgets', JSON.stringify(widgets));
+  }, []);
 
   // ─── Computed portfolio stats ─────────────────────────────────────────────
 
@@ -431,6 +618,9 @@ export function PortfolioProvider({ children }) {
   }, [state.data, state.prices]);
 
   const value = {
+    portfolios: state.portfolios,
+    activePortfolioId: state.activePortfolioId,
+    activePortfolioName: state.portfolios.find((p) => p.id === state.activePortfolioId)?.name || 'My Portfolio',
     data: state.data,
     prices: state.prices,
     lastUpdated: state.lastUpdated,
@@ -443,10 +633,24 @@ export function PortfolioProvider({ children }) {
     addTransaction,
     updateTransaction,
     deleteTransaction,
+    addWatchlistItem,
+    updateWatchlistItem,
+    deleteWatchlistItem,
+    addAlert,
+    updateAlert,
+    deleteAlert,
+    // Portfolio management
+    createPortfolio,
+    renamePortfolio,
+    deletePortfolio,
+    switchPortfolio,
+    duplicatePortfolio,
     // Prices
     updatePrices,
     // Settings
     updateSettings,
+    getDashboardWidgets,
+    saveDashboardWidgets,
     updateData,
     // Stats
     getAssetStats,

@@ -31,14 +31,18 @@ export default function TransactionList({ transactions = [], onEdit, onDelete, a
             <tr key={tx.id} className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
               <td className="py-2.5 pr-4">
                 <span className={`px-2 py-0.5 rounded text-xs font-semibold ${
-                  tx.type === 'buy' ? 'bg-green-50 dark:bg-green-900/20 text-green-700' : 'bg-red-50 dark:bg-red-900/20 text-red-700'
+                  tx.type === 'buy'
+                    ? 'bg-green-50 dark:bg-green-900/20 text-green-700'
+                    : tx.type === 'sell'
+                    ? 'bg-red-50 dark:bg-red-900/20 text-red-700'
+                    : 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300'
                 }`}>
                   {tx.type?.toUpperCase()}
                 </span>
               </td>
               <td className="py-2.5 pr-4 text-gray-700 dark:text-gray-300">{formatDate(tx.date)}</td>
-              <td className="py-2.5 pr-4 text-right text-gray-900 dark:text-gray-100">{formatNumber(tx.quantity, 4)}</td>
-              <td className="py-2.5 pr-4 text-right text-gray-700 dark:text-gray-300">{formatCurrency(tx.price)}</td>
+              <td className="py-2.5 pr-4 text-right text-gray-900 dark:text-gray-100">{tx.type === 'dividend' ? '—' : formatNumber(tx.quantity, 4)}</td>
+              <td className="py-2.5 pr-4 text-right text-gray-700 dark:text-gray-300">{tx.type === 'dividend' ? '—' : formatCurrency(tx.price)}</td>
               <td className="py-2.5 pr-4 text-right font-medium text-gray-900 dark:text-gray-100">{formatCurrency(tx.amount)}</td>
               <td className="py-2.5 text-right">
                 <div className="flex items-center justify-end gap-1">

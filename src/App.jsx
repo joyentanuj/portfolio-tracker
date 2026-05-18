@@ -20,6 +20,11 @@ import Cash from './pages/Cash';
 import RealEstate from './pages/RealEstate';
 import Others from './pages/Others';
 import Settings from './pages/Settings';
+import Watchlist from './pages/Watchlist';
+import Alerts from './pages/Alerts';
+import TaxLossHarvesting from './pages/reports/TaxLossHarvesting';
+import CapitalGains from './pages/reports/CapitalGains';
+import Dividends from './pages/reports/Dividends';
 
 const PAGE_TITLES = {
   '/': 'Dashboard',
@@ -31,10 +36,15 @@ const PAGE_TITLES = {
   '/cash': 'Cash',
   '/real-estate': 'Real Estate',
   '/others': 'Others',
+  '/watchlist': 'Watchlist',
+  '/alerts': 'Price Alerts',
+  '/reports/tax-loss-harvesting': 'Tax Loss Harvesting',
+  '/reports/capital-gains': 'Capital Gains',
+  '/reports/dividends': 'Dividends',
   '/settings': 'Settings',
 };
 
-const NAV_ROUTES = ['/', '/stocks', '/us-stocks', '/mutual-funds', '/fixed-deposits', '/gold-silver', '/cash', '/real-estate', '/others', '/settings'];
+const NAV_ROUTES = ['/', '/stocks', '/us-stocks', '/mutual-funds', '/fixed-deposits', '/gold-silver', '/cash', '/real-estate', '/others', '/watchlist', '/alerts', '/reports/tax-loss-harvesting', '/reports/capital-gains', '/reports/dividends', '/settings'];
 
 function AppLayout({ isDark, toggleDark }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -83,6 +93,11 @@ function AppLayout({ isDark, toggleDark }) {
             <Route path="/cash" element={<Cash />} />
             <Route path="/real-estate" element={<RealEstate />} />
             <Route path="/others" element={<Others />} />
+            <Route path="/watchlist" element={<Watchlist />} />
+            <Route path="/alerts" element={<Alerts />} />
+            <Route path="/reports/tax-loss-harvesting" element={<TaxLossHarvesting />} />
+            <Route path="/reports/capital-gains" element={<CapitalGains />} />
+            <Route path="/reports/dividends" element={<Dividends />} />
             <Route path="/settings" element={<Settings />} />
           </Routes>
         </main>

@@ -16,7 +16,7 @@ export default function TransactionForm({ onSubmit, onCancel, initialData = null
   const validate = () => {
     const errs = {};
     if (!form.date) errs.date = 'Date is required';
-    if (!form.quantity || isNaN(form.quantity) || Number(form.quantity) <= 0)
+    if (form.type !== 'dividend' && (!form.quantity || isNaN(form.quantity) || Number(form.quantity) <= 0))
       errs.quantity = 'Enter a valid quantity';
     if (!form.price || isNaN(form.price) || Number(form.price) <= 0)
       errs.price = 'Enter a valid price';
@@ -29,11 +29,12 @@ export default function TransactionForm({ onSubmit, onCancel, initialData = null
     if (!validate()) return;
     const qty = Number(form.quantity);
     const price = Number(form.price);
+    const isDividend = form.type === 'dividend';
     onSubmit({
       ...form,
-      quantity: qty,
+      quantity: isDividend ? 1 : qty,
       price,
-      amount: qty * price,
+      amount: isDividend ? price : qty * price,
     });
   };
 
@@ -47,7 +48,7 @@ export default function TransactionForm({ onSubmit, onCancel, initialData = null
     <form onSubmit={handleSubmit} className="space-y-4">
       {/* Type */}
       <div className="flex gap-2">
-        {['buy', 'sell'].map(t => (
+        {['buy', 'sell', 'dividend'].map(t => (
           <button
             key={t}
             type="button"
@@ -60,7 +61,7 @@ export default function TransactionForm({ onSubmit, onCancel, initialData = null
                 : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:border-gray-400 dark:hover:border-gray-500'
             }`}
           >
-            {t === 'buy' ? '↑ Buy' : '↓ Sell'}
+            {t === 'buy' ? '↑ Buy' : t === 'sell' ? '↓ Sell' : '₹ Dividend'}
           </button>
         ))}
       </div>
@@ -72,6 +73,7 @@ export default function TransactionForm({ onSubmit, onCancel, initialData = null
         {errors.date && <p className={errorClass}>{errors.date}</p>}
       </div>
 
+      {form.type !== 'dividend' && (
       <div className="grid grid-cols-2 gap-3">
         {/* Quantity */}
         <div>
@@ -103,13 +105,30 @@ export default function TransactionForm({ onSubmit, onCancel, initialData = null
           {errors.price && <p className={errorClass}>{errors.price}</p>}
         </div>
       </div>
+      )}
+
+      {form.type === 'dividend' && (
+        <div>
+          <label className={labelClass}>Dividend Amount (₹)</label>
+          <input
+            type="number"
+            className={inputClass}
+            value={form.price}
+            onChange={e => set('price', e.target.value)}
+            placeholder="0"
+            min="0"
+            step="any"
+          />
+          {errors.price && <p className={errorClass}>{errors.price}</p>}
+        </div>
+      )}
 
       {/* Total */}
-      {form.quantity && form.price && (
+      {((form.type === 'dividend' && form.price) || (form.quantity && form.price)) && (
         <div className="bg-gray-50 dark:bg-gray-700 rounded-lg px-3 py-2 text-sm border border-gray-200 dark:border-gray-600">
           <span className="text-gray-600 dark:text-gray-400">Total: </span>
           <span className="text-gray-900 dark:text-gray-100 font-semibold">
-            ₹{(Number(form.quantity) * Number(form.price)).toLocaleString('en-IN', { maximumFractionDigits: 2 })}
+            ₹{(form.type === 'dividend' ? Number(form.price) : Number(form.quantity) * Number(form.price)).toLocaleString('en-IN', { maximumFractionDigits: 2 })}
           </span>
         </div>
       )}
@@ -130,7 +149,7 @@ export default function TransactionForm({ onSubmit, onCancel, initialData = null
       <div className="flex gap-3 pt-2">
         <Button type="button" variant="secondary" onClick={onCancel} className="flex-1">Cancel</Button>
         <Button type="submit" variant={form.type === 'buy' ? 'success' : 'danger'} className="flex-1">
-          {initialData ? 'Update' : form.type === 'buy' ? 'Add Buy' : 'Add Sell'}
+          {initialData ? 'Update' : form.type === 'buy' ? 'Add Buy' : form.type === 'sell' ? 'Add Sell' : 'Add Dividend'}
         </Button>
       </div>
     </form>

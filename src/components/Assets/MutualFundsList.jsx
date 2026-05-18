@@ -53,7 +53,7 @@ function MFForm({ onSubmit, onCancel, initial = null }) {
   );
 }
 
-function MFRow({ mf, stats, weight, risk, priceInfo, totalPortfolioValue, onTxn, onEdit, onDelete, dense }) {
+function MFRow({ mf, stats, weight, risk, priceInfo, totalPortfolioValue, onTxn, onEdit, onDelete, onWatchlist, dense }) {
   const flash = usePriceFlash(stats.currentPrice);
   const py = dense ? 'py-1.5' : 'py-3';
   return (
@@ -102,6 +102,7 @@ function MFRow({ mf, stats, weight, risk, priceInfo, totalPortfolioValue, onTxn,
       <td className={py}>
         <div className="flex items-center gap-1">
           <button onClick={onTxn} className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300 rounded-md">Txns</button>
+          <button onClick={onWatchlist} className="px-2 py-1 text-xs bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 rounded-md transition-colors">Watch</button>
           <button onClick={onEdit} className="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-colors">
             <Pencil className="w-3.5 h-3.5" />
           </button>
@@ -115,7 +116,7 @@ function MFRow({ mf, stats, weight, risk, priceInfo, totalPortfolioValue, onTxn,
 }
 
 export default function MutualFundsList() {
-  const { data, getAssetStats, getPortfolioStats, getCategoryStats, getCategoryDailyChange, prices, addAsset, updateAsset, deleteAsset } = usePortfolio();
+  const { data, getAssetStats, getPortfolioStats, getCategoryStats, getCategoryDailyChange, prices, addAsset, updateAsset, deleteAsset, addWatchlistItem } = usePortfolio();
   const [addModal, setAddModal] = useState(false);
   const [editAsset, setEditAsset] = useState(null);
   const [txAsset, setTxAsset] = useState(null);
@@ -247,6 +248,13 @@ export default function MutualFundsList() {
                     priceInfo={priceInfo}
                     totalPortfolioValue={totalPortfolioValue}
                     onTxn={() => setTxAsset(mf)}
+                    onWatchlist={() => addWatchlistItem({
+                      type: 'mutualFund',
+                      symbol: mf.schemeCode,
+                      name: mf.schemeName,
+                      targetPrice: stats.currentPrice || 0,
+                      notes: '',
+                    })}
                     onEdit={() => setEditAsset(mf)}
                     onDelete={() => handleDelete(mf.id)}
                     dense={dense}
