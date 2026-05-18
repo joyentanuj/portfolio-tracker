@@ -6,6 +6,8 @@ import Button from '../Common/Button';
 import Modal from '../Common/Modal';
 import ConfirmDialog from '../Common/ConfirmDialog';
 import EmptyState from '../Common/EmptyState';
+import EPFOTransactionModal from './EPFOTransactionModal';
+import EPFOTransactionHistory from './EPFOTransactionHistory';
 
 function EPFOForm({ onSubmit, onCancel, initial = null }) {
   const [form, setForm] = useState(() => {
@@ -87,8 +89,10 @@ function EPFOForm({ onSubmit, onCancel, initial = null }) {
   );
 }
 
-function EPFOCard({ account, stats, onEdit, onDelete }) {
+function EPFOCard({ account, stats, onEdit, onDelete, onAddTransaction, onViewTransactions }) {
   const interestEarned = stats.pnl;
+  const employeeContribution = stats.employeeContributionTotal ?? account.employeeContribution ?? 0;
+  const employerContribution = stats.employerContributionTotal ?? account.employerContribution ?? 0;
 
   return (
     <div className="bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
@@ -116,11 +120,11 @@ function EPFOCard({ account, stats, onEdit, onDelete }) {
       <div className="grid grid-cols-3 gap-4 mb-4">
         <div>
           <p className="text-gray-400 dark:text-gray-500 text-xs">Employee Contrib</p>
-          <p className="text-gray-900 dark:text-gray-100 font-medium">{formatCurrency(account.employeeContribution || 0)}</p>
+          <p className="text-gray-900 dark:text-gray-100 font-medium">{formatCurrency(employeeContribution)}</p>
         </div>
         <div>
           <p className="text-gray-400 dark:text-gray-500 text-xs">Employer Contrib</p>
-          <p className="text-gray-900 dark:text-gray-100 font-medium">{formatCurrency(account.employerContribution || 0)}</p>
+          <p className="text-gray-900 dark:text-gray-100 font-medium">{formatCurrency(employerContribution)}</p>
         </div>
         <div>
           <p className="text-gray-400 dark:text-gray-500 text-xs">Interest Earned</p>
@@ -135,20 +139,43 @@ function EPFOCard({ account, stats, onEdit, onDelete }) {
         <span className="text-gray-500 dark:text-gray-400 text-xs">Total PF Balance</span>
         <span className="text-gray-900 dark:text-gray-100 font-bold text-base">{formatCurrency(stats.currentValue)}</span>
       </div>
+
+      <div className="mt-3 flex flex-col sm:flex-row gap-2">
+        <Button
+          onClick={onAddTransaction}
+          variant="secondary"
+          size="sm"
+          className="flex-1"
+        >
+          + Add Transaction
+        </Button>
+        <Button
+          onClick={onViewTransactions}
+          variant="outline"
+          size="sm"
+          className="flex-1"
+        >
+          View History ({account.transactions?.length || 0})
+        </Button>
+      </div>
     </div>
   );
 }
 
 export default function EPFOList() {
-  const { data, getAssetStats, addAsset, updateAsset, deleteAsset } = usePortfolio();
+  const { data, getAssetStats, addAsset, updateAsset, deleteAsset, addTransaction, updateTransaction, deleteTransaction } = usePortfolio();
   const [addModal, setAddModal] = useState(false);
   const [editAccount, setEditAccount] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
+  const [txModalAccountId, setTxModalAccountId] = useState(null);
+  const [historyAccountId, setHistoryAccountId] = useState(null);
 
   const accounts = data.epfo || [];
+  const txModalAccount = accounts.find((a) => a.id === txModalAccountId) || null;
+  const historyAccount = accounts.find((a) => a.id === historyAccountId) || null;
 
   const handleAdd = (form) => {
-    addAsset('epfo', { ...form, category: 'epfo' });
+    addAsset('epfo', { ...form, category: 'epfo', transactions: [] });
     setAddModal(false);
   };
 
@@ -160,6 +187,19 @@ export default function EPFOList() {
   const handleConfirmDelete = () => {
     deleteAsset('epfo', confirmDelete);
     setConfirmDelete(null);
+  };
+
+  const handleAddTransaction = (accountId, txData) => {
+    addTransaction('epfo', accountId, txData);
+    setTxModalAccountId(null);
+  };
+
+  const handleUpdateTransaction = (accountId, txId, updates) => {
+    updateTransaction('epfo', accountId, txId, updates);
+  };
+
+  const handleDeleteTransaction = (accountId, txId) => {
+    deleteTransaction('epfo', accountId, txId);
   };
 
   return (
@@ -188,6 +228,8 @@ export default function EPFOList() {
                 stats={stats}
                 onEdit={() => setEditAccount(account)}
                 onDelete={() => setConfirmDelete(account.id)}
+                onAddTransaction={() => setTxModalAccountId(account.id)}
+                onViewTransactions={() => setHistoryAccountId(account.id)}
               />
             );
           })}
@@ -200,6 +242,21 @@ export default function EPFOList() {
       <Modal isOpen={!!editAccount} onClose={() => setEditAccount(null)} title="Edit EPFO Account" size="md">
         <EPFOForm onSubmit={handleEdit} onCancel={() => setEditAccount(null)} initial={editAccount} />
       </Modal>
+
+      <EPFOTransactionModal
+        isOpen={!!txModalAccount}
+        onClose={() => setTxModalAccountId(null)}
+        account={txModalAccount}
+        onAddTransaction={handleAddTransaction}
+      />
+      <EPFOTransactionHistory
+        isOpen={!!historyAccount}
+        onClose={() => setHistoryAccountId(null)}
+        account={historyAccount}
+        onUpdateTransaction={handleUpdateTransaction}
+        onDeleteTransaction={handleDeleteTransaction}
+      />
+
       <ConfirmDialog
         isOpen={!!confirmDelete}
         title="Delete EPFO Account?"
