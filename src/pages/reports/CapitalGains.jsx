@@ -29,7 +29,7 @@ export default function CapitalGains() {
         const firstBuy = buys[0] ? new Date(buys[0].date) : sellDate;
         const holdingDays = Math.max(0, (sellDate - firstBuy) / (1000 * 60 * 60 * 24));
         const type = holdingDays < 365 ? 'stcg' : 'ltcg';
-        const debtLike = ['fixedDeposits', 'debt', 'cash'].includes(category);
+        const debtLike = ['fixedDeposits', 'cash'].includes(category);
         const taxRate = type === 'stcg' ? (debtLike ? 0.3 : 0.2) : 0.125;
         const sellAmount = Number(sellTx.amount || 0);
         const cost = Number(sellTx.quantity || 0) * avgBuyPrice;

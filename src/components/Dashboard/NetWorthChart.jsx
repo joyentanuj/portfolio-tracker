@@ -201,7 +201,7 @@ export default function NetWorthChart() {
                 strokeWidth={2}
                 dot={({ payload, ...props }) => (
                   payload.txCount > 0
-                    ? <circle {...props} r={3} fill={valueColor}><title>Month with transactions</title></circle>
+                    ? <circle {...props} r={3} fill={valueColor} aria-label="Month with transactions"><title>Month with transactions</title></circle>
                     : null
                 )}
                 activeDot={{ r: 4, fill: valueColor }}

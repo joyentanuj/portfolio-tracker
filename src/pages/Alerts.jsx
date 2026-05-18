@@ -48,7 +48,7 @@ export default function Alerts() {
                 <div>
                   <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{alert.assetName || alert.symbol}</p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
-                    {alert.type === 'pctChange' ? `Daily move ≥ ${alert.targetPercent ?? alert.targetPrice}%` : `${alert.type === 'above' ? 'Above' : 'Below'} ${formatCurrency(alert.targetPrice)}`}
+                    {alert.type === 'pctChange' ? `Daily move ≥ ${alert.targetPercent ?? 0}%` : `${alert.type === 'above' ? 'Above' : 'Below'} ${formatCurrency(alert.targetPrice)}`}
                   </p>
                   {alert.triggered && <p className="text-xs text-red-600 dark:text-red-300">Triggered at {formatCurrency(alert.currentPrice)} · {new Date(alert.triggeredAt).toLocaleString()}</p>}
                 </div>

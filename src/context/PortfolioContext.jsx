@@ -116,6 +116,11 @@ function calcFDValue(fd) {
   return principal * Math.pow(1 + rate / n, n * years);
 }
 
+function cloneData(value) {
+  if (typeof structuredClone === 'function') return structuredClone(value);
+  return JSON.parse(JSON.stringify(value));
+}
+
 export function PortfolioProvider({ children }) {
   const [state, dispatch] = useReducer(reducer, initialState);
 
@@ -187,7 +192,7 @@ export function PortfolioProvider({ children }) {
     const copy = {
       id: generateId(),
       name: (newName || '').trim() || `${source.name} Copy`,
-      data: structuredClone(source.data || getInitialData()),
+      data: cloneData(source.data || getInitialData()),
       createdAt: now,
       lastModified: now,
     };
