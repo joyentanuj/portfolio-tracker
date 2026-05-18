@@ -237,7 +237,34 @@ export function PortfolioProvider({ children }) {
       ...state.data,
       [category]: state.data[category].map(a =>
         a.id === assetId
-          ? { ...a, transactions: [...(a.transactions || []), newTx] }
+          ? (() => {
+            const existingTransactions = a.transactions || [];
+            if (category !== 'epfo' || existingTransactions.length > 0) {
+              return { ...a, transactions: [...existingTransactions, newTx] };
+            }
+
+            const legacyEmployee = Number(a.employeeContribution) || 0;
+            const legacyEmployer = Number(a.employerContribution) || 0;
+            const legacyTotal = legacyEmployee + legacyEmployer;
+            const legacyInterest = Math.max(0, (Number(a.currentBalance) || 0) - legacyTotal);
+            const migrationTx = legacyTotal > 0 || legacyInterest > 0
+              ? {
+                id: generateId(),
+                date: a.dateOfJoining || newTx.date,
+                type: 'contribution',
+                employeeAmount: legacyEmployee,
+                employerAmount: legacyEmployer,
+                vpfAmount: 0,
+                interestEarned: legacyInterest,
+                notes: 'Opening balance migration',
+              }
+              : null;
+
+            return {
+              ...a,
+              transactions: migrationTx ? [migrationTx, newTx] : [newTx],
+            };
+          })()
           : a
       ),
     };
@@ -250,7 +277,7 @@ export function PortfolioProvider({ children }) {
       ...state.data,
       [category]: state.data[category].map(a =>
         a.id === assetId
-          ? { ...a, transactions: a.transactions.map(t => t.id === txId ? { ...t, ...updates } : t) }
+          ? { ...a, transactions: (a.transactions || []).map(t => t.id === txId ? { ...t, ...updates } : t) }
           : a
       ),
     };
@@ -263,7 +290,7 @@ export function PortfolioProvider({ children }) {
       ...state.data,
       [category]: state.data[category].map(a =>
         a.id === assetId
-          ? { ...a, transactions: a.transactions.filter(t => t.id !== txId) }
+          ? { ...a, transactions: (a.transactions || []).filter(t => t.id !== txId) }
           : a
       ),
     };
@@ -424,11 +451,35 @@ export function PortfolioProvider({ children }) {
     }
 
     if (category === 'epfo') {
-      const currentValue = asset.currentBalance || 0;
-      const investedValue = (Number(asset.employeeContribution) || 0) + (Number(asset.employerContribution) || 0);
+      const transactions = asset.transactions || [];
+      const hasTransactions = transactions.length > 0;
+      const employeeContributionTotal = hasTransactions
+        ? transactions.reduce((sum, tx) => sum + (Number(tx.employeeAmount) || 0), 0)
+        : (Number(asset.employeeContribution) || 0);
+      const employerContributionTotal = hasTransactions
+        ? transactions.reduce((sum, tx) => sum + (Number(tx.employerAmount) || 0), 0)
+        : (Number(asset.employerContribution) || 0);
+      const vpfTotal = hasTransactions
+        ? transactions.reduce((sum, tx) => sum + (Number(tx.vpfAmount) || 0), 0)
+        : 0;
+      const investedValue = employeeContributionTotal + employerContributionTotal + vpfTotal;
+      const totalInterest = hasTransactions
+        ? transactions.reduce((sum, tx) => sum + (Number(tx.interestEarned) || 0), 0)
+        : Math.max(0, (Number(asset.currentBalance) || 0) - investedValue);
+      const currentValue = hasTransactions ? investedValue + totalInterest : (asset.currentBalance || 0);
       const pnl = currentValue - investedValue;
       const pnlPercent = investedValue > 0 ? pnl / investedValue : 0;
-      return { currentValue, investedValue, pnl, pnlPercent, xirr: null };
+      return {
+        currentValue,
+        investedValue,
+        pnl,
+        pnlPercent,
+        xirr: null,
+        employeeContributionTotal,
+        employerContributionTotal,
+        vpfTotal,
+        totalInterest,
+      };
     }
 
     if (category === 'cash') {
