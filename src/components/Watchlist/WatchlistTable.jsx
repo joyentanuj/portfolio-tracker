@@ -117,7 +117,10 @@ export default function WatchlistTable() {
               <tr key={item.id} className="border-b border-gray-100 dark:border-gray-800">
                 <td className="py-2 pr-3">
                   <p className="text-gray-900 dark:text-gray-100 font-medium">{item.name}</p>
-                  <p className="text-xs text-gray-500">{item.symbol} {item.targetHit ? '🔔' : ''}</p>
+                  <p className="text-xs text-gray-500">
+                    {item.symbol}
+                    {item.targetHit && <span className="ml-1" aria-label="Target hit" title="Target hit">🔔</span>}
+                  </p>
                 </td>
                 <td className="py-2 pr-3 text-right">{formatCurrency(item.currentPrice)}</td>
                 <td className="py-2 pr-3 text-right">

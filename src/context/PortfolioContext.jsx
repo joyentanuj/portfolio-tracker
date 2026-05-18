@@ -187,7 +187,7 @@ export function PortfolioProvider({ children }) {
     const copy = {
       id: generateId(),
       name: (newName || '').trim() || `${source.name} Copy`,
-      data: JSON.parse(JSON.stringify(source.data || getInitialData())),
+      data: structuredClone(source.data || getInitialData()),
       createdAt: now,
       lastModified: now,
     };
@@ -337,7 +337,7 @@ export function PortfolioProvider({ children }) {
 
       if (!shouldTrigger) return alert;
       changed = true;
-      showToast(`🔔 ${alert.assetName || symbol} alert triggered`, 'info');
+      showToast(`${alert.assetName || symbol} alert triggered`, 'info');
       return {
         ...alert,
         currentPrice,

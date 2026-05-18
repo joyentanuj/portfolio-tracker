@@ -4,6 +4,7 @@ import Button from '../../components/Common/Button';
 import { usePortfolio } from '../../context/PortfolioContext';
 import { formatCurrency, formatDate } from '../../utils/formatters';
 
+// Equity LTCG exemption limit under current Indian tax rules (update if laws change).
 const LTCG_EXEMPTION_LIMIT = 100000;
 
 function getFinancialYear(dateStr) {

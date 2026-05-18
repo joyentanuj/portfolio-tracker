@@ -1,8 +1,10 @@
 import React, { useMemo, useState } from 'react';
+import { differenceInMonths } from 'date-fns';
 import Card from '../../components/Common/Card';
 import { usePortfolio } from '../../context/PortfolioContext';
 import { formatCurrency } from '../../utils/formatters';
 
+// Indicative rates for tax planning in current regime (update if laws change).
 const TAX_RATES = { STCG: 0.3, LTCG: 0.2 };
 
 export default function TaxLossHarvesting() {
@@ -17,7 +19,7 @@ export default function TaxLossHarvesting() {
       if (stats.pnl >= 0) return null;
       const txDates = (asset.transactions || []).filter((tx) => tx.type === 'buy').map((tx) => new Date(tx.date).getTime()).filter(Boolean);
       const firstBuy = txDates.length ? Math.min(...txDates) : Date.now();
-      const holdingMonths = Math.max(1, Math.round((Date.now() - firstBuy) / (1000 * 60 * 60 * 24 * 30)));
+      const holdingMonths = Math.max(1, differenceInMonths(new Date(), new Date(firstBuy)));
       const type = holdingMonths < 12 ? 'STCG' : 'LTCG';
       const loss = Math.abs(stats.pnl);
       const taxSaving = loss * TAX_RATES[type];
