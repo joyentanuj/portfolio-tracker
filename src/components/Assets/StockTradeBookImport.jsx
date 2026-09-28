@@ -152,6 +152,8 @@ export default function StockTradeBookImport() {
             : 'border-indigo-200 dark:border-indigo-700 bg-white/80 dark:bg-gray-800/60'
         } ${isImporting ? 'cursor-progress opacity-80' : 'cursor-pointer'}`}
         disabled={isImporting}
+        aria-disabled={isImporting}
+        aria-busy={isImporting}
         aria-describedby={`${helpTextId} ${dropzoneTextId}`}
       >
         <Upload className={`mx-auto mb-3 h-8 w-8 text-indigo-500 ${isImporting ? 'animate-spin' : ''}`} />

@@ -402,12 +402,11 @@ export async function parseTradeBookFile(file) {
 }
 
 export function mergeTradeBookRowsIntoPortfolio(data, importResult, fileName = '') {
-  const stocks = cloneStocks(data.stocks || []);
-  const stocksBySymbol = new Map(stocks.map((stock) => [normalizeIdentifier(stock.symbol), stock]));
+  const existingStocks = data.stocks || [];
   const currentHoldings = new Map();
   const knownFingerprints = new Set();
 
-  stocks.forEach((stock) => {
+  existingStocks.forEach((stock) => {
     currentHoldings.set(stock.symbol, Math.max(0, getHoldingQuantity(stock.transactions)));
     (stock.transactions || []).forEach((transaction) => {
       const fingerprint = getExistingTradeFingerprint(stock, transaction);
@@ -450,6 +449,28 @@ export function mergeTradeBookRowsIntoPortfolio(data, importResult, fileName = '
     acceptedTrades.push(trade);
   });
 
+  if (acceptedTrades.length === 0) {
+    return {
+      data,
+      errors: errors.sort((left, right) => left.rowNumber - right.rowNumber),
+      duplicateRows: duplicateRows.sort((left, right) => left.rowNumber - right.rowNumber),
+      summary: {
+        totalRows: importResult.totalRows || 0,
+        importedCount: 0,
+        duplicateCount: duplicateRows.length,
+        rejectedCount: errors.length,
+        skippedCount: duplicateRows.length + errors.length,
+        createdAssetsCount: 0,
+        updatedAssetsCount: 0,
+      },
+      fatalError: importResult.fatalError || '',
+      missingColumns: importResult.missingColumns || [],
+    };
+  }
+
+  const stocks = cloneStocks(existingStocks);
+  const stocksBySymbol = new Map(stocks.map((stock) => [normalizeIdentifier(stock.symbol), stock]));
+
   acceptedTrades
     .sort((left, right) => left.rowNumber - right.rowNumber)
     .forEach((trade) => {
@@ -488,7 +509,7 @@ export function mergeTradeBookRowsIntoPortfolio(data, importResult, fileName = '
     });
 
   return {
-    data: acceptedTrades.length > 0 ? { ...data, stocks } : data,
+    data: { ...data, stocks },
     errors: errors.sort((left, right) => left.rowNumber - right.rowNumber),
     duplicateRows: duplicateRows.sort((left, right) => left.rowNumber - right.rowNumber),
     summary: {

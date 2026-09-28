@@ -110,6 +110,17 @@ test('parseTradeBookRows rejects rows that only provide an ISIN identifier', () 
   assert.match(result.errors[0].message, /Rows with only an ISIN are not supported/);
 });
 
+test('parseTradeBookRows accepts supported slash and dotted date string formats', () => {
+  const result = parseTradeBookRows([
+    ['Symbol', 'Side', 'Qty', 'Price', 'Trade Date'],
+    ['ITC', 'BUY', '2', '420', '2026/09/28'],
+    ['ASIANPAINT', 'SELL', '1', '3050', '28.09.2026'],
+  ]);
+
+  assert.equal(result.errors.length, 0);
+  assert.deepEqual(result.rows.map((row) => row.date), ['2026-09-28', '2026-09-28']);
+});
+
 test('mergeTradeBookRowsIntoPortfolio imports buys and sells, skips duplicates, and blocks oversells', () => {
   const portfolio = {
     settings: { autoRefresh: true, refreshInterval: 60 },
