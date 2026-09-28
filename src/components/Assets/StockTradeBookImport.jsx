@@ -127,7 +127,7 @@ export default function StockTradeBookImport() {
 
       <div
         role="button"
-        tabIndex={0}
+        tabIndex={isImporting ? -1 : 0}
         onClick={() => !isImporting && fileInputRef.current?.click()}
         onKeyDown={(event) => {
           if ((event.key === 'Enter' || event.key === ' ') && !isImporting) {
@@ -137,14 +137,17 @@ export default function StockTradeBookImport() {
         }}
         onDragEnter={(event) => {
           event.preventDefault();
+          if (isImporting) return;
           setDragActive(true);
         }}
         onDragOver={(event) => {
           event.preventDefault();
+          if (isImporting) return;
           setDragActive(true);
         }}
         onDragLeave={(event) => {
           event.preventDefault();
+          if (isImporting) return;
           setDragActive(false);
         }}
         onDrop={handleDrop}

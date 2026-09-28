@@ -14,6 +14,18 @@ function makeWorkbookBuffer(rows, bookType = 'xlsx') {
   return XLSX.write(workbook, { type: 'buffer', bookType });
 }
 
+function makeDateWorkbookBuffer(serial, { bookType = 'xlsx', date1904 = false } = {}) {
+  const worksheet = XLSX.utils.aoa_to_sheet([
+    ['Symbol', 'Side', 'Quantity', 'Price', 'Trade Date'],
+    ['INFY', 'Buy', 5, 1500, ''],
+  ]);
+  worksheet.E2 = { t: 'n', v: serial, z: 'm/d/yy' };
+  const workbook = XLSX.utils.book_new();
+  workbook.Workbook = { WBProps: { date1904 } };
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Trades');
+  return XLSX.write(workbook, { type: 'buffer', bookType });
+}
+
 test('parseTradeBookRows normalizes common header aliases', () => {
   const result = parseTradeBookRows([
     ['Scrip', 'Buy/Sell', 'Qty', 'Rate', 'Trade Date', 'Exchange', 'Order No'],
@@ -52,6 +64,14 @@ test('parseTradeBookWorkbook reads xlsx and xls workbooks', () => {
   assert.equal(xlsResult.rows.length, 1);
   assert.equal(xlsxResult.rows[0].symbol, 'INFY');
   assert.equal(xlsResult.rows[0].symbol, 'INFY');
+});
+
+test('parseTradeBookWorkbook preserves Excel serial dates including 1904 workbooks', () => {
+  const standardWorkbook = parseTradeBookWorkbook(makeDateWorkbookBuffer(46293));
+  const date1904Workbook = parseTradeBookWorkbook(makeDateWorkbookBuffer(44831, { date1904: true }));
+
+  assert.equal(standardWorkbook.rows[0].date, '2026-09-28');
+  assert.equal(date1904Workbook.rows[0].date, '2026-09-28');
 });
 
 test('parseTradeBookRows reports row-level validation errors and missing required headers', () => {

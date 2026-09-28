@@ -138,13 +138,13 @@ function toIsoDate(year, month, day) {
   return date.toISOString().slice(0, 10);
 }
 
-function normalizeTradeDate(value) {
+function normalizeTradeDate(value, options = {}) {
   if (value instanceof Date && !Number.isNaN(value.getTime())) {
     return value.toISOString().slice(0, 10);
   }
 
   if (typeof value === 'number' && Number.isFinite(value)) {
-    const parsed = XLSX.SSF.parse_date_code(value);
+    const parsed = XLSX.SSF.parse_date_code(value + (options.date1904 ? 1462 : 0));
     if (parsed?.y && parsed?.m && parsed?.d) {
       return toIsoDate(parsed.y, parsed.m, parsed.d);
     }
@@ -162,11 +162,6 @@ function normalizeTradeDate(value) {
   if (dmyMatch) {
     const year = Number(dmyMatch[3].length === 2 ? `20${dmyMatch[3]}` : dmyMatch[3]);
     return toIsoDate(year, Number(dmyMatch[2]), Number(dmyMatch[1]));
-  }
-
-  const parsed = new Date(text);
-  if (!Number.isNaN(parsed.getTime())) {
-    return parsed.toISOString().slice(0, 10);
   }
 
   return '';
@@ -256,7 +251,7 @@ function sortImportTrades(trades) {
   });
 }
 
-export function parseTradeBookRows(sheetRows = []) {
+export function parseTradeBookRows(sheetRows = [], options = {}) {
   const headerRowIndex = sheetRows.findIndex((row) => !isEmptyRow(row));
   if (headerRowIndex === -1) {
     return {
@@ -296,7 +291,7 @@ export function parseTradeBookRows(sheetRows = []) {
     const quantity = parsePositiveNumber(getRowValue(row, headerMap, 'quantity'));
     const price = parsePositiveNumber(getRowValue(row, headerMap, 'price'));
     const rawDate = getRowValue(row, headerMap, 'date');
-    const date = normalizeTradeDate(rawDate) || DEFAULT_TRADE_DATE;
+    const date = normalizeTradeDate(rawDate, options) || DEFAULT_TRADE_DATE;
     const rowErrors = [];
 
     if (!symbol) {
@@ -360,6 +355,7 @@ export function parseTradeBookRows(sheetRows = []) {
 
 export function parseTradeBookWorkbook(input) {
   const workbook = XLSX.read(input, { type: 'array', cellDates: true });
+  const date1904 = Boolean(workbook.Workbook?.WBProps?.date1904);
   const firstSheetName = workbook.SheetNames.find((name) => {
     const rows = XLSX.utils.sheet_to_json(workbook.Sheets[name], {
       header: 1,
@@ -388,7 +384,7 @@ export function parseTradeBookWorkbook(input) {
   });
 
   return {
-    ...parseTradeBookRows(sheetRows),
+    ...parseTradeBookRows(sheetRows, { date1904 }),
     sheetName: firstSheetName,
   };
 }
