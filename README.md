@@ -42,12 +42,13 @@ npm run build   # production build
 
 - Open **Indian Stocks** and upload a broker trade book in `.xlsx` or `.xls` format.
 - Header matching is case-insensitive and supports common aliases, including:
-  - Symbol: `Symbol`, `Stock`, `Scrip`, `ISIN`
+  - Symbol: `Symbol`, `Stock`, `Scrip`
   - Side: `Buy/Sell`, `Side`
   - Quantity: `Qty`, `Quantity`
   - Price: `Rate`, `Price`
-  - Optional metadata: `Trade Date`, `Exchange`, `Order ID`, `Trade ID`, `Stock Name`
+  - Optional metadata: `Trade Date`, `Exchange`, `Order ID`, `Trade ID`, `Stock Name`, `ISIN`
 - Required columns are symbol/stock identifier, buy-or-sell side, quantity, and trade price.
+- `ISIN` headers are recognized for validation, but each imported row still needs a tradable symbol/ticker because holdings are tracked by stock symbol.
 - Invalid rows are rejected with row-level errors. Quantity and price must be positive, side must be buy/sell, and sells that exceed currently held quantity are blocked.
 - Imports never replace your existing manual holdings. Valid rows are merged in as stock transactions and the holdings screen refreshes immediately.
 - Duplicate trades are skipped automatically. The importer prefers `Trade ID` / `Order ID` when present and falls back to a stable fingerprint of symbol, date, side, quantity, price, and exchange when identifiers are missing.

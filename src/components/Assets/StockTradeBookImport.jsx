@@ -21,6 +21,8 @@ export default function StockTradeBookImport() {
   const [dragActive, setDragActive] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
   const [result, setResult] = useState(null);
+  const helpTextId = 'stock-trade-book-import-help';
+  const dropzoneTextId = 'stock-trade-book-import-dropzone-help';
 
   const supportedHeaders = [
     ...SUPPORTED_TRADE_BOOK_HEADERS.symbol.slice(0, 4),
@@ -102,8 +104,8 @@ export default function StockTradeBookImport() {
             Required fields are matched case-insensitively and duplicates are skipped using trade or order identifiers when available,
             otherwise by a stable symbol/date/side/quantity/price fingerprint.
           </p>
-          <p className="text-[11px] leading-5 text-gray-500 dark:text-gray-400">
-            Supported header aliases include: {supportedHeaders}
+          <p id={helpTextId} className="text-[11px] leading-5 text-gray-500 dark:text-gray-400">
+            Supported header aliases include: {supportedHeaders}. ISIN headers are detected for validation, but each imported row still needs a tradable symbol/ticker.
           </p>
         </div>
         <input
@@ -150,12 +152,13 @@ export default function StockTradeBookImport() {
             : 'border-indigo-200 dark:border-indigo-700 bg-white/80 dark:bg-gray-800/60'
         } ${isImporting ? 'cursor-progress opacity-80' : 'cursor-pointer'}`}
         disabled={isImporting}
+        aria-describedby={`${helpTextId} ${dropzoneTextId}`}
       >
         <Upload className={`mx-auto mb-3 h-8 w-8 text-indigo-500 ${isImporting ? 'animate-spin' : ''}`} />
         <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
           {isImporting ? 'Reading workbook and validating trades…' : 'Drop your Excel file here or click to browse'}
         </p>
-        <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+        <p id={dropzoneTextId} className="mt-2 text-xs text-gray-500 dark:text-gray-400">
           Imported rows are merged into your current stock holdings without replacing manual positions.
         </p>
       </button>

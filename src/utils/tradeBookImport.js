@@ -8,7 +8,8 @@ function generateImportId() {
 }
 
 export const SUPPORTED_TRADE_BOOK_HEADERS = {
-  symbol: ['Symbol', 'Stock', 'Scrip', 'ISIN', 'Ticker', 'Security'],
+  symbol: ['Symbol', 'Stock', 'Scrip', 'Ticker', 'Security'],
+  isin: ['ISIN'],
   type: ['Buy/Sell', 'Side', 'Transaction Type', 'Action', 'Type'],
   quantity: ['Qty', 'Quantity', 'Shares', 'Units'],
   price: ['Rate', 'Price', 'Trade Price', 'Average Price'],
@@ -144,7 +145,7 @@ function normalizeTradeDate(value, options = {}) {
   }
 
   if (typeof value === 'number' && Number.isFinite(value)) {
-    const parsed = XLSX.SSF.parse_date_code(value + (options.date1904 ? 1462 : 0));
+    const parsed = XLSX.SSF.parse_date_code(value, { date1904: options.date1904 });
     if (parsed?.y && parsed?.m && parsed?.d) {
       return toIsoDate(parsed.y, parsed.m, parsed.d);
     }
@@ -264,7 +265,10 @@ export function parseTradeBookRows(sheetRows = [], options = {}) {
   }
 
   const headerMap = resolveHeaderMap(sheetRows[headerRowIndex]);
-  const missingColumns = REQUIRED_HEADERS.filter((key) => headerMap[key] == null);
+  const missingColumns = REQUIRED_HEADERS.filter((key) => key !== 'symbol' && headerMap[key] == null);
+  if (headerMap.symbol == null && headerMap.isin == null) {
+    missingColumns.unshift('symbol');
+  }
   if (missingColumns.length > 0) {
     return {
       rows: [],
@@ -286,7 +290,9 @@ export function parseTradeBookRows(sheetRows = [], options = {}) {
     totalRows += 1;
     const rowNumber = index + 1;
     const exchange = normalizeExchange(getRowValue(row, headerMap, 'exchange'));
-    const symbol = normalizeSymbol(getRowValue(row, headerMap, 'symbol'), exchange);
+    const rawSymbol = getRowValue(row, headerMap, 'symbol');
+    const isin = normalizeIdentifier(getRowValue(row, headerMap, 'isin'));
+    const symbol = normalizeSymbol(rawSymbol, exchange);
     const type = normalizeTradeType(getRowValue(row, headerMap, 'type'));
     const quantity = parsePositiveNumber(getRowValue(row, headerMap, 'quantity'));
     const price = parsePositiveNumber(getRowValue(row, headerMap, 'price'));
@@ -295,7 +301,7 @@ export function parseTradeBookRows(sheetRows = [], options = {}) {
     const rowErrors = [];
 
     if (!symbol) {
-      rowErrors.push('Missing a usable symbol or stock identifier');
+      rowErrors.push(isin ? 'Rows with only an ISIN are not supported; include a tradable symbol or ticker' : 'Missing a usable symbol or stock identifier');
     }
     if (!type) {
       rowErrors.push('Transaction type must be buy or sell');

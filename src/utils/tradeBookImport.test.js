@@ -98,6 +98,18 @@ test('parseTradeBookRows reports row-level validation errors and missing require
   assert.match(rowErrorResult.errors[1].message, /Trade date is invalid/);
 });
 
+test('parseTradeBookRows rejects rows that only provide an ISIN identifier', () => {
+  const result = parseTradeBookRows([
+    ['ISIN', 'Side', 'Qty', 'Price'],
+    ['INE009A01021', 'BUY', '10', '100'],
+  ]);
+
+  assert.equal(result.fatalError, '');
+  assert.equal(result.rows.length, 0);
+  assert.equal(result.errors.length, 1);
+  assert.match(result.errors[0].message, /Rows with only an ISIN are not supported/);
+});
+
 test('mergeTradeBookRowsIntoPortfolio imports buys and sells, skips duplicates, and blocks oversells', () => {
   const portfolio = {
     settings: { autoRefresh: true, refreshInterval: 60 },
