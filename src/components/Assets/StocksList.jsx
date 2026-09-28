@@ -14,6 +14,7 @@ import { SkeletonTable } from '../Common/Skeleton';
 import EmptyState from '../Common/EmptyState';
 import RiskBadge from './RiskBadge';
 import { calculateAssetRisk } from '../../utils/riskCalculations';
+import StockTradeBookImport from './StockTradeBookImport';
 
 function StockForm({ onSubmit, onCancel, initial = null }) {
   const [form, setForm] = useState({
@@ -225,6 +226,8 @@ export default function StocksList() {
           <Button onClick={() => setAddModal(true)} icon={<Plus className="w-3.5 h-3.5" />} size="sm">Add Stock</Button>
         </div>
       </div>
+
+      <StockTradeBookImport />
 
       {stocks.length === 0 ? (
         <EmptyState
