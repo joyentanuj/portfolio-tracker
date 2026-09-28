@@ -190,7 +190,7 @@ export function buildTradeFingerprint({
   orderId,
   tradeId,
 }) {
-  const identifier = normalizeIdentifier(orderId) || normalizeIdentifier(tradeId);
+  const identifier = normalizeIdentifier(tradeId) || normalizeIdentifier(orderId);
   const baseParts = [
     normalizeFingerprintValue(symbol),
     normalizeFingerprintValue(type),
@@ -354,7 +354,8 @@ export function parseTradeBookRows(sheetRows = [], options = {}) {
 }
 
 export function parseTradeBookWorkbook(input) {
-  const workbook = XLSX.read(input, { type: 'array', cellDates: true });
+  const normalizedInput = input instanceof ArrayBuffer ? input : new Uint8Array(input);
+  const workbook = XLSX.read(normalizedInput, { type: 'array', cellDates: true });
   const date1904 = Boolean(workbook.Workbook?.WBProps?.date1904);
   const firstSheetName = workbook.SheetNames.find((name) => {
     const rows = XLSX.utils.sheet_to_json(workbook.Sheets[name], {

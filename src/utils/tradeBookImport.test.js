@@ -172,3 +172,18 @@ test('mergeTradeBookRowsIntoPortfolio preserves manual holdings and creates new 
   assert.equal(infy.transactions.length, 1);
   assert.equal(merged.data.stocks.find((stock) => stock.symbol === 'TCS.NS').transactions.length, 1);
 });
+
+test('mergeTradeBookRowsIntoPortfolio prefers trade IDs over order IDs for duplicate detection', () => {
+  const portfolio = { stocks: [] };
+  const parsedImport = parseTradeBookRows([
+    ['Symbol', 'Side', 'Quantity', 'Price', 'Trade Date', 'Exchange', 'Order ID', 'Trade ID'],
+    ['HDFCBANK', 'Buy', '1', '1700', '2026-09-25', 'NSE', 'ORDER-1', 'TRADE-1'],
+    ['HDFCBANK', 'Buy', '1', '1700', '2026-09-25', 'NSE', 'ORDER-1', 'TRADE-2'],
+  ]);
+
+  const merged = mergeTradeBookRowsIntoPortfolio(portfolio, parsedImport);
+
+  assert.equal(merged.summary.importedCount, 2);
+  assert.equal(merged.summary.duplicateCount, 0);
+  assert.equal(merged.data.stocks[0].transactions.length, 2);
+});

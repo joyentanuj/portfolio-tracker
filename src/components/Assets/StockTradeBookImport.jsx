@@ -125,16 +125,9 @@ export default function StockTradeBookImport() {
         </Button>
       </div>
 
-      <div
-        role="button"
-        tabIndex={isImporting ? -1 : 0}
+      <button
+        type="button"
         onClick={() => !isImporting && fileInputRef.current?.click()}
-        onKeyDown={(event) => {
-          if ((event.key === 'Enter' || event.key === ' ') && !isImporting) {
-            event.preventDefault();
-            fileInputRef.current?.click();
-          }
-        }}
         onDragEnter={(event) => {
           event.preventDefault();
           if (isImporting) return;
@@ -156,7 +149,7 @@ export default function StockTradeBookImport() {
             ? 'border-indigo-500 bg-white dark:bg-gray-800'
             : 'border-indigo-200 dark:border-indigo-700 bg-white/80 dark:bg-gray-800/60'
         } ${isImporting ? 'cursor-progress opacity-80' : 'cursor-pointer'}`}
-        aria-disabled={isImporting}
+        disabled={isImporting}
       >
         <Upload className={`mx-auto mb-3 h-8 w-8 text-indigo-500 ${isImporting ? 'animate-spin' : ''}`} />
         <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
@@ -165,7 +158,7 @@ export default function StockTradeBookImport() {
         <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
           Imported rows are merged into your current stock holdings without replacing manual positions.
         </p>
-      </div>
+      </button>
 
       {result && (
         <div
