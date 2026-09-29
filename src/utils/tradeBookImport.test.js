@@ -48,7 +48,40 @@ test('parseTradeBookRows normalizes common header aliases', () => {
     tradeId: '',
     fingerprint: result.rows[0].fingerprint,
   });
-  assert.match(result.rows[0].fingerprint, /^id\|ORD-1/i);
+  assert.match(result.rows[0].fingerprint, /^order\|ORD-1/i);
+});
+
+test('parseTradeBookRows finds the Zerodha header after metadata and imports its exact columns', () => {
+  const result = parseTradeBookRows([
+    ['ZERODHA'],
+    [],
+    ['Client ID', 'ABC123'],
+    ['Tradebook for Equity from 2026-04-01 to 2026-09-29'],
+    ['Symbol', 'ISIN', 'Trade Date', 'Exchange', 'Segment', 'Series', 'Trade Type', 'Auction', 'Quantity', 'Price', 'Trade ID', 'Order ID', 'Order Execution Time'],
+    ['RELIANCE', 'INE002A01018', '2026-04-01T09:15:00', 'NSE', 'EQ', 'EQ', ' BUY ', 'No', ' 1,000 ', '₹ 2,500.50 ', 'TRD-1', 'ORD-1', '2026-04-01T09:15:00'],
+    ['RELIANCE', 'INE002A01018', '2026-04-02', 'NSE', 'EQ', 'EQ', 'sell', 'No', '250', '2,600', 'TRD-2', 'ORD-2', '2026-04-02T09:15:00'],
+    ['Client ID', 'ABC123'],
+  ]);
+
+  assert.equal(result.fatalError, '');
+  assert.equal(result.errors.length, 0);
+  assert.equal(result.rows.length, 2);
+  assert.equal(result.rows[0].rowNumber, 6);
+  assert.equal(result.rows[0].symbol, 'RELIANCE.NS');
+  assert.equal(result.rows[0].isin, 'INE002A01018');
+  assert.equal(result.rows[0].type, 'buy');
+  assert.equal(result.rows[0].quantity, 1000);
+  assert.equal(result.rows[0].price, 2500.5);
+  assert.equal(result.rows[0].date, '2026-04-01');
+  assert.equal(result.rows[1].type, 'sell');
+  assert.equal(result.skippedRows.length, 1);
+
+  const merged = mergeTradeBookRowsIntoPortfolio({ stocks: [] }, result);
+  assert.equal(merged.summary.importedCount, 2);
+  assert.equal(merged.summary.skippedCount, 1);
+  assert.equal(merged.summary.rejectedCount, 0);
+  assert.equal(merged.data.stocks[0].isin, 'INE002A01018');
+  assert.deepEqual(merged.data.stocks[0].transactions.map((transaction) => transaction.type), ['buy', 'sell']);
 });
 
 test('parseTradeBookWorkbook reads xlsx and xls workbooks', () => {
@@ -113,7 +146,7 @@ test('parseTradeBookRows rejects rows that only provide an ISIN identifier', () 
 test('parseTradeBookRows accepts supported slash and dotted date string formats', () => {
   const result = parseTradeBookRows([
     ['Symbol', 'Side', 'Qty', 'Price', 'Trade Date'],
-    ['ITC', 'BUY', '2', '420', '2026/09/28'],
+    ['ITC', 'BUY', '2', '420', '2026/09/28T11:32:00'],
     ['ASIANPAINT', 'SELL', '1', '3050', '28.09.2026'],
   ]);
 
@@ -139,11 +172,11 @@ test('mergeTradeBookRowsIntoPortfolio imports buys and sells, skips duplicates, 
   };
 
   const parsedImport = parseTradeBookRows([
-    ['Symbol', 'Side', 'Qty', 'Price', 'Trade Date', 'Exchange', 'Order ID'],
-    ['RELIANCE', 'BUY', '5', '110', '2026-09-21', 'NSE', 'OLD-1'],
-    ['RELIANCE', 'BUY', '5', '110', '2026-09-21', 'NSE', 'NEW-1'],
-    ['RELIANCE', 'SELL', '8', '120', '2026-09-22', 'NSE', 'NEW-2'],
-    ['RELIANCE', 'SELL', '20', '125', '2026-09-23', 'NSE', 'NEW-3'],
+    ['Symbol', 'Side', 'Qty', 'Price', 'Trade Date', 'Exchange', 'Order ID', 'Trade ID'],
+    ['RELIANCE', 'BUY', '5', '110', '2026-09-21', 'NSE', 'OLD-1', 'TRADE-1'],
+    ['RELIANCE', 'BUY', '5', '110', '2026-09-21', 'NSE', 'NEW-1', 'TRADE-1'],
+    ['RELIANCE', 'SELL', '8', '120', '2026-09-22', 'NSE', 'NEW-2', 'TRADE-2'],
+    ['RELIANCE', 'SELL', '20', '125', '2026-09-23', 'NSE', 'NEW-3', 'TRADE-3'],
   ]);
 
   const merged = mergeTradeBookRowsIntoPortfolio(portfolio, parsedImport, 'tradebook.xlsx');
@@ -201,12 +234,13 @@ test('mergeTradeBookRowsIntoPortfolio prefers trade IDs over order IDs for dupli
   const parsedImport = parseTradeBookRows([
     ['Symbol', 'Side', 'Quantity', 'Price', 'Trade Date', 'Exchange', 'Order ID', 'Trade ID'],
     ['HDFCBANK', 'Buy', '1', '1700', '2026-09-25', 'NSE', 'ORDER-1', 'TRADE-1'],
+    ['HDFCBANK', 'Buy', '99', '1', '2026-09-26', 'NSE', 'ORDER-2', 'TRADE-1'],
     ['HDFCBANK', 'Buy', '1', '1700', '2026-09-25', 'NSE', 'ORDER-1', 'TRADE-2'],
   ]);
 
   const merged = mergeTradeBookRowsIntoPortfolio(portfolio, parsedImport);
 
   assert.equal(merged.summary.importedCount, 2);
-  assert.equal(merged.summary.duplicateCount, 0);
+  assert.equal(merged.summary.duplicateCount, 1);
   assert.equal(merged.data.stocks[0].transactions.length, 2);
 });

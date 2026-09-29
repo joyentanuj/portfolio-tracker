@@ -30,6 +30,8 @@ export default function StockTradeBookImport() {
     ...SUPPORTED_TRADE_BOOK_HEADERS.quantity.slice(0, 2),
     ...SUPPORTED_TRADE_BOOK_HEADERS.price.slice(0, 2),
     SUPPORTED_TRADE_BOOK_HEADERS.date[0],
+    SUPPORTED_TRADE_BOOK_HEADERS.orderId[0],
+    SUPPORTED_TRADE_BOOK_HEADERS.tradeId[0],
   ].join(', ');
 
   const handleProcessedImport = async (file) => {
@@ -62,6 +64,7 @@ export default function StockTradeBookImport() {
         missingColumns: [],
         errors: [],
         duplicateRows: [],
+        skippedRows: [],
         summary: {
           totalRows: 0,
           importedCount: 0,
@@ -101,6 +104,7 @@ export default function StockTradeBookImport() {
           </div>
           <p className="text-xs leading-5 text-gray-600 dark:text-gray-300">
             Upload a broker trade book in <span className="font-medium">.xlsx</span> or <span className="font-medium">.xls</span> format.
+            Zerodha trade-book files are supported, including reports with logo, Client ID, and title rows before the table.
             Required fields are matched case-insensitively and duplicates are skipped using trade or order identifiers when available,
             otherwise by a stable symbol/date/side/quantity/price fingerprint.
           </p>
@@ -188,14 +192,15 @@ export default function StockTradeBookImport() {
               <p className="mt-1 text-xs text-gray-600 dark:text-gray-300">
                 {result.fatalError
                   ? result.fatalError
-                  : `${result.summary.importedCount} rows imported, ${result.summary.duplicateCount} duplicates skipped, ${result.summary.rejectedCount} rows rejected.`}
+                  : `${result.summary.importedCount} imported, ${result.summary.duplicateCount} duplicates, ${result.summary.skippedCount} skipped, ${result.summary.rejectedCount} rejected.`}
               </p>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
               <SummaryTile label="Rows scanned" value={result.summary.totalRows} />
               <SummaryTile label="Imported" value={result.summary.importedCount} />
               <SummaryTile label="Duplicates" value={result.summary.duplicateCount} />
+              <SummaryTile label="Skipped" value={result.summary.skippedCount} />
               <SummaryTile label="Rejected" value={result.summary.rejectedCount} />
             </div>
 
@@ -219,6 +224,19 @@ export default function StockTradeBookImport() {
                   {result.errors.map((error) => (
                     <li key={`${error.rowNumber}-${error.message}`} className="leading-5">
                       <span className="font-semibold">Row {error.rowNumber}:</span> {error.message}
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            )}
+
+            {result.skippedRows?.length > 0 && (
+              <details className="rounded-lg border border-gray-200 bg-white/80 px-3 py-2 text-xs text-gray-700 dark:border-gray-700 dark:bg-gray-900/40 dark:text-gray-300">
+                <summary className="cursor-pointer font-medium">Skipped non-trade rows ({result.skippedRows.length})</summary>
+                <ul className="mt-3 space-y-2">
+                  {result.skippedRows.map((entry) => (
+                    <li key={`${entry.rowNumber}-${entry.message}`} className="leading-5">
+                      <span className="font-semibold">Row {entry.rowNumber}:</span> {entry.message}
                     </li>
                   ))}
                 </ul>
