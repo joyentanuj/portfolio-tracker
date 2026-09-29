@@ -41,17 +41,15 @@ npm run build   # production build
 ## Excel Trade Book Import
 
 - Open **Indian Stocks** and upload a broker trade book in `.xlsx` or `.xls` format.
-- Header matching is case-insensitive and supports common aliases, including:
-  - Symbol: `Symbol`, `Stock`, `Scrip`
-  - Side: `Buy/Sell`, `Side`
-  - Quantity: `Qty`, `Quantity`
-  - Price: `Rate`, `Price`
-  - Optional metadata: `Trade Date`, `Exchange`, `Order ID`, `Trade ID`, `Stock Name`, `ISIN`
+- Zerodha trade books are supported, including reports with logo, Client ID, and report-title metadata rows before the table header. The importer scans worksheet rows to find the header.
+- Header matching is case-insensitive and supports the Zerodha columns `Symbol`, `ISIN`, `Trade Date`, `Exchange`, `Segment`, `Series`, `Trade Type`, `Auction`, `Quantity`, `Price`, `Trade ID`, `Order ID`, and `Order Execution Time`.
+- Common aliases are also supported: `Stock` / `Scrip` for Symbol, `Side` / `Buy/Sell` for Trade Type, `Qty` for Quantity, and `Rate` for Price.
 - Required columns are symbol/stock identifier, buy-or-sell side, quantity, and trade price.
-- `ISIN` headers are recognized for validation, but each imported row still needs a tradable symbol/ticker because holdings are tracked by stock symbol.
+- `Symbol` is the primary holding identifier. `ISIN` is retained as a stable disambiguation key, but each imported row still needs a tradable symbol/ticker.
 - Invalid rows are rejected with row-level errors. Quantity and price must be positive, side must be buy/sell, and sells that exceed currently held quantity are blocked.
+- Non-trade rows are skipped and reported separately from rejected rows and duplicates.
 - Imports never replace your existing manual holdings. Valid rows are merged in as stock transactions and the holdings screen refreshes immediately.
-- Duplicate trades are skipped automatically. The importer prefers `Trade ID` / `Order ID` when present and falls back to a stable fingerprint of symbol, date, side, quantity, price, and exchange when identifiers are missing.
+- Duplicate trades are skipped automatically. The importer prefers `Trade ID`, then uses `Order ID` with trade date, symbol, side, quantity, and price, and otherwise falls back to a stable trade fingerprint.
 
 ## Notes
 

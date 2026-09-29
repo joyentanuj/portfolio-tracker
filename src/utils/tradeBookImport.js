@@ -10,7 +10,7 @@ function generateImportId() {
 export const SUPPORTED_TRADE_BOOK_HEADERS = {
   symbol: ['Symbol', 'Stock', 'Scrip', 'Ticker', 'Security'],
   isin: ['ISIN'],
-  type: ['Buy/Sell', 'Side', 'Transaction Type', 'Action', 'Type'],
+  type: ['Buy/Sell', 'Trade Type', 'Side', 'Transaction Type', 'Action', 'Type'],
   quantity: ['Qty', 'Quantity', 'Shares', 'Units'],
   price: ['Rate', 'Price', 'Trade Price', 'Average Price'],
   date: ['Trade Date', 'Date', 'Transaction Date', 'Execution Date'],
@@ -18,6 +18,9 @@ export const SUPPORTED_TRADE_BOOK_HEADERS = {
   orderId: ['Order ID', 'Order No', 'Order Number'],
   tradeId: ['Trade ID', 'Trade No', 'Trade Number'],
   name: ['Stock Name', 'Company Name', 'Security Name', 'Instrument'],
+  series: ['Series'],
+  auction: ['Auction'],
+  executionTime: ['Order Execution Time'],
 };
 
 const HEADER_LOOKUP = Object.entries(SUPPORTED_TRADE_BOOK_HEADERS).reduce((lookup, [key, aliases]) => {
@@ -62,9 +65,10 @@ function normalizeSymbol(value, exchange) {
   if (!raw) return '';
 
   const symbol = raw.includes(':') ? raw.split(':').pop() : raw;
-  if (!symbol || looksLikeIsin(symbol) || symbol.includes('.') || symbol.includes('=')) {
+  if (!symbol || symbol.includes('.') || symbol.includes('=')) {
     return symbol;
   }
+  if (looksLikeIsin(symbol)) return '';
 
   if (exchange === 'NSE') return `${symbol}.NS`;
   if (exchange === 'BSE') return `${symbol}.BO`;
@@ -103,12 +107,16 @@ function parsePositiveNumber(value) {
     return Number.isFinite(value) && value > 0 ? value : null;
   }
 
-  const cleaned = normalizeText(value)
-    .replace(/[₹$,]/g, '')
+  const text = normalizeText(value)
     .replace(/\s+/g, '')
-    .replace(/^\((.*)\)$/, '-$1');
+    .replace(/[₹$]/g, '');
+  const isNegative = /^\(.*\)$/.test(text);
+  const cleaned = (isNegative ? `-${text.slice(1, -1)}` : text).replace(/,/g, '');
 
-  if (!cleaned) return null;
+  if (
+    !cleaned
+    || !/^-?(?:\d+|\d{1,3}(?:,\d{3})+)(?:\.\d+)?$/.test(isNegative ? `-${text.slice(1, -1)}` : text)
+  ) return null;
 
   const parsed = Number(cleaned);
   if (!Number.isFinite(parsed) || parsed <= 0) return null;
@@ -118,10 +126,8 @@ function parsePositiveNumber(value) {
 function normalizeTradeType(value) {
   const normalized = normalizeHeader(value);
   if (!normalized) return '';
-  if (normalized === 'b') return 'buy';
-  if (normalized === 's') return 'sell';
-  if (normalized.includes('buy')) return 'buy';
-  if (normalized.includes('sell')) return 'sell';
+  if (normalized === 'b' || normalized === 'buy') return 'buy';
+  if (normalized === 's' || normalized === 'sell') return 'sell';
   return '';
 }
 
@@ -154,7 +160,7 @@ function normalizeTradeDate(value, options = {}) {
   const text = normalizeText(value);
   if (!text) return '';
 
-  const isoMatch = text.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/);
+  const isoMatch = text.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})(?:[T\s].*)?$/);
   if (isoMatch) {
     return toIsoDate(Number(isoMatch[1]), Number(isoMatch[2]), Number(isoMatch[3]));
   }
@@ -183,6 +189,7 @@ function normalizeFingerprintNumber(value) {
 
 export function buildTradeFingerprint({
   symbol,
+  isin,
   type,
   quantity,
   price,
@@ -191,7 +198,6 @@ export function buildTradeFingerprint({
   orderId,
   tradeId,
 }) {
-  const identifier = normalizeIdentifier(tradeId) || normalizeIdentifier(orderId);
   const baseParts = [
     normalizeFingerprintValue(symbol),
     normalizeFingerprintValue(type),
@@ -199,16 +205,15 @@ export function buildTradeFingerprint({
     normalizeFingerprintNumber(quantity),
     normalizeFingerprintNumber(price),
     normalizeFingerprintValue(exchange),
+    normalizeFingerprintValue(isin),
   ];
 
-  return identifier
-    ? [
-        'id',
-        identifier,
-        normalizeFingerprintValue(symbol),
-        normalizeFingerprintValue(type),
-        normalizeFingerprintValue(exchange),
-      ].join('|')
+  const normalizedTradeId = normalizeIdentifier(tradeId);
+  if (normalizedTradeId) return ['id', normalizedTradeId].join('|');
+
+  const normalizedOrderId = normalizeIdentifier(orderId);
+  return normalizedOrderId
+    ? ['order', normalizedOrderId, ...baseParts].join('|')
     : ['trade', ...baseParts].join('|');
 }
 
@@ -219,6 +224,7 @@ function getExistingTradeFingerprint(asset, transaction) {
 
   return transaction.importFingerprint || buildTradeFingerprint({
     symbol: asset.symbol,
+    isin: transaction.isin || asset.isin,
     type: transaction.type,
     quantity: Number(transaction.quantity),
     price: Number(transaction.price),
@@ -237,6 +243,30 @@ function getHoldingQuantity(transactions = []) {
   }, 0);
 }
 
+function getStockIsin(stock) {
+  return normalizeIdentifier(stock.isin || stock.transactions?.find((transaction) => transaction.isin)?.isin);
+}
+
+function getStockIdentity(stock) {
+  return `${normalizeIdentifier(stock.symbol)}|${getStockIsin(stock)}`;
+}
+
+function findStockForTrade(stocks, trade) {
+  const matchingSymbol = stocks.filter((stock) => normalizeIdentifier(stock.symbol) === normalizeIdentifier(trade.symbol));
+  const matchingIsin = normalizeIdentifier(trade.isin);
+
+  if (matchingIsin) {
+    const exactIsin = matchingSymbol.find((stock) => getStockIsin(stock) === matchingIsin);
+    if (exactIsin) return exactIsin;
+    const withoutIsin = matchingSymbol.find((stock) => !getStockIsin(stock));
+    if (withoutIsin) return withoutIsin;
+    if (matchingSymbol.length > 0) return null;
+    return stocks.find((stock) => getStockIsin(stock) === matchingIsin) || null;
+  }
+
+  return matchingSymbol[0] || null;
+}
+
 function cloneStocks(stocks = []) {
   return stocks.map((stock) => ({
     ...stock,
@@ -253,11 +283,21 @@ function sortImportTrades(trades) {
 }
 
 export function parseTradeBookRows(sheetRows = [], options = {}) {
-  const headerRowIndex = sheetRows.findIndex((row) => !isEmptyRow(row));
+  const firstNonEmptyRowIndex = sheetRows.findIndex((row) => !isEmptyRow(row));
+  const headerCandidates = sheetRows
+    .map((row, index) => ({ index, mapping: resolveHeaderMap(row || []) }))
+    .filter(({ mapping }) => Object.keys(mapping).length > 0)
+    .sort((left, right) => {
+      const score = (mapping) => Object.keys(mapping).length
+        + REQUIRED_HEADERS.filter((key) => mapping[key] != null).length * 10;
+      return score(right.mapping) - score(left.mapping);
+    });
+  const headerRowIndex = headerCandidates[0]?.index ?? firstNonEmptyRowIndex;
   if (headerRowIndex === -1) {
     return {
       rows: [],
       errors: [],
+      skippedRows: [],
       totalRows: 0,
       missingColumns: REQUIRED_HEADERS,
       fatalError: 'The workbook is empty.',
@@ -281,6 +321,7 @@ export function parseTradeBookRows(sheetRows = [], options = {}) {
 
   const rows = [];
   const errors = [];
+  const skippedRows = [];
   let totalRows = 0;
 
   for (let index = headerRowIndex + 1; index < sheetRows.length; index += 1) {
@@ -293,9 +334,17 @@ export function parseTradeBookRows(sheetRows = [], options = {}) {
     const rawSymbol = getRowValue(row, headerMap, 'symbol');
     const isin = normalizeIdentifier(getRowValue(row, headerMap, 'isin'));
     const symbol = normalizeSymbol(rawSymbol, exchange);
-    const type = normalizeTradeType(getRowValue(row, headerMap, 'type'));
-    const quantity = parsePositiveNumber(getRowValue(row, headerMap, 'quantity'));
-    const price = parsePositiveNumber(getRowValue(row, headerMap, 'price'));
+    const rawType = getRowValue(row, headerMap, 'type');
+    const rawQuantity = getRowValue(row, headerMap, 'quantity');
+    const rawPrice = getRowValue(row, headerMap, 'price');
+    if (!normalizeText(rawType) && !normalizeText(rawQuantity) && !normalizeText(rawPrice)) {
+      skippedRows.push({ rowNumber, message: 'Not a trade row; skipped' });
+      continue;
+    }
+
+    const type = normalizeTradeType(rawType);
+    const quantity = parsePositiveNumber(rawQuantity);
+    const price = parsePositiveNumber(rawPrice);
     const rawDate = getRowValue(row, headerMap, 'date');
     const date = normalizeTradeDate(rawDate, options) || DEFAULT_TRADE_DATE;
     const rowErrors = [];
@@ -329,6 +378,7 @@ export function parseTradeBookRows(sheetRows = [], options = {}) {
     rows.push({
       rowNumber,
       symbol,
+      isin,
       name,
       type,
       quantity,
@@ -339,6 +389,7 @@ export function parseTradeBookRows(sheetRows = [], options = {}) {
       tradeId,
       fingerprint: buildTradeFingerprint({
         symbol,
+        isin,
         type,
         quantity,
         price,
@@ -353,6 +404,7 @@ export function parseTradeBookRows(sheetRows = [], options = {}) {
   return {
     rows,
     errors,
+    skippedRows,
     totalRows,
     missingColumns: [],
     fatalError: '',
@@ -377,6 +429,7 @@ export function parseTradeBookWorkbook(input) {
     return {
       rows: [],
       errors: [],
+      skippedRows: [],
       totalRows: 0,
       missingColumns: REQUIRED_HEADERS,
       fatalError: 'The workbook does not contain any readable sheets.',
@@ -405,9 +458,10 @@ export function mergeTradeBookRowsIntoPortfolio(data, importResult, fileName = '
   const existingStocks = data.stocks || [];
   const currentHoldings = new Map();
   const knownFingerprints = new Set();
+  const holdingStocks = [...existingStocks];
 
   existingStocks.forEach((stock) => {
-    currentHoldings.set(stock.symbol, Math.max(0, getHoldingQuantity(stock.transactions)));
+    currentHoldings.set(getStockIdentity(stock), Math.max(0, getHoldingQuantity(stock.transactions)));
     (stock.transactions || []).forEach((transaction) => {
       const fingerprint = getExistingTradeFingerprint(stock, transaction);
       if (fingerprint) {
@@ -417,6 +471,7 @@ export function mergeTradeBookRowsIntoPortfolio(data, importResult, fileName = '
   });
 
   const errors = [...(importResult.errors || [])];
+  const skippedRows = [...(importResult.skippedRows || [])];
   const duplicateRows = [];
   const acceptedTrades = [];
   const updatedSymbols = new Set();
@@ -432,7 +487,14 @@ export function mergeTradeBookRowsIntoPortfolio(data, importResult, fileName = '
       return;
     }
 
-    const heldUnits = currentHoldings.get(trade.symbol) || 0;
+    let holdingStock = findStockForTrade(holdingStocks, trade);
+    if (!holdingStock) {
+      holdingStock = { symbol: trade.symbol, isin: trade.isin };
+      holdingStocks.push(holdingStock);
+      currentHoldings.set(getStockIdentity(holdingStock), 0);
+    }
+    const holdingKey = getStockIdentity(holdingStock);
+    const heldUnits = currentHoldings.get(holdingKey) || 0;
     if (trade.type === 'sell' && trade.quantity > heldUnits + 1e-8) {
       errors.push({
         rowNumber: trade.rowNumber,
@@ -443,7 +505,7 @@ export function mergeTradeBookRowsIntoPortfolio(data, importResult, fileName = '
 
     knownFingerprints.add(trade.fingerprint);
     currentHoldings.set(
-      trade.symbol,
+      holdingKey,
       trade.type === 'buy' ? heldUnits + trade.quantity : Math.max(0, heldUnits - trade.quantity)
     );
     acceptedTrades.push(trade);
@@ -454,12 +516,13 @@ export function mergeTradeBookRowsIntoPortfolio(data, importResult, fileName = '
       data,
       errors: errors.sort((left, right) => left.rowNumber - right.rowNumber),
       duplicateRows: duplicateRows.sort((left, right) => left.rowNumber - right.rowNumber),
+      skippedRows: skippedRows.sort((left, right) => left.rowNumber - right.rowNumber),
       summary: {
         totalRows: importResult.totalRows || 0,
         importedCount: 0,
         duplicateCount: duplicateRows.length,
         rejectedCount: errors.length,
-        skippedCount: duplicateRows.length + errors.length,
+        skippedCount: skippedRows.length,
         createdAssetsCount: 0,
         updatedAssetsCount: 0,
       },
@@ -467,29 +530,28 @@ export function mergeTradeBookRowsIntoPortfolio(data, importResult, fileName = '
       missingColumns: importResult.missingColumns || [],
     };
   }
-
   const stocks = cloneStocks(existingStocks);
-  const stocksBySymbol = new Map(stocks.map((stock) => [normalizeIdentifier(stock.symbol), stock]));
 
   acceptedTrades
     .sort((left, right) => left.rowNumber - right.rowNumber)
     .forEach((trade) => {
-      let stock = stocksBySymbol.get(normalizeIdentifier(trade.symbol));
+      let stock = findStockForTrade(stocks, trade);
       if (!stock) {
         stock = {
           id: generateImportId(),
           symbol: trade.symbol,
           name: trade.name || trade.symbol.replace(/\.(NS|BO)$/i, ''),
           exchange: trade.exchange || inferExchange(trade.symbol, ''),
+          isin: trade.isin || undefined,
           category: 'stocks',
           transactions: [],
         };
         stocks.push(stock);
-        stocksBySymbol.set(normalizeIdentifier(trade.symbol), stock);
         createdAssetsCount += 1;
       } else if (!stock.name && trade.name) {
         stock.name = trade.name;
       }
+      if (!stock.isin && trade.isin) stock.isin = trade.isin;
 
       stock.transactions.push({
         id: generateImportId(),
@@ -500,6 +562,7 @@ export function mergeTradeBookRowsIntoPortfolio(data, importResult, fileName = '
         amount: Number((trade.quantity * trade.price).toFixed(2)),
         notes: fileName ? `Imported from trade book: ${fileName}` : 'Imported from trade book',
         exchange: trade.exchange || stock.exchange || '',
+        isin: trade.isin || undefined,
         orderId: trade.orderId || undefined,
         tradeId: trade.tradeId || undefined,
         importFingerprint: trade.fingerprint,
@@ -512,12 +575,13 @@ export function mergeTradeBookRowsIntoPortfolio(data, importResult, fileName = '
     data: { ...data, stocks },
     errors: errors.sort((left, right) => left.rowNumber - right.rowNumber),
     duplicateRows: duplicateRows.sort((left, right) => left.rowNumber - right.rowNumber),
+    skippedRows: skippedRows.sort((left, right) => left.rowNumber - right.rowNumber),
     summary: {
       totalRows: importResult.totalRows || 0,
       importedCount: acceptedTrades.length,
       duplicateCount: duplicateRows.length,
       rejectedCount: errors.length,
-      skippedCount: duplicateRows.length + errors.length,
+      skippedCount: skippedRows.length,
       createdAssetsCount,
       updatedAssetsCount: updatedSymbols.size,
     },
