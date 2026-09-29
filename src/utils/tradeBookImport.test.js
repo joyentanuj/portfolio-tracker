@@ -38,6 +38,7 @@ test('parseTradeBookRows normalizes common header aliases', () => {
   assert.deepEqual(result.rows[0], {
     rowNumber: 2,
     symbol: 'RELIANCE.NS',
+    isin: '',
     name: '',
     type: 'buy',
     quantity: 10,
@@ -148,10 +149,11 @@ test('parseTradeBookRows accepts supported slash and dotted date string formats'
     ['Symbol', 'Side', 'Qty', 'Price', 'Trade Date'],
     ['ITC', 'BUY', '2', '420', '2026/09/28T11:32:00'],
     ['ASIANPAINT', 'SELL', '1', '3050', '28.09.2026'],
+    ['INFY', 'BUY', '1', '1500', new Date('2026-09-28T11:32:00Z')],
   ]);
 
   assert.equal(result.errors.length, 0);
-  assert.deepEqual(result.rows.map((row) => row.date), ['2026-09-28', '2026-09-28']);
+  assert.deepEqual(result.rows.map((row) => row.date), ['2026-09-28', '2026-09-28', '2026-09-28']);
 });
 
 test('mergeTradeBookRowsIntoPortfolio imports buys and sells, skips duplicates, and blocks oversells', () => {
@@ -242,5 +244,42 @@ test('mergeTradeBookRowsIntoPortfolio prefers trade IDs over order IDs for dupli
 
   assert.equal(merged.summary.importedCount, 2);
   assert.equal(merged.summary.duplicateCount, 1);
+  assert.equal(merged.data.stocks[0].transactions.length, 2);
+});
+
+test('mergeTradeBookRowsIntoPortfolio deduplicates order fills using all trade details', () => {
+  const parsedImport = parseTradeBookRows([
+    ['Symbol', 'Side', 'Quantity', 'Price', 'Trade Date', 'Exchange', 'Order ID'],
+    ['TCS', 'Buy', '2', '3500', '2026-09-25', 'NSE', 'ORDER-1'],
+    ['TCS', 'Buy', '3', '3501', '2026-09-25', 'NSE', 'ORDER-1'],
+    ['TCS', 'Buy', '2', '3500', '2026-09-25', 'NSE', 'ORDER-1'],
+  ]);
+
+  const merged = mergeTradeBookRowsIntoPortfolio({ stocks: [] }, parsedImport);
+
+  assert.equal(merged.summary.importedCount, 2);
+  assert.equal(merged.summary.duplicateCount, 1);
+  assert.equal(merged.data.stocks[0].transactions.length, 2);
+});
+
+test('mergeTradeBookRowsIntoPortfolio uses ISIN to find holdings when a symbol changes', () => {
+  const portfolio = {
+    stocks: [{
+      id: 'stock-1',
+      symbol: 'OLDTICKER.NS',
+      isin: 'INE002A01018',
+      transactions: [{ id: 'tx-1', type: 'buy', date: '2026-09-20', quantity: 2, price: 100 }],
+    }],
+  };
+  const parsedImport = parseTradeBookRows([
+    ['Symbol', 'ISIN', 'Side', 'Quantity', 'Price', 'Trade Date', 'Exchange', 'Trade ID'],
+    ['NEWTICKER', 'INE002A01018', 'Sell', '1', '120', '2026-09-25', 'NSE', 'TRADE-1'],
+  ]);
+
+  const merged = mergeTradeBookRowsIntoPortfolio(portfolio, parsedImport);
+
+  assert.equal(merged.summary.importedCount, 1);
+  assert.equal(merged.summary.createdAssetsCount, 0);
+  assert.equal(merged.data.stocks.length, 1);
   assert.equal(merged.data.stocks[0].transactions.length, 2);
 });

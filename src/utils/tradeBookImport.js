@@ -337,7 +337,7 @@ export function parseTradeBookRows(sheetRows = [], options = {}) {
     const rawType = getRowValue(row, headerMap, 'type');
     const rawQuantity = getRowValue(row, headerMap, 'quantity');
     const rawPrice = getRowValue(row, headerMap, 'price');
-    if (!normalizeText(rawSymbol) && !normalizeText(rawType) && !normalizeText(rawQuantity) && !normalizeText(rawPrice)) {
+    if (!normalizeText(rawType) && !normalizeText(rawQuantity) && !normalizeText(rawPrice)) {
       skippedRows.push({ rowNumber, message: 'Not a trade row; skipped' });
       continue;
     }
@@ -530,7 +530,6 @@ export function mergeTradeBookRowsIntoPortfolio(data, importResult, fileName = '
       missingColumns: importResult.missingColumns || [],
     };
   }
-  const stocks = cloneStocks(existingStocks);
   const stocks = cloneStocks(existingStocks);
 
   acceptedTrades
